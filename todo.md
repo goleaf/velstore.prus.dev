@@ -7,7 +7,7 @@
 
 2) Replace hardcoded strings with translations and add missing keys
 - Use __('cms.*') and JSON translations as needed
-- Fill gaps across `resources/lang/*`
+- Fill gaps across `lang/*`
 
 3) Remove Bootstrap/CDN usage; install Tailwind via npm/Vite
 - Configure tailwind.config.js and PostCSS
