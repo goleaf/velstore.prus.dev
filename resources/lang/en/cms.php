@@ -1075,6 +1075,10 @@ return [
 
     'product_reviews' => [
         'title_manage' => 'Product Reviews',
+        'index_description' => 'Moderate customer feedback and keep your catalogue trustworthy.',
+        'show_title' => 'Review #:id',
+        'details_title' => 'Review details',
+        'back_to_list' => 'Back to Reviews',
 
         'review_id' => 'Review ID',
         'customer_name' => 'Customer Name',
@@ -1082,6 +1086,15 @@ return [
         'rating' => 'Rating',
         'status' => 'Status',
         'actions' => 'Actions',
+        'review' => 'Review',
+
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'approved' => 'Approved',
+        'pending' => 'Pending',
+        'missing_customer' => 'Unknown customer',
+        'missing_product' => 'Unknown product',
+        'no_review_provided' => 'No review was provided for this submission.',
 
         'confirm_delete' => 'Confirm Delete',
         'delete_message' => 'Are you sure you want to delete this product review?',
