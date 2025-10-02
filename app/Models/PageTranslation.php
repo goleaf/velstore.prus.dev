@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PageTranslation extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['page_id', 'language_code', 'title', 'content', 'image_url'];
 
     public function page()
