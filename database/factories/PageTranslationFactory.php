@@ -15,12 +15,14 @@ class PageTranslationFactory extends Factory
 
     public function definition(): array
     {
+        $imageName = $this->faker->unique()->uuid().'.jpg';
+
         return [
             'page_id' => Page::factory(),
             'language_code' => $this->faker->unique()->lexify('??'),
             'title' => $this->faker->sentence(3),
             'content' => $this->faker->paragraph(),
-            'image_url' => null,
+            'image_url' => 'pages/'.$imageName,
         ];
     }
 }
