@@ -9,6 +9,7 @@ use App\Models\PageTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\Facades\DataTables;
 
 class PageController extends Controller
@@ -198,13 +199,14 @@ class PageController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        $page = Page::find($request->id);
-        $page->status = $request->status;
+        $page = Page::findOrFail($request->id);
+        $page->status = $request->boolean('status');
         $page->save();
 
         return response()->json([
             'success' => true,
+            'status' => (bool) $page->status,
             'message' => 'Page status updated.',
-        ]);
+        ], Response::HTTP_OK);
     }
 }

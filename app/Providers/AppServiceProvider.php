@@ -51,6 +51,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
 
         $this->app->bind(AttributeRepositoryInterface::class, AttributeRepository::class);
+
+        $this->app->singleton('auth.customer', function ($app) {
+            return $app['auth']->guard('customer');
+        });
     }
 
     /**
