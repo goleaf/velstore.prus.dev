@@ -1,125 +1,157 @@
 @extends('admin.layouts.admin')
 
-@section('content')
-    <div class="card mt-4">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.vendors.title_list') }}</h6>
-        </div>
-        <div class="card-body">
-            <table id="vendors-table" class="table table-bordered mt-4 dt-style">
-                <thead>
-                    <tr>
-                        <th>{{ __('cms.vendors.id') }}</th>
-                        <th>{{ __('cms.vendors.name') }}</th>
-                        <th>{{ __('cms.vendors.email') }}</th>
-                        <th>{{ __('cms.vendors.phone') }}</th>
-                        <th>{{ __('cms.vendors.status') }}</th>
-                        <th>{{ __('cms.vendors.actions') }}</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
-
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteVendorModal" tabindex="-1" aria-labelledby="deleteVendorModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="deleteVendorModalLabel">{{ __('cms.vendors.modal_confirm_delete_title') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">{{ __('cms.vendors.modal_confirm_delete_body') }}</div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cms.vendors.cancel') }}</button>
-            <button type="button" class="btn btn-danger" id="confirmDeleteVendor">{{ __('cms.vendors.delete') }}</button>
-            </div>
-        </div>
-        </div>
-    </div>
-@endsection
-
-@section('js')
 @php
-    $datatableLang = __('cms.datatables'); 
+    $datatableLang = __('cms.datatables');
+    $vendorStats = $stats ?? [
+        'total' => 0,
+        'active' => 0,
+        'inactive' => 0,
+        'banned' => 0,
+    ];
 @endphp
 
-<script>
-$(document).ready(function() {
-    $('#vendors-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: "{{ route('admin.vendors.data') }}",
-            type: "GET"
-        },
-        columns: [
-            { data: 'id', name: 'id' },
-            { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' },
-            { data: 'phone', name: 'phone' },
-            { 
-                data: 'status',
-                name: 'status',
-                render: function(data) {
-                    return data === 'active' 
-                        ? '<span class="badge bg-success">{{ __('cms.vendors.active') }}</span>'
-                        : '<span class="badge bg-danger">{{ __('cms.vendors.inactive') }}</span>';
-                }
-            },
-            {
-                data: 'action',
-                orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    return `
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-danger btn-delete-vendor" data-id="${row.id}">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        ],
-        pageLength: 10,
-        language: @json($datatableLang)
-    });
-});
+@section('content')
+<x-admin.page-header
+    :title="__('cms.vendors.title_manage')"
+    :description="__('cms.vendors.index_description')"
+>
+    <x-admin.button-link href="{{ route('admin.vendors.create') }}" class="btn-primary">
+        {{ __('cms.vendors.add_vendor') }}
+    </x-admin.button-link>
+</x-admin.page-header>
 
-let vendorToDeleteId = null;
+<x-admin.card>
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+            <p class="text-xs uppercase tracking-wide text-slate-600 mb-1">{{ __('cms.vendors.total_vendors') }}</p>
+            <p class="text-xl font-semibold text-slate-900">{{ number_format($vendorStats['total']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
+            <p class="text-xs uppercase tracking-wide text-emerald-600 mb-1">{{ __('cms.vendors.active_vendors') }}</p>
+            <p class="text-xl font-semibold text-emerald-900">{{ number_format($vendorStats['active']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-amber-50 border border-amber-100">
+            <p class="text-xs uppercase tracking-wide text-amber-600 mb-1">{{ __('cms.vendors.inactive_vendors') }}</p>
+            <p class="text-xl font-semibold text-amber-900">{{ number_format($vendorStats['inactive']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-rose-50 border border-rose-100">
+            <p class="text-xs uppercase tracking-wide text-rose-600 mb-1">{{ __('cms.vendors.banned_vendors') }}</p>
+            <p class="text-xl font-semibold text-rose-900">{{ number_format($vendorStats['banned']) }}</p>
+        </div>
+    </div>
+</x-admin.card>
 
-$(document).on('click', '.btn-delete-vendor', function() {
-    vendorToDeleteId = $(this).data('id');        
-    $('#deleteVendorModal').modal('show');
-});
+<x-admin.card class="mt-6" :title="__('cms.vendors.table_title')">
+    <x-admin.table id="vendors-table" :columns="[
+        __('cms.vendors.id'),
+        __('cms.vendors.name'),
+        __('cms.vendors.email'),
+        __('cms.vendors.phone'),
+        __('cms.vendors.status'),
+        __('cms.vendors.actions'),
+    ]">
+    </x-admin.table>
+</x-admin.card>
 
-$('#confirmDeleteVendor').off('click').on('click', function() {
-    if (vendorToDeleteId !== null) {
-        $.ajax({
-            url: '{{ route('admin.vendors.destroy', ':id') }}'.replace(':id', vendorToDeleteId),
-            method: 'DELETE',
-            data: {
-                _token: "{{ csrf_token() }}",
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#vendors-table').DataTable().ajax.reload();
-                    toastr.error(response.message, "Deleted", {
-                        closeButton: true,
-                        progressBar: true,
-                        positionClass: "toast-top-right",
-                        timeOut: 5000
-                    });
-                    $('#deleteVendorModal').modal('hide');
-                }
-            },
-            error: function() {
-                toastr.error("{{ __('cms.vendors.error_delete') }}", "Error");
-                $('#deleteVendorModal').modal('hide');
-            }
-        });
-    }
-});
-</script>
+<div class="modal fade" id="deleteVendorModal" tabindex="-1" aria-labelledby="deleteVendorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteVendorModalLabel">{{ __('cms.vendors.modal_confirm_delete_title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0 text-gray-600">{{ __('cms.vendors.modal_confirm_delete_body') }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('cms.vendors.cancel') }}</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteVendor">{{ __('cms.vendors.confirm_delete_button') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const routes = {
+                data: '{{ route('admin.vendors.data') }}',
+                destroy: '{{ route('admin.vendors.destroy', ['id' => '__ID__']) }}',
+            };
+
+            const table = $('#vendors-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: routes.data,
+                    type: 'GET',
+                },
+                columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'name', name: 'name' },
+                    { data: 'email', name: 'email' },
+                    { data: 'phone', name: 'phone', defaultContent: '—' },
+                    { data: 'status', name: 'status', orderable: false, searchable: false },
+                    { data: 'action', orderable: false, searchable: false },
+                ],
+                pageLength: 10,
+                order: [[0, 'desc']],
+                language: @json($datatableLang),
+            });
+
+            const deleteModalElement = document.getElementById('deleteVendorModal');
+            const deleteModal = deleteModalElement ? new bootstrap.Modal(deleteModalElement) : null;
+            let vendorToDelete = null;
+
+            document.addEventListener('click', (event) => {
+                const trigger = event.target.closest('[data-action="delete-vendor"]');
+                if (! trigger) {
+                    return;
+                }
+
+                vendorToDelete = trigger.getAttribute('data-vendor-id');
+                if (vendorToDelete && deleteModal) {
+                    deleteModal.show();
+                }
+            });
+
+            const confirmDeleteButton = document.getElementById('confirmDeleteVendor');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.addEventListener('click', () => {
+                    if (! vendorToDelete) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: routes.destroy.replace('__ID__', vendorToDelete),
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success: function(response) {
+                            if (response && response.success) {
+                                table.ajax.reload(null, false);
+                                toastr.success(response.message || '{{ __('cms.vendors.success_delete') }}');
+                            } else {
+                                toastr.error((response && response.message) || '{{ __('cms.vendors.error_delete') }}');
+                            }
+
+                            vendorToDelete = null;
+                            deleteModal?.hide();
+                        },
+                        error: function() {
+                            toastr.error('{{ __('cms.vendors.error_delete') }}');
+                            vendorToDelete = null;
+                            deleteModal?.hide();
+                        }
+                    });
+                });
+            }
+
+            deleteModalElement?.addEventListener('hidden.bs.modal', () => {
+                vendorToDelete = null;
+            });
+        });
+    </script>
+@endpush

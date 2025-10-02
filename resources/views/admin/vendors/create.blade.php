@@ -1,79 +1,150 @@
 @extends('admin.layouts.admin')
 
+@php
+    $statusOptions = [
+        'active' => __('cms.vendors.status_active'),
+        'inactive' => __('cms.vendors.status_inactive'),
+        'banned' => __('cms.vendors.status_banned'),
+    ];
+@endphp
+
 @section('content')
-    <div class="card mt-4">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.vendors.register_new_vendor') }}</h6>
+<x-admin.page-header
+    :title="__('cms.vendors.title_create')"
+    :description="__('cms.vendors.create_description')"
+>
+    <x-admin.button-link href="{{ route('admin.vendors.index') }}" class="btn-outline">
+        {{ __('cms.vendors.back_to_index') }}
+    </x-admin.button-link>
+</x-admin.page-header>
+
+<x-admin.card class="mt-6">
+    <form action="{{ route('admin.vendors.store') }}" method="POST" class="grid gap-6">
+        @csrf
+
+        <div class="grid gap-6 lg:grid-cols-2">
+            <div class="space-y-4">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">{{ __('cms.vendors.vendor_details_heading') }}</h3>
+
+                <div class="grid gap-4">
+                    <div>
+                        <label for="name" class="form-label">{{ __('cms.vendors.vendor_name') }}</label>
+                        <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            value="{{ old('name') }}"
+                            maxlength="255"
+                            class="form-control @error('name') is-invalid @enderror"
+                            autocomplete="name"
+                            required
+                        >
+                        @error('name')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="email" class="form-label">{{ __('cms.vendors.vendor_email') }}</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            maxlength="255"
+                            class="form-control @error('email') is-invalid @enderror"
+                            autocomplete="email"
+                            required
+                        >
+                        @error('email')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="phone" class="form-label">{{ __('cms.vendors.phone_optional') }}</label>
+                        <input
+                            id="phone"
+                            type="text"
+                            name="phone"
+                            value="{{ old('phone') }}"
+                            maxlength="20"
+                            class="form-control @error('phone') is-invalid @enderror"
+                            autocomplete="tel"
+                            placeholder="+1 555 123 4567"
+                        >
+                        @error('phone')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">{{ __('cms.vendors.account_security_heading') }}</h3>
+
+                <div class="grid gap-4">
+                    <div>
+                        <label for="password" class="form-label">{{ __('cms.vendors.password') }}</label>
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            class="form-control @error('password') is-invalid @enderror"
+                            autocomplete="new-password"
+                            required
+                        >
+                        @error('password')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="password_confirmation" class="form-label">{{ __('cms.vendors.confirm_password') }}</label>
+                        <input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            class="form-control @error('password_confirmation') is-invalid @enderror"
+                            autocomplete="new-password"
+                            required
+                        >
+                        @error('password_confirmation')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="status" class="form-label">{{ __('cms.vendors.status_label') }}</label>
+                        <select
+                            id="status"
+                            name="status"
+                            class="form-select @error('status') is-invalid @enderror"
+                            required
+                        >
+                            <option value="" disabled {{ old('status') ? '' : 'selected' }}>{{ __('cms.vendors.status_placeholder') }}</option>
+                            @foreach ($statusOptions as $value => $label)
+                                <option value="{{ $value }}" @selected(old('status', 'active') === $value)>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form action="{{ route('admin.vendors.store') }}" method="POST">
-                @csrf
 
-                <div class="mb-3">
-                    <label for="name" class="form-label">{{ __('cms.vendors.vendor_name') }}</label>
-                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                           value="{{ old('name') }}" maxlength="255">
-                    @error('name')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="email" class="form-label">{{ __('cms.vendors.vendor_email') }}</label>
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                           value="{{ old('email') }}" maxlength="255">
-                    @error('email')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="phone" class="form-label">{{ __('cms.vendors.phone_optional') }}</label>
-                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                           value="{{ old('phone') }}" maxlength="20">
-                    @error('phone')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">{{ __('cms.vendors.password') }}</label>
-                    <input type="password" name="password"
-                           class="form-control @error('password') is-invalid @enderror" autocomplete="new-password">
-                    @error('password')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="password_confirmation" class="form-label">{{ __('cms.vendors.confirm_password') }}</label>
-                    <input type="password" name="password_confirmation"
-                           class="form-control @error('password_confirmation') is-invalid @enderror"
-                           autocomplete="new-password">
-                    @error('password_confirmation')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="status" class="form-label">{{ __('cms.vendors.status') }}</label>
-                    <select name="status" class="form-select @error('status') is-invalid @enderror">
-                        <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>
-                            {{ __('cms.vendors.active') }}</option>
-                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
-                            {{ __('cms.vendors.inactive') }}</option>
-                        <option value="banned" {{ old('status') == 'banned' ? 'selected' : '' }}>
-                            {{ __('cms.vendors.banned') }}</option>
-                    </select>
-                    @error('status')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-
-                <button type="submit" class="btn btn-success">{{ __('cms.vendors.register_button') }}</button>
-                <button type="button" class="btn btn-secondary"
-                        data-url="{{ route('admin.vendors.index') }}">{{ __('cms.vendors.cancel') }}</button>
-            </form>
+        <div class="flex flex-wrap justify-end gap-3">
+            <button type="submit" class="btn btn-primary">
+                {{ __('cms.vendors.register_button') }}
+            </button>
+            <x-admin.button-link href="{{ route('admin.vendors.index') }}" class="btn-outline">
+                {{ __('cms.vendors.cancel_button') }}
+            </x-admin.button-link>
         </div>
-    </div>
+    </form>
+</x-admin.card>
 @endsection
