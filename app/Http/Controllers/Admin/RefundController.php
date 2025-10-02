@@ -22,16 +22,16 @@ class RefundController extends Controller
             return DataTables::of($refunds)
                 ->addColumn('payment', fn ($row) => $row->payment ? 'Payment #'.$row->payment->id : '—')
                 ->addColumn('action', function ($row) {
-                    return '
-                        <a href="'.route('admin.refunds.show', $row->id).'" 
-                        class="border border-primary dt-show rounded-3 d-inline-block me-1 px-2 py-1">
-                            <i class="bi bi-eye-fill text-primary"></i>
-                        </a>
-                        <span class="border border-danger dt-trash rounded-3 d-inline-block" 
-                            onclick="deleteRefund('.$row->id.')"> 
-                            <i class="bi bi-trash-fill text-danger"></i>
-                        </span>
-                    ';
+                    $showRoute = route('admin.refunds.show', $row->id);
+
+                    return '<div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-view-refund" data-url="'.$showRoute.'">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-delete-refund" data-id="'.$row->id.'">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>';
                 })
                 ->make(true);
         }

@@ -31,13 +31,16 @@ class SocialMediaLinkController extends Controller
 
         return DataTables::of($socialMediaLinks)
             ->addColumn('action', function ($socialMediaLink) {
-                return '<a href="'.route('admin.social-media-links.edit', $socialMediaLink->id).'" class="btn btn-sm btn-primary">Edit</a>
-                        <a href="'.route('admin.social-media-links.destroy', $socialMediaLink->id).'" class="btn btn-sm btn-danger" 
-                        onclick="event.preventDefault(); document.getElementById(\'delete-form-'.$socialMediaLink->id.'\').submit();">Delete</a>
-                        <form id="delete-form-'.$socialMediaLink->id.'" action="'.route('admin.social-media-links.destroy', $socialMediaLink->id).'" method="POST" style="display: none;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                        </form>';
+                $editRoute = route('admin.social-media-links.edit', $socialMediaLink->id);
+
+                return '<div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-edit-social-link" data-url="'.$editRoute.'">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-delete-social-link" data-id="'.$socialMediaLink->id.'">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>';
             })
             ->rawColumns(['action'])
             ->make(true);

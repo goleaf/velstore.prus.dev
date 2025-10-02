@@ -70,10 +70,17 @@
 
             let couponToDeleteId = null;
 
-            window.deleteCoupon = function(id) {
-                couponToDeleteId = id;
+            $(document).on('click', '.btn-edit-coupon', function() {
+                const url = $(this).data('url');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+
+            $(document).on('click', '.btn-delete-coupon', function() {
+                couponToDeleteId = $(this).data('id');
                 $('#deleteCouponModal').modal('show');
-            }
+            });
 
             $('#confirmDeleteCoupon').on('click', function() {
                 if (couponToDeleteId === null) {

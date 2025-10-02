@@ -1,11 +1,6 @@
 
 @extends('admin.layouts.admin')
 
-@section('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-@endsection
-
 @section('content')
 
 <div class="card mt-4">
@@ -46,23 +41,9 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 @php
     $datatableLang = __('cms.datatables'); 
 @endphp
-
-@if (session('success'))
-<script>
-    toastr.success("{{ session('success') }}", "{{ __('cms.products.success') }}", {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: 5000
-    });
-</script>
-@endif  
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
 <script>
 
@@ -94,15 +75,23 @@
                                 </label>`;
                     }
                 },
-                { 
-                    data: 'action', 
-                    name: 'action', 
-                    orderable: false, 
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
                     searchable: false,
                     render: function(data, type, row) {
-                        var editBtn = '<span class="border border-edit dt-trash rounded-3 d-inline-block"><a href="/admin/products/' + row.id + '/edit"><i class="bi bi-pencil-fill pencil-edit-color"></i></a></span>';
-                        var deleteBtn = '<span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="deleteProduct(' + row.id + ')"><i class="bi bi-trash-fill text-danger"></i></span>';
-                        return editBtn + ' ' + deleteBtn;
+                        var editUrl = '{{ route('admin.products.edit', ':id') }}'.replace(':id', row.id);
+                        return `
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-edit-product" data-url="${editUrl}">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-delete-product" data-id="${row.id}">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        `;
                     }
                 }
             ],
@@ -116,54 +105,61 @@
             updateProductStatus(productId, newStatus);
         });
 
+        $(document).on('click', '.btn-edit-product', function() {
+            const url = $(this).data('url');
+            if (url) {
+                window.location.href = url;
+            }
+        });
+
+        $(document).on('click', '.btn-delete-product', function() {
+            productToDeleteId = $(this).data('id');
+            $('#deleteProductModal').modal('show');
+        });
+
     });
 
     let productToDeleteId = null;
 
-    function deleteProduct(id) {
-        productToDeleteId = id;
-        $('#deleteProductModal').modal('show');
-
-        $('#confirmDeleteProduct').off('click').on('click', function() {
-            if (productToDeleteId !== null) {
-                $.ajax({
-                    url: '{{ route('admin.products.destroy', ':id') }}'.replace(':id', productToDeleteId),
-                    method: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#products-table').DataTable().ajax.reload();
-                            toastr.error(response.message, "Success", {
-                                closeButton: true,
-                                progressBar: true,
-                                positionClass: "toast-top-right",
-                                timeOut: 5000
-                            });
-                            $('#deleteProductModal').modal('hide');
-                        } else {
-                            toastr.error(response.message, "Error", {
-                                closeButton: true,
-                                progressBar: true,
-                                positionClass: "toast-top-right",
-                                timeOut: 5000
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        toastr.error('Error deleting product!', "Error", {
+    $('#confirmDeleteProduct').off('click').on('click', function() {
+        if (productToDeleteId !== null) {
+            $.ajax({
+                url: '{{ route('admin.products.destroy', ':id') }}'.replace(':id', productToDeleteId),
+                method: 'DELETE',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#products-table').DataTable().ajax.reload();
+                        toastr.error(response.message, "Success", {
                             closeButton: true,
                             progressBar: true,
                             positionClass: "toast-top-right",
                             timeOut: 5000
                         });
                         $('#deleteProductModal').modal('hide');
+                    } else {
+                        toastr.error(response.message, "Error", {
+                            closeButton: true,
+                            progressBar: true,
+                            positionClass: "toast-top-right",
+                            timeOut: 5000
+                        });
                     }
-                });
-            }
-        });
-    }
+                },
+                error: function() {
+                    toastr.error('Error deleting product!', "Error", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
+                    $('#deleteProductModal').modal('hide');
+                }
+            });
+        }
+    });
 
     function updateProductStatus(id, status) {
         $.ajax({
@@ -206,4 +202,3 @@
 </script>
 
 @endsection
-

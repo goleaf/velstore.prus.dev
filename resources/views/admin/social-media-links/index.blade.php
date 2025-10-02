@@ -2,15 +2,6 @@
 
 @extends('admin.layouts.admin')
 
-@section('css')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   
-    
-@endsection
-
 @section('content')
 
 <div class="card mt-4">
@@ -54,29 +45,10 @@
 @endsection
 
 @section('js')
-
- <!-- DataTables JS -->
- <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
-
 @php
     $datatableLang = __('cms.datatables'); // Load the datatables translation
 @endphp
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-@if (session('success'))
-<script>
-    toastr.success("{{ session('success') }}", "{{ __('cms.social_media_links.success') }}", {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: 5000
-    });
-</script>
-@endif
-</script>
 <script>
     $(document).ready(function() {
     $('#social-media-links-table').DataTable({
@@ -96,12 +68,7 @@
             {
                 data: 'action',
                 orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    var editBtn = '<span class="border border-info dt-trash rounded-3 d-inline-block"><a href="/admin/social-media-links/' + row.id + '/edit"><i class="bi bi-pencil-fill text-info"></i></a></span>';
-                    var deleteBtn = '<span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="deleteSocialMediaLink(' + row.id + ')"> <i class="bi bi-trash-fill text-danger"></i> </span>';
-                    return editBtn + ' ' + deleteBtn;
-                }
+                searchable: false
             }
         ],
         pageLength: 10,
@@ -112,55 +79,59 @@
 
 let socialMediaLinkToDeleteId = null;
 
-function deleteSocialMediaLink(id) {
-    socialMediaLinkToDeleteId = id;
-    $('#deleteSocialMediaLinkModal').modal('show');
+$(document).on('click', '.btn-edit-social-link', function() {
+    const url = $(this).data('url');
+    if (url) {
+        window.location.href = url;
+    }
+});
 
-    $('#confirmDeleteSocialMediaLink').off('click').on('click', function() {
-        if (socialMediaLinkToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.social-media-links.destroy', ':id') }}'.replace(':id', socialMediaLinkToDeleteId),
-                method: 'DELETE',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Reload the datatable and show success message
-                        $('#social-media-links-table').DataTable().ajax.reload();
-                        toastr.error(response.message, "Success", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        $('#deleteSocialMediaLinkModal').modal('hide');
-                    } else {
-                        toastr.error(response.message, "Error", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    // Handle any unexpected errors here
-                    toastr.error("Error deleting social media link! Please try again.", "Error", {
+$(document).on('click', '.btn-delete-social-link', function() {
+    socialMediaLinkToDeleteId = $(this).data('id');
+    $('#deleteSocialMediaLinkModal').modal('show');
+});
+
+$('#confirmDeleteSocialMediaLink').off('click').on('click', function() {
+    if (socialMediaLinkToDeleteId !== null) {
+        $.ajax({
+            url: '{{ route('admin.social-media-links.destroy', ':id') }}'.replace(':id', socialMediaLinkToDeleteId),
+            method: 'DELETE',
+            data: {
+                _token: "{{ csrf_token() }}",
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#social-media-links-table').DataTable().ajax.reload();
+                    toastr.error(response.message, "Success", {
                         closeButton: true,
                         progressBar: true,
                         positionClass: "toast-top-right",
                         timeOut: 5000
                     });
                     $('#deleteSocialMediaLinkModal').modal('hide');
+                } else {
+                    toastr.error(response.message, "Error", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
                 }
-            });
-        }
-    });
-} 
+            },
+            error: function() {
+                toastr.error("Error deleting social media link! Please try again.", "Error", {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: "toast-top-right",
+                    timeOut: 5000
+                });
+                $('#deleteSocialMediaLinkModal').modal('hide');
+            }
+        });
+    }
+}); 
 
 </script>
 
 @endsection
-
 

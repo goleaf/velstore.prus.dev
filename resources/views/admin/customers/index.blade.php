@@ -60,28 +60,16 @@ $(document).ready(function() {
             { data: 'email', name: 'email' },
             { data: 'phone', name: 'phone' },
             { data: 'address', name: 'address' },
-            { 
+            {
                 data: 'status',
                 name: 'status',
-                render: function(data) {
-                    return data === 'active' 
-                        ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-danger">Inactive</span>';
-                }
+                orderable: false,
+                searchable: false
             },
             {
                 data: 'action',
                 orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    return `
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="${row.id}">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </div>
-                    `;
-                }
+                searchable: false
             }
         ],
         pageLength: 10,

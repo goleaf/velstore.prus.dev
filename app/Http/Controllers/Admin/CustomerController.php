@@ -61,12 +61,31 @@ class CustomerController extends Controller
 
         return DataTables::of($customers)
             ->addColumn('status', function ($customer) {
-                return $customer->status == 'active' ?
-                    '<span class="badge bg-success">Active</span>' :
-                    '<span class="badge bg-danger">Inactive</span>';
+                $label = $customer->status === 'active'
+                    ? __('cms.customers.active')
+                    : __('cms.customers.inactive');
+
+                $class = $customer->status === 'active'
+                    ? 'badge bg-success'
+                    : 'badge bg-danger';
+
+                return '<span class="' . $class . '">' . e($label) . '</span>';
             })
             ->addColumn('action', function ($customer) {
-                return '<span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="deleteCustomer('.$customer->id.')"><i class="bi bi-trash-fill text-danger"></i></span>';
+                $viewUrl = route('admin.customers.show', $customer);
+                $viewLabel = __('cms.customers.view_button');
+                $deleteLabel = __('cms.customers.delete_button');
+
+                return <<<HTML
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{$viewUrl}" class="btn btn-outline-primary" title="{$viewLabel}">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="{$customer->id}" title="{$deleteLabel}">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                HTML;
             })
             ->rawColumns(['status', 'action'])
             ->make(true);
@@ -78,6 +97,32 @@ class CustomerController extends Controller
     public function edit(Customer $customer)
     {
         return view('admin.customers.edit', compact('customer'));
+    }
+
+    /**
+     * Display the specified customer along with related data.
+     */
+    public function show(Customer $customer)
+    {
+        $customer->load([
+            'orders' => function ($query) {
+                $query->with([
+                    'details.product.translation',
+                    'shippingAddress',
+                    'payments.gateway',
+                    'latestPayment.gateway',
+                ])->latest();
+            },
+            'wishlists' => function ($query) {
+                $query->with(['product.translation']);
+            },
+            'reviews' => function ($query) {
+                $query->with(['product.translation'])->latest();
+            },
+            'shippingAddresses',
+        ]);
+
+        return view('admin.customers.show', compact('customer'));
     }
 
     /**

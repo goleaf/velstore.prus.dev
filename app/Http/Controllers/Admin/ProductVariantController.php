@@ -42,12 +42,16 @@ class ProductVariantController extends Controller
                 return $productVariant->translations->first()->name ?? 'N/A';
             })
             ->addColumn('action', function ($productVariant) {
-                return '<a href="'.route('admin.product_variants.edit', $productVariant->id).'" class="btn btn-warning btn-sm">Edit</a>
-                    <form action="'.route('admin.product_variants.destroy', $productVariant->id).'" method="POST" style="display:inline;" onsubmit="return confirm(\'Are you sure you want to delete this variant?\');">
-                        '.csrf_field().'
-                        '.method_field('DELETE').'
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>';
+                $editRoute = route('admin.product_variants.edit', $productVariant->id);
+
+                return '<div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-edit-variant" data-url="'.$editRoute.'">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-delete-variant" data-id="'.$productVariant->id.'">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>';
             })
             ->rawColumns(['action'])
             ->make(true);

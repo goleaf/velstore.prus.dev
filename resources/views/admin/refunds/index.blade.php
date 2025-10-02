@@ -1,9 +1,5 @@
 @extends('admin.layouts.admin')
 
-@section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">  
-@endsection
-
 @section('content')
 <div class="card mt-4">
     <div class="card-header card-header-bg text-white">
@@ -45,21 +41,9 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 @php
     $datatableLang = __('cms.datatables'); 
 @endphp
-
-@if (session('success'))
-<script>
-    toastr.success("{{ session('success') }}", "{{ __('cms.refunds.success') }}", {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: 5000
-    });
-</script>
-@endif
 
 <script>
 $(document).ready(function() {
@@ -82,36 +66,55 @@ $(document).ready(function() {
 
 let refundToDeleteId = null;
 
-function deleteRefund(id) {
-    refundToDeleteId = id;        
+$(document).on('click', '.btn-view-refund', function() {
+    const url = $(this).data('url');
+    if (url) {
+        window.location.href = url;
+    }
+});
+
+$(document).on('click', '.btn-delete-refund', function() {
+    refundToDeleteId = $(this).data('id');
     $('#deleteRefundModal').modal('show');
+});
 
-    $('#confirmDeleteRefund').off('click').on('click', function() {
-        if (refundToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.refunds.destroy', ':id') }}'.replace(':id', refundToDeleteId),
-                method: 'DELETE',
-                data: { _token: "{{ csrf_token() }}" },
-                success: function(response) {
-                    if (response.success) {
-                        $('#refunds-table').DataTable().ajax.reload();
+$('#confirmDeleteRefund').off('click').on('click', function() {
+    if (refundToDeleteId !== null) {
+        $.ajax({
+            url: '{{ route('admin.refunds.destroy', ':id') }}'.replace(':id', refundToDeleteId),
+            method: 'DELETE',
+            data: { _token: "{{ csrf_token() }}" },
+            success: function(response) {
+                if (response.success) {
+                    $('#refunds-table').DataTable().ajax.reload();
 
-                        toastr.error(response.message, "Deleted", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        $('#deleteRefundModal').modal('hide');
-                    }
-                },
-                error: function() {
-                    alert('Error deleting refund!');
+                    toastr.error(response.message, "Deleted", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
                     $('#deleteRefundModal').modal('hide');
+                } else {
+                    toastr.error(response.message || 'Error deleting refund!', "Error", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
                 }
-            });
-        }
-    });
-}
+            },
+            error: function() {
+                toastr.error('Error deleting refund!', "Error", {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: "toast-top-right",
+                    timeOut: 5000
+                });
+                $('#deleteRefundModal').modal('hide');
+            }
+        });
+    }
+});
 </script>
 @endsection

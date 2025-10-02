@@ -35,11 +35,22 @@ class Customer extends Authenticatable
 
     public function wishlistProducts()
     {
-        return $this->belongsToMany(Product::class, 'wishlists');
+        return $this->belongsToMany(Product::class, 'wishlists')
+            ->withPivot(['created_at', 'updated_at']);
     }
 
     public function reviews()
     {
         return $this->hasMany(ProductReview::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function shippingAddresses()
+    {
+        return $this->hasMany(ShippingAddress::class);
     }
 }

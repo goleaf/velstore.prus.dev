@@ -1,11 +1,5 @@
 @extends('admin.layouts.admin')
 
-@section('css')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-@endsection
-
 @section('content')
     <div class="card mt-4">
         <div class="card-header card-header-bg text-white">
@@ -46,23 +40,9 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
 @php
     $datatableLang = __('cms.datatables'); 
 @endphp
-
-@if (session('success'))
-<script>
-    toastr.success("{{ session('success') }}", "{{ __('cms.vendors.success') }}", {
-        closeButton: true,
-        progressBar: true,
-        positionClass: "toast-top-right",
-        timeOut: 5000
-    });
-</script>
-@endif
 
 <script>
 $(document).ready(function() {
@@ -87,15 +67,18 @@ $(document).ready(function() {
                         : '<span class="badge bg-danger">{{ __('cms.vendors.inactive') }}</span>';
                 }
             },
-            { 
+            {
                 data: 'action',
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row) {
-                    return `<span class="border border-danger dt-trash rounded-3 d-inline-block" 
-                                onclick="deleteVendor(${row.id})">
-                                <i class="bi bi-trash-fill text-danger"></i>
-                            </span>`;
+                    return `
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-danger btn-delete-vendor" data-id="${row.id}">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    `;
                 }
             }
         ],
@@ -106,37 +89,37 @@ $(document).ready(function() {
 
 let vendorToDeleteId = null;
 
-function deleteVendor(id) {
-    vendorToDeleteId = id;        
+$(document).on('click', '.btn-delete-vendor', function() {
+    vendorToDeleteId = $(this).data('id');        
     $('#deleteVendorModal').modal('show');
+});
 
-    $('#confirmDeleteVendor').off('click').on('click', function() {
-        if (vendorToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.vendors.destroy', ':id') }}'.replace(':id', vendorToDeleteId),
-                method: 'DELETE',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#vendors-table').DataTable().ajax.reload();
-                        toastr.error(response.message, "Deleted", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        $('#deleteVendorModal').modal('hide');
-                    }
-                },
-                error: function() {
-                    toastr.error("{{ __('cms.vendors.error_delete') }}", "Error");
+$('#confirmDeleteVendor').off('click').on('click', function() {
+    if (vendorToDeleteId !== null) {
+        $.ajax({
+            url: '{{ route('admin.vendors.destroy', ':id') }}'.replace(':id', vendorToDeleteId),
+            method: 'DELETE',
+            data: {
+                _token: "{{ csrf_token() }}",
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#vendors-table').DataTable().ajax.reload();
+                    toastr.error(response.message, "Deleted", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
                     $('#deleteVendorModal').modal('hide');
                 }
-            });
-        }
-    });
-}
+            },
+            error: function() {
+                toastr.error("{{ __('cms.vendors.error_delete') }}", "Error");
+                $('#deleteVendorModal').modal('hide');
+            }
+        });
+    }
+});
 </script>
 @endsection

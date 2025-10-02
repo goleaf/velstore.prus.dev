@@ -43,12 +43,15 @@ class CouponController extends Controller
             })
             ->addColumn('action', function (Coupon $coupon) {
                 $editUrl = route('admin.coupons.edit', $coupon->id);
-                $deleteAction = "deleteCoupon({$coupon->id})";
 
-                return '<span class="border border-edit dt-trash rounded-3 d-inline-block">'
-                    .'<a href="'.$editUrl.'" class=""><i class="bi bi-pencil-fill pencil-edit-color"></i></a></span> '
-                    .'<span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="'.$deleteAction.'">'
-                    .'<i class="bi bi-trash-fill text-danger"></i></span>';
+                return '<div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-edit-coupon" data-url="'.$editUrl.'">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-delete-coupon" data-id="'.$coupon->id.'">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>';
             })
             ->rawColumns(['action'])
             ->make(true);

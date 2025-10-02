@@ -77,15 +77,6 @@
 
 @extends('admin.layouts.admin')
 
-@section('css')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-@endsection
-
 @section('content')
 <div class="container">
     <h2>Product Variants</h2>
@@ -120,6 +111,22 @@
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="deleteVariantModal" tabindex="-1" aria-labelledby="deleteVariantModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteVariantModalLabel">Delete Product Variant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Are you sure you want to delete this product variant?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteVariant">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('js')
@@ -129,17 +136,17 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "{{ route('admin.product_variants.data') }}",  // This is the URL to fetch the data via AJAX
+                url: "{{ route('admin.product_variants.data') }}",
                 type: 'POST',
                 data: {
                     _token: "{{ csrf_token() }}"
                 }
             },
             columns: [
-                { data: 'id', name: 'id' },  // Add the ID column here
+                { data: 'id', name: 'id' },
                 { data: 'product', name: 'product' },
                 { data: 'variant_name', name: 'variant_name' },
-                { data: 'value', name: 'value' }, // Adjust this if needed
+                { data: 'value', name: 'value' },
                 { data: 'price', name: 'price' },
                 { data: 'stock', name: 'stock' },
                 { data: 'SKU', name: 'SKU' },
@@ -147,8 +154,63 @@
             ]
         });
     });
+
+    $(document).on('click', '.btn-edit-variant', function() {
+        const url = $(this).data('url');
+        if (url) {
+            window.location.href = url;
+        }
+    });
+
+    let variantToDeleteId = null;
+
+    $(document).on('click', '.btn-delete-variant', function() {
+        variantToDeleteId = $(this).data('id');
+        $('#deleteVariantModal').modal('show');
+    });
+
+    $(document).on('click', '#confirmDeleteVariant', function() {
+        if (variantToDeleteId === null) {
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route('admin.product_variants.destroy', ':id') }}'.replace(':id', variantToDeleteId),
+            method: 'DELETE',
+            data: {
+                _token: "{{ csrf_token() }}"
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#product-variants-table').DataTable().ajax.reload();
+                    toastr.error(response.message, "Deleted", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
+                } else {
+                    toastr.error(response.message || 'Error deleting product variant.', "Error", {
+                        closeButton: true,
+                        progressBar: true,
+                        positionClass: "toast-top-right",
+                        timeOut: 5000
+                    });
+                }
+
+                $('#deleteVariantModal').modal('hide');
+            },
+            error: function() {
+                toastr.error('Error deleting product variant.', "Error", {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: "toast-top-right",
+                    timeOut: 5000
+                });
+                $('#deleteVariantModal').modal('hide');
+            }
+        });
+    });
 </script>
 @endsection
-
-
 
