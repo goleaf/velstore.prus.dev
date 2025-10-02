@@ -74,7 +74,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = null;
+            $imagePath = 'assets/images/placeholder-promo.svg';
 
             if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
                 $imagePath = $translation['image']->store('categories', 'public');
@@ -104,7 +104,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url');
+            $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url')
+                ?? 'assets/images/placeholder-promo.svg';
 
             if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
                 $imagePath = $translation['image']->store('categories', 'public');

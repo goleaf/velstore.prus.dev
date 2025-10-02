@@ -32,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Admin\Category\CategoryRepository::class
         );
 
+        $this->app->singleton('auth.customer', function ($app) {
+            return $app['auth']->guard('customer');
+        });
+
         $this->app->singleton(ImageService::class, function ($app) {
             return new ImageService;
         });
