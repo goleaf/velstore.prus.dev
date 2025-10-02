@@ -86,7 +86,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Orders */
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('orders/data', [OrderController::class, 'getData'])->name('orders.data');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
 

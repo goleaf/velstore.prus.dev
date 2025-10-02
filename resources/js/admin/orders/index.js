@@ -1,19 +1,4 @@
-import $ from 'jquery';
-import 'datatables.net-dt';
 import axios from 'axios';
-
-const parseJson = (value) => {
-    if (!value) {
-        return undefined;
-    }
-
-    try {
-        return JSON.parse(value);
-    } catch (error) {
-        console.warn('Unable to parse JSON value for orders table language.', error);
-        return undefined;
-    }
-};
 
 const getCsrfToken = () => {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -34,7 +19,57 @@ const showToast = (type, message, title) => {
     });
 };
 
-const initializeDeleteModal = (tableInstance) => {
+const createEmptyRow = (tableElement) => {
+    const tableBody = tableElement?.querySelector('tbody');
+    if (!tableBody) {
+        return null;
+    }
+
+    const emptyMessage = tableElement.dataset.emptyMessage ?? '';
+    const columnCountValue = tableElement.dataset.columnCount ?? '1';
+    const columnCount = Number.parseInt(columnCountValue, 10);
+
+    const emptyRow = document.createElement('tr');
+    emptyRow.dataset.ordersEmptyRow = '';
+
+    const emptyCell = document.createElement('td');
+    emptyCell.colSpan = Number.isNaN(columnCount) ? 1 : columnCount;
+    emptyCell.className = 'table-cell py-6 text-center text-sm text-gray-500';
+    emptyCell.textContent = emptyMessage;
+
+    emptyRow.appendChild(emptyCell);
+
+    return emptyRow;
+};
+
+const removeOrderRow = (orderId, tableElement) => {
+    if (!tableElement) {
+        window.location.reload();
+        return;
+    }
+
+    const deleteButton = document.querySelector(`[data-order-delete="${orderId}"]`);
+    const row = deleteButton?.closest('tr') ?? tableElement.querySelector(`[data-order-row="${orderId}"]`);
+
+    if (!row) {
+        window.location.reload();
+        return;
+    }
+
+    const tableBody = row.parentElement;
+    row.remove();
+
+    if (!tableBody || tableBody.children.length > 0) {
+        return;
+    }
+
+    const emptyRow = createEmptyRow(tableElement);
+    if (emptyRow) {
+        tableBody.appendChild(emptyRow);
+    }
+};
+
+const initializeDeleteModal = () => {
     const modal = document.querySelector('[data-orders-delete-modal]');
     if (!modal) {
         return;
@@ -43,6 +78,7 @@ const initializeDeleteModal = (tableInstance) => {
     const confirmButton = modal.querySelector('[data-confirm-delete]');
     const cancelTriggers = modal.querySelectorAll('[data-dismiss-modal]');
     const orderLabel = modal.querySelector('[data-order-label]');
+    const tableElement = document.querySelector('[data-orders-table]');
 
     const deleteUrlTemplate = modal.dataset.deleteUrl;
     const successTitle = modal.dataset.successTitle;
@@ -84,13 +120,12 @@ const initializeDeleteModal = (tableInstance) => {
     });
 
     document.addEventListener('click', (event) => {
-        const deleteButton = event.target.closest('[data-order-delete]');
+        const deleteButton = event.target.closest?.('[data-order-delete]');
         if (!deleteButton) {
             return;
         }
 
         const { orderDelete: orderId, orderLabel: orderLabelText } = deleteButton.dataset;
-
         currentOrderId = orderId ?? null;
 
         if (orderLabel) {
@@ -122,7 +157,7 @@ const initializeDeleteModal = (tableInstance) => {
             });
 
             if (response.data?.success) {
-                tableInstance.ajax.reload(null, false);
+                removeOrderRow(currentOrderId, tableElement);
                 showToast('success', response.data.message ?? successMessage, successTitle);
                 hideModal();
             } else {
@@ -137,47 +172,4 @@ const initializeDeleteModal = (tableInstance) => {
     });
 };
 
-const initializeOrdersTable = () => {
-    const tableElement = document.querySelector('[data-orders-table]');
-    if (!tableElement) {
-        return;
-    }
-
-    const language = parseJson(tableElement.dataset.language);
-    const pageLength = Number.parseInt(tableElement.dataset.pageLength ?? '10', 10);
-    const sourceUrl = tableElement.dataset.source;
-
-    if (!sourceUrl) {
-        return;
-    }
-
-    const tableInstance = $(tableElement).DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: sourceUrl,
-            type: 'POST',
-            data(d) {
-                d._token = getCsrfToken();
-                const params = new URLSearchParams(window.location.search);
-                const status = params.get('status');
-                if (status) {
-                    d.status = status;
-                }
-            },
-        },
-        columns: [
-            { data: 'id', name: 'id' },
-            { data: 'order_date', name: 'order_date', orderable: false, searchable: false },
-            { data: 'status', name: 'status' },
-            { data: 'total_price', name: 'total_price', orderable: false, searchable: false },
-            { data: 'action', name: 'action', orderable: false, searchable: false },
-        ],
-        pageLength: Number.isNaN(pageLength) ? 10 : pageLength,
-        language,
-    });
-
-    initializeDeleteModal(tableInstance);
-};
-
-document.addEventListener('DOMContentLoaded', initializeOrdersTable);
+document.addEventListener('DOMContentLoaded', initializeDeleteModal);
