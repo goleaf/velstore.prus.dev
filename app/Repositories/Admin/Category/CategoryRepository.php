@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
+    private const DEFAULT_IMAGE = 'categories/default-placeholder.jpg';
+
     public function all()
     {
         return Category::all();
@@ -74,11 +76,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = null;
-
-            if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
-                $imagePath = $translation['image']->store('categories', 'public');
-            }
+            $imagePath = $this->resolveCategoryImage($translation);
 
             CategoryTranslation::create([
                 'category_id' => $category->id,
@@ -104,11 +102,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url');
-
-            if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
-                $imagePath = $translation['image']->store('categories', 'public');
-            }
+            $existingPath = $category->translations()->where('language_code', $languageCode)->value('image_url');
+            $imagePath = $this->resolveCategoryImage($translation, $existingPath);
 
             $category->translations()->updateOrCreate(
                 ['language_code' => $languageCode],
@@ -121,6 +116,19 @@ class CategoryRepository implements CategoryRepositoryInterface
         }
 
         return $category;
+    }
+
+    private function resolveCategoryImage(array $translation, ?string $existing = null): string
+    {
+        if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
+            return $translation['image']->store('categories', 'public');
+        }
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return self::DEFAULT_IMAGE;
     }
 
     protected function generateUniqueSlug(string $baseSlug, ?int $ignoreId = null): string

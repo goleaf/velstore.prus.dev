@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class BannerService
 {
+    private const DEFAULT_IMAGE = 'banner_images/default-placeholder.jpg';
+
     protected $bannerRepository;
 
     public function __construct(BannerRepositoryInterface $bannerRepository)
@@ -60,7 +62,7 @@ class BannerService
             $image = $request->file("languages.$code.image");
             $imageUrl = $image
                 ? $image->store('banner_images', 'public')
-                : $defaultImage;
+                : ($defaultImage ?? self::DEFAULT_IMAGE);
 
             BannerTranslation::create([
                 'banner_id' => $banner->id,
@@ -116,7 +118,7 @@ class BannerService
                     'language_code' => $languageData['language_code'],
                     'title' => $languageData['title'],
                     'description' => $languageData['description'] ?? null,
-                    'image_url' => $imageUrl,
+                    'image_url' => $imageUrl ?: self::DEFAULT_IMAGE,
                 ]);
             }
         }
