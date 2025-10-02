@@ -18,6 +18,7 @@ use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepository;
 use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepositoryInterface;
 use App\Services\Admin\ImageService;
 use App\Services\Admin\MenuService;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -51,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
 
         $this->app->bind(AttributeRepositoryInterface::class, AttributeRepository::class);
+
+        $this->app->bind('auth.customer', function ($app) {
+            return $app->make(AuthFactory::class)->guard('customer');
+        });
     }
 
     /**

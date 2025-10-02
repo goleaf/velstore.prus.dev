@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Page;
 use App\Models\PageTranslation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PageTranslation>
@@ -20,7 +21,7 @@ class PageTranslationFactory extends Factory
             'language_code' => $this->faker->unique()->lexify('??'),
             'title' => $this->faker->sentence(3),
             'content' => $this->faker->paragraph(),
-            'image_url' => null,
+            'image_url' => 'pages/'.Str::slug($this->faker->unique()->sentence(2)).'.jpg',
         ];
     }
 }

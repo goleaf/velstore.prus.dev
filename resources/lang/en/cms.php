@@ -340,6 +340,7 @@ return [
         // Toastr messages
         'toastr_success' => 'Success',
         'toastr_error' => 'Error deleting page',
+        'status_updated' => 'Page status updated successfully!',
     ],
 
     'customers' => [

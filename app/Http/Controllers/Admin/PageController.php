@@ -193,18 +193,19 @@ class PageController extends Controller
 
     public function updatePageStatus(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'id' => 'required|exists:pages,id',
             'status' => 'required|boolean',
         ]);
 
-        $page = Page::find($request->id);
-        $page->status = $request->status;
+        $page = Page::findOrFail($data['id']);
+        $page->status = (bool) $data['status'];
         $page->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Page status updated.',
+            'message' => __('cms.pages.status_updated'),
+            'status' => $page->status,
         ]);
     }
 }

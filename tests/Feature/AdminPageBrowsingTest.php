@@ -160,6 +160,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'name' => 'Test Category',
             'description' => 'Category description',
+            'image_url' => 'categories/test-category.jpg',
         ]);
 
         $this->brand = Brand::create([
@@ -269,7 +270,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'title' => 'Homepage Banner',
             'description' => 'Banner description',
-            'image_url' => null,
+            'image_url' => 'banner_images/homepage-banner.jpg',
             'type' => 'hero',
         ]);
 
@@ -368,7 +369,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'title' => 'About us',
             'content' => 'About page content',
-            'image_url' => null,
+            'image_url' => 'pages/about-us.jpg',
         ]);
 
         SiteSetting::create([
