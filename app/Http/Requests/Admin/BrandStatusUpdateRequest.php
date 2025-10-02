@@ -23,7 +23,7 @@ class BrandStatusUpdateRequest extends FormRequest
     {
         return [
             'id' => 'required|exists:brands,id',
-            'status' => 'required|boolean',
+            'status' => 'required|string|in:active,inactive,discontinued',
         ];
     }
 
@@ -38,7 +38,8 @@ class BrandStatusUpdateRequest extends FormRequest
             'id.required' => __('validation.required', ['attribute' => 'brand ID']),
             'id.exists' => __('validation.exists', ['attribute' => 'brand']),
             'status.required' => __('validation.required', ['attribute' => 'status']),
-            'status.boolean' => __('validation.boolean', ['attribute' => 'status']),
+            'status.string' => __('validation.string', ['attribute' => 'status']),
+            'status.in' => __('validation.in', ['attribute' => 'status']),
         ];
     }
 }

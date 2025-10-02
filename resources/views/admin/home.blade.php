@@ -23,7 +23,7 @@
             'pending' => __('cms.dashboard.pending_orders'),
             'processing' => __('cms.dashboard.processing_orders'),
             'completed' => __('cms.dashboard.completed_orders'),
-            'cancelled' => __('cms.dashboard.cancelled_orders'),
+            'canceled' => __('cms.dashboard.cancelled_orders'),
         ];
 
         $statusCounts = [];
@@ -37,7 +37,7 @@
                 $statusMap['pending'] => $kpi['orders_pending'] ?? 0,
                 $statusMap['processing'] => $kpi['orders_processing'] ?? 0,
                 $statusMap['completed'] => $kpi['orders_completed'] ?? 0,
-                $statusMap['cancelled'] => $kpi['orders_cancelled'] ?? 0,
+                $statusMap['canceled'] => $kpi['orders_cancelled'] ?? 0,
             ];
         }
         $statusTotal = array_sum($statusCounts);
@@ -294,7 +294,7 @@
                     <ul class="divide-y divide-gray-100">
                         @foreach ($revenueTrend as $point)
                             <li class="py-3 flex items-center justify-between text-sm">
-                                <span class="font-medium text-gray-700">{{ \\Carbon\\Carbon::parse($point['date'])->format('M d, Y') }}</span>
+                                <span class="font-medium text-gray-700">{{ \Carbon\Carbon::parse($point['date'])->format('M d, Y') }}</span>
                                 <span class="text-gray-900 font-semibold">{{ number_format($point['amount'], 2) }}</span>
                             </li>
                         @endforeach

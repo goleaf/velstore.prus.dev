@@ -51,7 +51,7 @@
     @endif
 
     <x-admin.card class="mt-6">
-        <form action="{{ $formAction }}" method="POST" class="space-y-8">
+        <form action="{{ $formAction }}" method="POST" class="space-y-8" id="productVariantForm">
             @csrf
             @if ($isEdit)
                 @method($formMethod)
@@ -237,14 +237,35 @@
                     </div>
                 </div>
 
-                @if ($languages->isNotEmpty())
-                    <input type="hidden" name="active_tab" x-model="activeTab">
+                <div class="mt-6">
+                    <ul class="nav nav-tabs" id="productVariantLanguageTabs" role="tablist">
+                        @foreach ($languages as $language)
+                            @php
+                                $langCode = $language->code;
+                                $languageName = ucwords($language->name ?? $langCode);
+                                $hasTranslationErrors = $errors->has("translations.$langCode.name") || $errors->has("translations.$langCode.value");
+                            @endphp
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link {{ $loop->first ? 'active' : '' }} {{ $hasTranslationErrors ? 'text-danger-600' : '' }}"
+                                    id="product-variant-{{ $langCode }}-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#product-variant-{{ $langCode }}"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="product-variant-{{ $langCode }}"
+                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}"
+                                >
+                                    {{ $languageName }}
+                                    @if ($hasTranslationErrors)
+                                        <span class="ms-1">*</span>
+                                    @endif
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
 
-                    <div class="mt-6">
-                        @include('admin.product_variants.partials.language-tabs', ['languages' => $languages])
-                    </div>
-
-                    <div class="mt-6 space-y-6">
+                    <div class="tab-content mt-4" id="productVariantLanguageTabContent">
                         @foreach ($languages as $language)
                             @php
                                 $langCode = $language->code;
@@ -255,44 +276,51 @@
                                 $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
                                 $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
                             @endphp
-                            <div x-show="activeTab === '{{ $langCode }}'" x-cloak class="space-y-4">
-                                <div>
-                                    <label for="translations_{{ $langCode }}_name" class="form-label">
-                                        {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="translations[{{ $langCode }}][name]"
-                                        id="translations_{{ $langCode }}_name"
-                                        class="form-control"
-                                        value="{{ $nameValue }}"
-                                        required
-                                    >
-                                    @error('translations.' . $langCode . '.name')
-                                        <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                            <div
+                                class="tab-pane fade show {{ $loop->first ? 'active' : '' }} rounded-lg border border-gray-200 bg-secondary-50/40 p-4"
+                                id="product-variant-{{ $langCode }}"
+                                role="tabpanel"
+                                aria-labelledby="product-variant-{{ $langCode }}-tab"
+                            >
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="translations_{{ $langCode }}_name" class="form-label">
+                                            {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="translations[{{ $langCode }}][name]"
+                                            id="translations_{{ $langCode }}_name"
+                                            class="form-control @error('translations.' . $langCode . '.name') is-invalid @enderror"
+                                            value="{{ $nameValue }}"
+                                            required
+                                        >
+                                        @error('translations.' . $langCode . '.name')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                                <div>
-                                    <label for="translations_{{ $langCode }}_value" class="form-label">
-                                        {{ __('cms.product_variants.form_translation_value', ['language' => $languageName]) }}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="translations[{{ $langCode }}][value]"
-                                        id="translations_{{ $langCode }}_value"
-                                        class="form-control"
-                                        value="{{ $valueValue }}"
-                                        placeholder="{{ __('cms.product_variants.form_translation_placeholder') }}"
-                                    >
-                                    @error('translations.' . $langCode . '.value')
-                                        <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
-                                    @enderror
+                                    <div>
+                                        <label for="translations_{{ $langCode }}_value" class="form-label">
+                                            {{ __('cms.product_variants.form_translation_value', ['language' => $languageName]) }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="translations[{{ $langCode }}][value]"
+                                            id="translations_{{ $langCode }}_value"
+                                            class="form-control @error('translations.' . $langCode . '.value') is-invalid @enderror"
+                                            value="{{ $valueValue }}"
+                                            placeholder="{{ __('cms.product_variants.form_translation_placeholder') }}"
+                                        >
+                                        @error('translations.' . $langCode . '.value')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                @endif
+                </div>
             </section>
 
             <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
@@ -306,3 +334,29 @@
         </form>
     </x-admin.card>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('productVariantForm');
+            if (!form) {
+                return;
+            }
+
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (!firstInvalid) {
+                return;
+            }
+
+            const tabPane = firstInvalid.closest('.tab-pane');
+            if (!tabPane || typeof bootstrap === 'undefined') {
+                return;
+            }
+
+            const trigger = document.querySelector(`[data-bs-target="#${tabPane.id}"]`);
+            if (trigger) {
+                bootstrap.Tab.getOrCreateInstance(trigger).show();
+            }
+        });
+    </script>
+@endpush

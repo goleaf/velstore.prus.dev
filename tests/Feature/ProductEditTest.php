@@ -80,8 +80,8 @@ class ProductEditTest extends TestCase
                     'stock' => 50,
                     'SKU' => 'UPD-SKU-001',
                     'barcode' => '1234567890123',
-                    'weight' => '1.5 kg',
-                    'dimension' => '10x20x5'
+                    'weight' => 1.5,
+                    'dimensions' => '10x20x5'
                 ]
             ]
         ];
