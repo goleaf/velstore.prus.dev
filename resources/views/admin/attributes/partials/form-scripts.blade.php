@@ -10,6 +10,8 @@
         const languages = @json($languageMeta);
         const valueContainer = document.getElementById('attribute-values-container');
         const addButton = document.getElementById('add-attribute-value');
+        const tabTriggers = Array.from(document.querySelectorAll('[data-language-tab-target]'));
+        const tabPanels = Array.from(document.querySelectorAll('[data-language-panel]'));
         const removeText = @json(__('cms.attributes.remove_value'));
         const valuePlaceholder = @json(__('cms.attributes.attribute_values'));
         const translationPlaceholder = @json(__('cms.attributes.translated_value'));
@@ -196,11 +198,12 @@
         @if ($errors->any())
             const firstInvalid = document.querySelector('.is-invalid');
             if (firstInvalid) {
-                const tabPane = firstInvalid.closest('.tab-pane');
-                if (tabPane && typeof bootstrap !== 'undefined') {
-                    const trigger = document.querySelector(`[data-bs-target="#${tabPane.id}"]`);
+                const tabPane = firstInvalid.closest('[data-language-panel]');
+                if (tabPane) {
+                    const code = tabPane.dataset.languagePanel;
+                    const trigger = document.querySelector(`[data-language-tab-target="${code}"]`);
                     if (trigger) {
-                        bootstrap.Tab.getOrCreateInstance(trigger).show();
+                        setActiveTab(code);
                     }
                 }
             }
