@@ -8,7 +8,7 @@ class BrandRepository implements BrandRepositoryInterface
 {
     public function getAll()
     {
-        return Brand::all();
+        return Brand::with('translations')->get();
     }
 
     public function find($id)

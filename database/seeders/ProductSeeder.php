@@ -147,11 +147,20 @@ class ProductSeeder extends Seeder
                 $product = Product::create([
                     'shop_id' => $shop->id,
                     'vendor_id' => $vendor->id,
+                    'seller_id' => $vendor->id,
                     'slug' => $item['slug'],
                     'category_id' => $category->id,
                     'brand_id' => $brand->id,
                     'product_type' => 'variable',
                     'status' => 1,
+                    'price' => 99.99,
+                    'discount_price' => null,
+                    'stock' => 50,
+                    'currency' => 'USD',
+                    'SKU' => Str::upper(Str::random(10)),
+                    'weight' => null,
+                    'dimensions' => null,
+                    'image_url' => $item['image'],
                 ]);
 
                 foreach ($languages as $lang) {

@@ -105,7 +105,7 @@ php artisan install:velstore --with-import
 ```
 
 ### **Options**
-- `--with-import` Imports sample data to help you get started quickly.
+- `--with-import` Imports a multilingual demo catalog, seeded via factories across all core models.
 
 Start the Laravel server:
 ```sh
@@ -123,7 +123,7 @@ http://127.0.0.1:8000
 ```
 
 ## Tech Stack
-- Backend: Laravel 10+
+- Backend: Laravel 12
 - Database: MySQLi
 - Frontend: Blade (with Laravel UI)
 - Authentication: Laravel Sanctum

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Shop;
+use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -15,15 +16,15 @@ class ShopFactory extends Factory
 
     public function definition(): array
     {
-        $name = $this->faker->company();
+        $name = $this->faker->unique()->company() . ' Shop';
 
         return [
-            'seller_id' => null,
+            'vendor_id' => Vendor::factory(),
             'name' => $name,
             'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
-            'logo' => $this->faker->imageUrl(),
+            'logo' => null,
             'description' => $this->faker->sentence(),
-            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'status' => 'active',
         ];
     }
 }
