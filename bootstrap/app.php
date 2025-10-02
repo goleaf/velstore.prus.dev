@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'auth.customer' => \App\Http\Middleware\AuthenticateCustomer::class,
+            'auth.vendor' => \App\Http\Middleware\AuthenticateVendor::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

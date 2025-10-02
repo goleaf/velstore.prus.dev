@@ -52,7 +52,7 @@ class HomeController extends Controller
         $completedOrders = Order::query()->where('status', 'completed')->count();
         $ordersPending = Order::query()->where('status', 'pending')->count();
         $ordersProcessing = Order::query()->where('status', 'processing')->count();
-        $ordersCancelled = Order::query()->where('status', 'cancelled')->count();
+        $ordersCancelled = Order::query()->where('status', 'canceled')->count();
 
         $totalVendors = Vendor::query()->count();
         $totalCustomers = Customer::query()->count();

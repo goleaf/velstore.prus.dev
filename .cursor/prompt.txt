@@ -11,3 +11,4 @@ in admin customers create view information with all information about customer, 
 add to customer feature where customer can create few order addresses and show this feature in frontend in profile and in admin panel inside of customer information, with feature select what address is default
 
 create seeds as addresses for every customer, make few addreses for every existing customers and show in frontend and in admin panel toono
+

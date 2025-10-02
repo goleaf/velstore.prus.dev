@@ -10,6 +10,7 @@ use App\Models\Brand;
 use App\Models\Language;
 use App\Services\Admin\BrandService;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class BrandController extends Controller
 {
@@ -27,28 +28,36 @@ class BrandController extends Controller
 
     public function getData(Request $request)
     {
-        $brands = $this->brandService->getAllBrands();
+        $brands = $this->brandService->getBrandsForDataTable();
 
-        return datatables()
-            ->of($brands)
-            ->addColumn('action', function ($brand) {
-                return view('admin.brands.index', compact('brand'));
+        return DataTables::of($brands)
+            ->addColumn('name', fn (Brand $brand) => $this->resolveLocalizedName($brand))
+            ->editColumn('status', fn (Brand $brand) => $brand->status)
+            ->addColumn('action', fn () => '')
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->whereHas('translations', function ($relation) use ($keyword) {
+                    $relation->where('name', 'like', "%{$keyword}%");
+                });
             })
-            ->make(true);
+            ->toJson();
     }
 
     public function create()
     {
-        return view('admin.brands.create');
+        $activeLanguages = Language::where('active', 1)->get();
+
+        return view('admin.brands.create', [
+            'activeLanguages' => $activeLanguages,
+            'brand' => new Brand(),
+        ]);
     }
 
     public function store(BrandStoreRequest $request)
     {
-        $result = $this->brandService->store($request->all());
+        $data = $request->validated();
+        $data['logo_url'] = $request->file('logo_url');
 
-        if ($result instanceof \Illuminate\Support\MessageBag) {
-            return redirect()->back()->withErrors($result)->withInput();
-        }
+        $this->brandService->store($data);
 
         return redirect()->route('admin.brands.index')->with('success', __('cms.brands.created'));
     }
@@ -57,18 +66,20 @@ class BrandController extends Controller
     {
         $brand = Brand::with('translations')->findOrFail($id);
 
-        $languages = Language::active()->get();
+        $activeLanguages = Language::where('active', 1)->get();
 
-        return view('admin.brands.edit', compact('brand', 'languages'));
+        return view('admin.brands.edit', [
+            'brand' => $brand,
+            'activeLanguages' => $activeLanguages,
+        ]);
     }
 
     public function update(BrandUpdateRequest $request, $id)
     {
-        $result = $this->brandService->updateBrand($id, $request->all());
+        $data = $request->validated();
+        $data['logo_url'] = $request->file('logo_url');
 
-        if ($result instanceof \Illuminate\Support\MessageBag) {
-            return redirect()->back()->withErrors($result)->withInput();
-        }
+        $this->brandService->updateBrand($id, $data);
 
         return redirect()->route('admin.brands.index')->with('success', __('cms.brands.updated'));
     }
@@ -92,20 +103,26 @@ class BrandController extends Controller
 
     public function updateStatus(BrandStatusUpdateRequest $request)
     {
-        $brand = Brand::find($request->id);
-        $brand->status = $request->status;
+        $brand = Brand::findOrFail($request->id);
+        $brand->status = $request->input('status');
         $brand->save();
 
-        if ($brand) {
-            return response()->json([
-                'success' => true,
-                'message' => __('cms.brands.status_updated'),
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Brand status could not be updated.',
-            ]);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => __('cms.brands.status_updated'),
+            'status' => $brand->status,
+        ]);
+    }
+
+    protected function resolveLocalizedName(Brand $brand): string
+    {
+        $locale = app()->getLocale();
+        $fallback = config('app.fallback_locale');
+
+        $translation = $brand->translations->firstWhere('locale', $locale)
+            ?? ($fallback ? $brand->translations->firstWhere('locale', $fallback) : null)
+            ?? $brand->translations->first();
+
+        return $translation?->name ?? $brand->slug;
     }
 }

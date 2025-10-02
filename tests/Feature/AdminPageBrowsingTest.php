@@ -91,5 +91,4 @@ class AdminPageBrowsingTest extends TestCase
             $response->assertViewIs($expectedView);
         }
     }
-
 }

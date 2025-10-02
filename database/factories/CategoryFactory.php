@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\CategoryTranslation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -19,8 +20,18 @@ class CategoryFactory extends Factory
 
         return [
             'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
-            'status' => $this->faker->boolean(90),
             'parent_category_id' => null,
+            'status' => true,
         ];
+    }
+
+    public function withTranslation(string $language = 'en'): static
+    {
+        return $this->afterCreating(function (Category $category) use ($language) {
+            CategoryTranslation::factory()->create([
+                'category_id' => $category->id,
+                'language_code' => $language,
+            ]);
+        });
     }
 }

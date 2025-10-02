@@ -3,6 +3,7 @@
     $isEdit = isset($brand) && $brand;
     $submitLabel = $submitLabel ?? ($isEdit ? __('cms.brands.update') : __('cms.brands.create'));
     $logoPreviewUrl = $logoPreviewUrl ?? null;
+    $activeLanguages = isset($activeLanguages) ? collect($activeLanguages) : collect();
 
     if (! $logoPreviewUrl && $isEdit && $brand->logo_url) {
         $logoPreviewUrl = filter_var($brand->logo_url, FILTER_VALIDATE_URL)
