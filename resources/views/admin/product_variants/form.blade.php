@@ -1,0 +1,293 @@
+@extends('admin.layouts.admin')
+
+@php
+    $isEdit = $isEdit ?? false;
+    $productVariant = $productVariant ?? null;
+
+    $pageTitle = $isEdit
+        ? __('cms.product_variants.title_edit')
+        : __('cms.product_variants.title_create');
+    $pageDescription = $isEdit
+        ? __('cms.product_variants.edit_description')
+        : __('cms.product_variants.create_description');
+    $formAction = $isEdit
+        ? route('admin.product_variants.update', $productVariant->id)
+        : route('admin.product_variants.store');
+    $formMethod = $isEdit ? 'PUT' : 'POST';
+@endphp
+
+@section('content')
+    <x-admin.page-header :title="$pageTitle" :description="$pageDescription">
+        <x-admin.button-link href="{{ route('admin.product_variants.index') }}" class="btn-outline">
+            {{ __('cms.product_variants.back_to_index') }}
+        </x-admin.button-link>
+    </x-admin.page-header>
+
+    @if (session('success'))
+        <div class="alert alert-success mt-6">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger mt-6">
+            <p class="font-semibold">{{ __('cms.product_variants.form_validation_error') }}</p>
+            <ul class="mt-2 list-disc list-inside space-y-1 text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <x-admin.card class="mt-6">
+        <form action="{{ $formAction }}" method="POST" class="space-y-8">
+            @csrf
+            @if ($isEdit)
+                @method($formMethod)
+            @endif
+
+            <section>
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ __('cms.product_variants.form_section_details') }}
+                </h2>
+                <div class="mt-4 grid gap-6 md:grid-cols-2">
+                    <div>
+                        <label for="product_id" class="form-label">{{ __('cms.product_variants.form_product') }}</label>
+                        <select name="product_id" id="product_id" class="form-select" required>
+                            <option value="">{{ __('cms.product_variants.form_select_product') }}</option>
+                            @foreach ($products as $product)
+                                @php
+                                    $productName = optional($product->translation)->name
+                                        ?? $product->translations->first()?->name
+                                        ?? __('cms.products.unnamed_product');
+                                @endphp
+                                <option value="{{ $product->id }}" @selected(old('product_id', $productVariant?->product_id ?? '') == $product->id)>
+                                    {{ $productName }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('product_id')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="variant_slug" class="form-label">{{ __('cms.product_variants.form_variant_slug') }}</label>
+                        <input
+                            type="text"
+                            name="variant_slug"
+                            id="variant_slug"
+                            class="form-control"
+                            value="{{ old('variant_slug', $productVariant?->variant_slug ?? '') }}"
+                            required
+                        >
+                        @error('variant_slug')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="name" class="form-label">{{ __('cms.product_variants.form_internal_name') }}</label>
+                        <input
+                            type="text"
+                            name="name"
+                            id="name"
+                            class="form-control"
+                            value="{{ old('name', $productVariant?->name ?? '') }}"
+                            required
+                        >
+                        @error('name')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="value" class="form-label">{{ __('cms.product_variants.form_value') }}</label>
+                        <input
+                            type="text"
+                            name="value"
+                            id="value"
+                            class="form-control"
+                            value="{{ old('value', $productVariant?->value ?? '') }}"
+                            required
+                        >
+                        @error('value')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {{ __('cms.product_variants.form_section_inventory') }}
+                </h2>
+                <div class="mt-4 grid gap-6 md:grid-cols-2">
+                    <div>
+                        <label for="price" class="form-label">{{ __('cms.product_variants.form_price') }}</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="price"
+                            id="price"
+                            class="form-control"
+                            value="{{ old('price', $productVariant?->price ?? '') }}"
+                            required
+                        >
+                        @error('price')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="discount_price" class="form-label">{{ __('cms.product_variants.form_discount_price') }}</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="discount_price"
+                            id="discount_price"
+                            class="form-control"
+                            value="{{ old('discount_price', $productVariant?->discount_price ?? '') }}"
+                        >
+                        @error('discount_price')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="stock" class="form-label">{{ __('cms.product_variants.form_stock') }}</label>
+                        <input
+                            type="number"
+                            name="stock"
+                            id="stock"
+                            class="form-control"
+                            value="{{ old('stock', $productVariant?->stock ?? '') }}"
+                            required
+                        >
+                        @error('stock')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="SKU" class="form-label">{{ __('cms.product_variants.form_sku') }}</label>
+                        <input
+                            type="text"
+                            name="SKU"
+                            id="SKU"
+                            class="form-control"
+                            value="{{ old('SKU', $productVariant?->SKU ?? '') }}"
+                            required
+                        >
+                        @error('SKU')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="weight" class="form-label">{{ __('cms.product_variants.form_weight') }}</label>
+                        <input
+                            type="text"
+                            name="weight"
+                            id="weight"
+                            class="form-control"
+                            value="{{ old('weight', $productVariant?->weight ?? '') }}"
+                        >
+                        @error('weight')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="dimensions" class="form-label">{{ __('cms.product_variants.form_dimensions') }}</label>
+                        <input
+                            type="text"
+                            name="dimensions"
+                            id="dimensions"
+                            class="form-control"
+                            value="{{ old('dimensions', $productVariant?->dimensions ?? '') }}"
+                        >
+                        @error('dimensions')
+                            <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {{ __('cms.product_variants.form_section_translations') }}
+                        </h2>
+                        <p class="mt-2 text-sm text-gray-500">
+                            {{ __('cms.product_variants.form_section_translations_description') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid gap-6 md:grid-cols-2">
+                    @foreach ($languages as $language)
+                        @php
+                            $langCode = $language->code;
+                            $languageName = ucwords($language->name ?? $langCode);
+                            $existingTranslation = $isEdit && $productVariant
+                                ? $productVariant->translations->firstWhere('locale', $langCode)
+                                : null;
+                            $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
+                            $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
+                        @endphp
+                        <div class="rounded-lg border border-gray-200 bg-secondary-50/40 p-4">
+                            <h3 class="text-sm font-semibold text-gray-700">{{ $languageName }}</h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="translations_{{ $langCode }}_name" class="form-label">
+                                        {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="translations[{{ $langCode }}][name]"
+                                        id="translations_{{ $langCode }}_name"
+                                        class="form-control"
+                                        value="{{ $nameValue }}"
+                                        required
+                                    >
+                                    @error('translations.' . $langCode . '.name')
+                                        <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="translations_{{ $langCode }}_value" class="form-label">
+                                        {{ __('cms.product_variants.form_translation_value', ['language' => $languageName]) }}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="translations[{{ $langCode }}][value]"
+                                        id="translations_{{ $langCode }}_value"
+                                        class="form-control"
+                                        value="{{ $valueValue }}"
+                                        placeholder="{{ __('cms.product_variants.form_translation_placeholder') }}"
+                                    >
+                                    @error('translations.' . $langCode . '.value')
+                                        <p class="mt-2 text-sm text-danger-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
+                <x-admin.button-link href="{{ route('admin.product_variants.index') }}" class="btn-outline">
+                    {{ __('cms.product_variants.back_to_index') }}
+                </x-admin.button-link>
+                <button type="submit" class="btn btn-primary">
+                    {{ $isEdit ? __('cms.product_variants.update_button') : __('cms.product_variants.create_button') }}
+                </button>
+            </div>
+        </form>
+    </x-admin.card>
+@endsection
