@@ -62,12 +62,15 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $category->delete();
     }
 
-    public function storeWithTranslations(array $translations)
+    public function storeWithTranslations(array $attributes, array $translations)
     {
-        $slug = Str::slug($translations['en']['name']);
+        $primaryTranslation = $this->getPrimaryTranslation($translations);
+        $slug = $this->generateUniqueSlug(Str::slug($primaryTranslation['name'] ?? Str::random(8)));
 
         $category = Category::create([
             'slug' => $slug,
+            'parent_category_id' => $attributes['parent_category_id'] ?? null,
+            'status' => $attributes['status'] ?? true,
         ]);
 
         foreach ($translations as $languageCode => $translation) {
@@ -89,8 +92,17 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $category;
     }
 
-    public function updateWithTranslations(Category $category, array $translations)
+    public function updateWithTranslations(Category $category, array $attributes, array $translations)
     {
+        $primaryTranslation = $this->getPrimaryTranslation($translations);
+        $slug = $this->generateUniqueSlug(Str::slug($primaryTranslation['name'] ?? $category->slug), $category->id);
+
+        $category->update([
+            'slug' => $slug,
+            'parent_category_id' => $attributes['parent_category_id'] ?? null,
+            'status' => $attributes['status'] ?? $category->status,
+        ]);
+
         foreach ($translations as $languageCode => $translation) {
             $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url');
 
@@ -109,5 +121,37 @@ class CategoryRepository implements CategoryRepositoryInterface
         }
 
         return $category;
+    }
+
+    protected function generateUniqueSlug(string $baseSlug, ?int $ignoreId = null): string
+    {
+        $slug = $baseSlug ?: Str::random(8);
+        $original = $slug;
+        $counter = 1;
+
+        while (
+            Category::where('slug', $slug)
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $original.'-'.($counter++);
+        }
+
+        return $slug;
+    }
+
+    protected function getPrimaryTranslation(array $translations): array
+    {
+        if (isset($translations['en'])) {
+            return $translations['en'];
+        }
+
+        foreach ($translations as $translation) {
+            if (is_array($translation)) {
+                return $translation;
+            }
+        }
+
+        return [];
     }
 }

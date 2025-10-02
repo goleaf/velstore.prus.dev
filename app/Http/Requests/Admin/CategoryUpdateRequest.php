@@ -4,6 +4,8 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+use Illuminate\Validation\Rule;
+
 class CategoryUpdateRequest extends FormRequest
 {
     /**
@@ -23,6 +25,13 @@ class CategoryUpdateRequest extends FormRequest
     {
         $rules = [
             'translations' => 'required|array',
+            'parent_category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id'),
+                Rule::notIn([$this->route('category')]),
+            ],
+            'status' => 'nullable|boolean',
         ];
 
         foreach ($this->input('translations', []) as $lang => $data) {
@@ -54,6 +63,9 @@ class CategoryUpdateRequest extends FormRequest
             'translations.*.image.image' => __('validation.image', ['attribute' => 'category image']),
             'translations.*.image.mimes' => __('validation.mimes', ['attribute' => 'category image', 'values' => 'jpeg, png, jpg, gif, webp']),
             'translations.*.image.max' => __('validation.max.file', ['attribute' => 'category image', 'max' => '2048']),
+            'parent_category_id.exists' => __('validation.exists', ['attribute' => 'parent category']),
+            'parent_category_id.not_in' => __('validation.not_in', ['attribute' => 'parent category']),
+            'status.boolean' => __('validation.boolean', ['attribute' => 'status']),
         ];
     }
 }

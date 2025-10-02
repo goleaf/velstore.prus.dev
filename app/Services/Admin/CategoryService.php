@@ -4,7 +4,10 @@ namespace App\Services\Admin;
 
 use App\Models\Category;
 use App\Repositories\Admin\Category\CategoryRepositoryInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Yajra\DataTables\DataTables;
 
 class CategoryService
@@ -44,66 +47,275 @@ class CategoryService
             ->make(true);
     }
 
-    /**
-     * Store a newly created category.
-     */
-    public function store(array $translations)
+    public function getIndexData(array $filters = []): array
+    {
+        $filters = $this->normalizeFilters($filters);
+
+        $categories = Category::with(['translation', 'translations'])
+            ->withCount('products')
+            ->orderBy('parent_category_id')
+            ->orderBy('id')
+            ->get();
+
+        $stats = [
+            'total' => $categories->count(),
+            'active' => $categories->where('status', true)->count(),
+            'inactive' => $categories->where('status', false)->count(),
+        ];
+
+        $tree = $this->buildTree(
+            $filters['parent'],
+            $categories,
+            $filters,
+            [],
+            true
+        );
+
+        $flattened = $this->flattenTree($tree);
+
+        $parentOptions = $this->buildParentOptions($categories);
+
+        return [
+            'categories' => $flattened,
+            'stats' => $stats,
+            'filters' => $filters,
+            'parentOptions' => $parentOptions,
+        ];
+    }
+
+    public function getParentOptions(?int $excludeCategoryId = null): array
+    {
+        $categories = Category::with(['translation', 'translations'])
+            ->orderBy('parent_category_id')
+            ->orderBy('id')
+            ->get();
+
+        return $this->buildParentOptions($categories, $excludeCategoryId);
+    }
+
+    public function store(array $attributes, array $translations)
     {
         $validator = Validator::make($translations, [
             '*.name' => 'required|string|max:255',
             '*.description' => 'nullable|string',
-            '*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000', // Validate image
-        ], trans('category'));
+            '*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000',
+        ]);
 
         if ($validator->fails()) {
             return $validator->errors();
         }
 
-        return $this->categoryRepository->storeWithTranslations($translations);
+        $attributes['status'] = array_key_exists('status', $attributes)
+            ? (bool) $attributes['status']
+            : true;
+        $attributes['parent_category_id'] = $attributes['parent_category_id'] ?: null;
+
+        return $this->categoryRepository->storeWithTranslations($attributes, $translations);
     }
 
-    /**
-     * Uploads an image and returns the full storage URL.
-     */
-    private function uploadImage($image)
+    public function update(int $id, array $attributes, array $translations)
     {
-        $fileName = time().'_'.$image->getClientOriginalName();
-        $path = $image->storeAs('categories', $fileName, 'public');
+        $category = Category::with('translations')->findOrFail($id);
 
-        return 'storage/'.$path; // Ensure it's publicly accessible
-    }
-
-    /**
-     * Update an existing category.
-     */
-    public function update($request, $id)
-    {
-        $category = Category::findOrFail($id);
-
-        $validatedData = $request->validate([
-            'translations.*.name' => 'required|string|max:255',
-            'translations.*.description' => 'nullable|string',
-            'translations.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000', // Validate image
+        $validator = Validator::make($translations, [
+            '*.name' => 'required|string|max:255',
+            '*.description' => 'nullable|string',
+            '*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000',
         ]);
 
-        return $this->categoryRepository->updateWithTranslations($category, $request->translations);
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        $attributes['status'] = array_key_exists('status', $attributes)
+            ? (bool) $attributes['status']
+            : (bool) $category->status;
+        $attributes['parent_category_id'] = $attributes['parent_category_id'] ?: null;
+
+        if ($attributes['parent_category_id']) {
+            $allCategories = Category::select('id', 'parent_category_id')->get();
+            $descendantIds = $this->collectDescendantIds($category->id, $allCategories);
+
+            if (in_array($attributes['parent_category_id'], $descendantIds, true)) {
+                throw ValidationException::withMessages([
+                    'parent_category_id' => __('validation.not_in', ['attribute' => 'parent category']),
+                ]);
+            }
+        }
+
+        return $this->categoryRepository->updateWithTranslations($category, $attributes, $translations);
     }
 
-    /**
-     * Delete an existing category.
-     */
     public function destroy($id)
     {
-        // Call the repository to delete the category
         return $this->categoryRepository->destroy($id);
     }
 
-    /**
-     * Find a category by its ID.
-     */
     public function find($id)
     {
-        // Call the repository to find the category by ID
         return $this->categoryRepository->find($id);
     }
+
+    protected function normalizeFilters(array $filters): array
+    {
+        $defaults = [
+            'search' => '',
+            'status' => '',
+            'parent' => null,
+        ];
+
+        $filters = array_merge($defaults, array_filter($filters, fn ($value) => $value !== null));
+
+        $filters['search'] = trim((string) $filters['search']);
+        $filters['status'] = in_array($filters['status'], ['active', 'inactive'], true)
+            ? $filters['status']
+            : '';
+        $filters['parent'] = $filters['parent'] ? (int) $filters['parent'] : null;
+
+        return $filters;
+    }
+
+    protected function buildParentOptions(Collection $categories, ?int $excludeCategoryId = null): array
+    {
+        $excludedIds = [];
+
+        if ($excludeCategoryId) {
+            $excludedIds = $this->collectDescendantIds($excludeCategoryId, $categories);
+        }
+
+        $tree = $this->buildTree(null, $categories, $this->normalizeFilters([]), $excludedIds, false);
+        $flat = $this->flattenTree($tree);
+
+        return collect($flat)
+            ->map(function (array $node) {
+                return [
+                    'id' => $node['category']->id,
+                    'name' => str_repeat('— ', $node['depth']).$node['name'],
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    protected function buildTree(?int $rootId, Collection $categories, array $filters, array $excludedIds, bool $applyFilters): array
+    {
+        if ($rootId !== null) {
+            $rootCategory = $categories->firstWhere('id', $rootId);
+
+            if (! $rootCategory) {
+                return [];
+            }
+
+            $node = $this->buildNodeFromCategory($rootCategory, $categories, $filters, $excludedIds, $applyFilters);
+
+            return $node ? [$node] : [];
+        }
+
+        return $this->buildTreeForParent(null, $categories, $filters, $excludedIds, $applyFilters);
+    }
+
+    protected function buildTreeForParent(?int $parentId, Collection $categories, array $filters, array $excludedIds, bool $applyFilters): array
+    {
+        return $categories
+            ->where('parent_category_id', $parentId)
+            ->sortBy(function (Category $category) {
+                return Str::lower($this->getCategoryDisplayName($category));
+            })
+            ->map(function (Category $category) use ($categories, $filters, $excludedIds, $applyFilters) {
+                return $this->buildNodeFromCategory($category, $categories, $filters, $excludedIds, $applyFilters);
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    protected function buildNodeFromCategory(Category $category, Collection $categories, array $filters, array $excludedIds, bool $applyFilters): ?array
+    {
+        if (in_array($category->id, $excludedIds, true)) {
+            return null;
+        }
+
+        $children = $this->buildTreeForParent($category->id, $categories, $filters, $excludedIds, $applyFilters);
+        $matches = $applyFilters ? $this->categoryMatchesFilters($category, $filters) : true;
+
+        if ($applyFilters && ! $matches && empty($children)) {
+            return null;
+        }
+
+        return [
+            'category' => $category,
+            'children' => $children,
+        ];
+    }
+
+    protected function categoryMatchesFilters(Category $category, array $filters): bool
+    {
+        if ($filters['status'] === 'active' && ! (bool) $category->status) {
+            return false;
+        }
+
+        if ($filters['status'] === 'inactive' && (bool) $category->status) {
+            return false;
+        }
+
+        if ($filters['search'] !== '') {
+            $search = Str::lower($filters['search']);
+
+            $nameMatches = $category->translations
+                ->pluck('name')
+                ->filter()
+                ->map(fn ($name) => Str::lower($name))
+                ->contains(fn ($name) => Str::contains($name, $search));
+
+            $slugMatches = Str::contains(Str::lower($category->slug ?? ''), $search);
+
+            if (! $nameMatches && ! $slugMatches) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function flattenTree(array $nodes, int $depth = 0): array
+    {
+        $flat = [];
+
+        foreach ($nodes as $node) {
+            $category = $node['category'];
+            $flat[] = [
+                'category' => $category,
+                'name' => $this->getCategoryDisplayName($category),
+                'depth' => $depth,
+                'children_count' => count($node['children']),
+            ];
+
+            $flat = array_merge($flat, $this->flattenTree($node['children'], $depth + 1));
+        }
+
+        return $flat;
+    }
+
+    protected function getCategoryDisplayName(Category $category): string
+    {
+        $preferred = optional($category->translation)->name;
+
+        if ($preferred) {
+            return $preferred;
+        }
+
+        return $category->translations->pluck('name')->filter()->first() ?? $category->slug ?? '—';
+    }
+
+    protected function collectDescendantIds(int $categoryId, Collection $categories): array
+    {
+        $ids = [$categoryId];
+
+        foreach ($categories->where('parent_category_id', $categoryId) as $child) {
+            $ids = array_merge($ids, $this->collectDescendantIds($child->id, $categories));
+        }
+
+        return array_unique($ids);
+    }
 }
+

@@ -20,9 +20,13 @@ class CategoryController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.categories.index');
+        $filters = $request->only(['search', 'status', 'parent']);
+
+        $data = $this->categoryService->getIndexData($filters);
+
+        return view('admin.categories.index', $data);
     }
 
     public function getCategories(Request $request)
@@ -32,21 +36,31 @@ class CategoryController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('admin.categories.create');
+        $parentOptions = $this->categoryService->getParentOptions();
+        $selectedParent = $request->filled('parent') ? (int) $request->input('parent') : null;
+
+        return view('admin.categories.create', [
+            'parentOptions' => $parentOptions,
+            'selectedParent' => $selectedParent,
+        ]);
     }
 
     public function store(CategoryStoreRequest $request)
     {
         $translations = $request->input('translations');
+        $attributes = [
+            'status' => $request->boolean('status'),
+            'parent_category_id' => $request->input('parent_category_id'),
+        ];
         foreach ($translations as $languageCode => $translation) {
             if ($request->hasFile("translations.$languageCode.image")) {
                 $translations[$languageCode]['image'] = $request->file("translations.$languageCode.image");
             }
         }
 
-        $result = $this->categoryService->store($translations);
+        $result = $this->categoryService->store($attributes, $translations);
 
         if ($result instanceof \Illuminate\Support\MessageBag) {
             return redirect()->back()->withErrors($result)->withInput();
@@ -65,13 +79,22 @@ class CategoryController extends Controller
         $category = Category::with('translations')->findOrFail($id);
 
         $activeLanguages = Language::where('active', true)->get();
+        $parentOptions = $this->categoryService->getParentOptions($category->id);
 
-        return view('admin.categories.edit', compact('category', 'activeLanguages'));
+        return view('admin.categories.edit', [
+            'category' => $category,
+            'activeLanguages' => $activeLanguages,
+            'parentOptions' => $parentOptions,
+        ]);
     }
 
     public function update(CategoryUpdateRequest $request, $id)
     {
         $translations = $request->all()['translations'];
+        $attributes = [
+            'status' => $request->boolean('status'),
+            'parent_category_id' => $request->input('parent_category_id'),
+        ];
 
         foreach ($translations as $languageCode => $translation) {
             if ($request->hasFile("translations.$languageCode.image")) {
@@ -79,7 +102,7 @@ class CategoryController extends Controller
             }
         }
 
-        $this->categoryService->update($request, $id);
+        $this->categoryService->update($id, $attributes, $translations);
 
         return redirect()->route('admin.categories.index')->with('success', __('cms.categories.updated'));
     }
