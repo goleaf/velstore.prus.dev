@@ -285,6 +285,12 @@ return [
     'customers' => [
         'customer_list' => 'Customer List',
 
+        // Create form
+        'create_title' => 'Create Customer',
+        'create_description' => 'Add a new customer by providing their basic information.',
+        'create_button' => 'Create Customer',
+        'password' => 'Password',
+
         // Table columns
         'id' => 'Id',
         'name' => 'Name',

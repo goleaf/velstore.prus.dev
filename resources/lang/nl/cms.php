@@ -265,6 +265,12 @@ return [
     'customers' => [
         'customer_list' => 'Klantlijst',
 
+        // Create form
+        'create_title' => 'Klant aanmaken',
+        'create_description' => 'Voeg een nieuwe klant toe door zijn basisinformatie in te vullen.',
+        'create_button' => 'Klant aanmaken',
+        'password' => 'Wachtwoord',
+
         // Table columns
         'id' => 'ID',
         'name' => 'Naam',

@@ -2,8 +2,10 @@
 
 @section('content')
 <div class="card mt-4">
-    <div class="card-header card-header-bg text-white">
+    <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
         <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.customers.customer_list') }}</h6>
+        <button type="button" class="btn btn-light btn-sm"
+                data-url="{{ route('admin.customers.create') }}">{{ __('cms.sidebar.customers.add_new') }}</button>
     </div>
     <div class="card-body">
         <table id="customers-table" class="table table-bordered mt-4 dt-style">

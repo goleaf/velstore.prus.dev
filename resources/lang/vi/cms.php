@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'Danh sách khách hàng',
 
+        // Create form
+        'create_title' => 'Tạo khách hàng',
+        'create_description' => 'Thêm khách hàng mới bằng cách cung cấp thông tin cơ bản của họ.',
+        'create_button' => 'Tạo khách hàng',
+        'password' => 'Mật khẩu',
+
         // Table columns
         'id' => 'ID',
         'name' => 'Tên',

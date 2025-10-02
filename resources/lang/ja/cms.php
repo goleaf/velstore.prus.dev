@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => '顧客一覧',
 
+        // Create form
+        'create_title' => '顧客を作成',
+        'create_description' => '基本情報を入力して新しい顧客を追加します。',
+        'create_button' => '顧客を作成',
+        'password' => 'パスワード',
+
         // Table columns
         'id' => 'ID',
         'name' => '名前',

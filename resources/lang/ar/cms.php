@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'قائمة العملاء',
 
+        // Create form
+        'create_title' => 'إنشاء عميل',
+        'create_description' => 'أضف عميلاً جديدًا عن طريق إدخال معلوماته الأساسية.',
+        'create_button' => 'إنشاء عميل',
+        'password' => 'كلمة المرور',
+
         // Table columns
         'id' => 'المعرف',
         'name' => 'الاسم',
