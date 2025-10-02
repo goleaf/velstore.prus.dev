@@ -25,7 +25,9 @@ class Shop extends Model
         parent::boot();
 
         static::creating(function ($shop) {
-            $shop->slug = Str::slug($shop->name);
+            if (blank($shop->slug)) {
+                $shop->slug = Str::slug($shop->name);
+            }
         });
     }
 }

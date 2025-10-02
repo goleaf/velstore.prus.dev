@@ -22,6 +22,10 @@ class ProductFactory extends Factory
         $name = $this->faker->unique()->words(3, true);
         $price = $this->faker->randomFloat(2, 10, 500);
 
+        $dimensions = $this->faker->numberBetween(10, 100)
+            . 'x' . $this->faker->numberBetween(10, 100)
+            . 'x' . $this->faker->numberBetween(10, 100);
+
         return [
             'shop_id' => null,
             'vendor_id' => null,
