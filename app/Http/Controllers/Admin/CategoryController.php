@@ -40,10 +40,12 @@ class CategoryController extends Controller
     {
         $parentOptions = $this->categoryService->getParentOptions();
         $selectedParent = $request->filled('parent') ? (int) $request->input('parent') : null;
+        $activeLanguages = Language::where('active', true)->get();
 
         return view('admin.categories.create', [
             'parentOptions' => $parentOptions,
             'selectedParent' => $selectedParent,
+            'activeLanguages' => $activeLanguages,
         ]);
     }
 
