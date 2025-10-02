@@ -1,28 +1,26 @@
-
 @extends('admin.layouts.admin')
 
-@section('content')
+@section('title', __('cms.attributes.title_manage'))
 
-<div class="card mt-4">
-    <div class="card-header card-header-bg text-white">
-        <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.attributes.title_manage') }}</h6>
-    </div>
-    <div class="card-body">
-        <table id="attributes-table" class="table table-bordered mt-4">
-            <thead>
-                <tr>
-                    <th>{{ __('cms.attributes.id') }}</th>
-                    <th>{{ __('cms.attributes.name') }}</th>
-                    <th>{{ __('cms.attributes.values') }}</th>
-                    <th>{{ __('cms.attributes.action') }}</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+@section('content')
+<x-admin.page-header :title="__('cms.attributes.title_manage')">
+    <x-admin.button-link href="{{ route('admin.attributes.create') }}" class="btn-primary">
+        {{ __('cms.attributes.title_create') }}
+    </x-admin.button-link>
+</x-admin.page-header>
+
+<x-admin.card class="mt-6">
+    <x-admin.table id="attributes-table" :columns="[
+        __('cms.attributes.id'),
+        __('cms.attributes.name'),
+        __('cms.attributes.values'),
+        __('cms.attributes.action'),
+    ]">
+    </x-admin.table>
+</x-admin.card>
 
 <div class="modal fade" id="deleteAttributeModal" tabindex="-1" aria-labelledby="deleteAttributeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteAttributeModalLabel">{{ __('cms.attributes.confirm_delete') }}</h5>
@@ -36,108 +34,124 @@
         </div>
     </div>
 </div>
-
 @endsection
 
-@section('js')
 @php
-    $datatableLang = __('cms.datatables'); 
+    $datatableLang = __('cms.datatables');
 @endphp
-<script>
-    $(document).ready(function() {
-        $('#attributes-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('admin.attributes.data') }}",
-                type: 'POST',
-                data: function(d) {
-                    d._token = "{{ csrf_token() }}";
-                }
-            },
-            columns: [
-                { data: 'id', name: 'id' },
-                { data: 'name', name: 'name' },
-                { data: 'values', name: 'values', orderable: false, searchable: false },
-                {
-                    data: 'action',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        var editUrl = '{{ route('admin.attributes.edit', ':id') }}'.replace(':id', row.id);
-                        return `
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-edit-attribute" data-url="${editUrl}">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-delete-attribute" data-id="${row.id}">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-                }
-            ],
-            pageLength: 10,
-            language: {!! json_encode($datatableLang) !!}
-        });
-    });
 
-
-    let attributeToDeleteId = null;
-
-    $(document).on('click', '.btn-edit-attribute', function() {
-        const url = $(this).data('url');
-        if (url) {
-            window.location.href = url;
-        }
-    });
-
-    $(document).on('click', '.btn-delete-attribute', function() {
-        attributeToDeleteId = $(this).data('id');
-        $('#deleteAttributeModal').modal('show');
-    });
-
-    $('#confirmDeleteAttribute').off('click').on('click', function() {
-        if (attributeToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.attributes.destroy', ':id') }}'.replace(':id', attributeToDeleteId),
-                method: 'DELETE',
-                data: {
-                    _token: "{{ csrf_token() }}",
+@section('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = $('#attributes-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('admin.attributes.data') }}",
+                    type: 'POST',
+                    data: function (data) {
+                        data._token = "{{ csrf_token() }}";
+                    },
                 },
-                success: function(response) {
-                    if (response.success) {
-                        $('#attributes-table').DataTable().ajax.reload();
-                        toastr.error(response.message, "Success", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        $('#deleteAttributeModal').modal('hide');
-                    } else {
-                        toastr.error(response.message, "Error", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function() {
-                    toastr.error("Error deleting attribute! Please try again.", "Error", {
-                        closeButton: true,
-                        progressBar: true,
-                        positionClass: "toast-top-right",
-                        timeOut: 5000
-                    });
-                    $('#deleteAttributeModal').modal('hide');
+                columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'name', name: 'name' },
+                    { data: 'values', name: 'values', orderable: false, searchable: false },
+                    {
+                        data: 'action',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            const editUrl = "{{ route('admin.attributes.edit', ':id') }}".replace(':id', row.id);
+
+                            return `
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-edit-attribute" data-url="${editUrl}" aria-label="{{ __('cms.attributes.title_edit') }}">
+                                        <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-attribute" data-id="${row.id}" aria-label="{{ __('cms.attributes.delete') }}">
+                                        <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            `;
+                        },
+                    },
+                ],
+                pageLength: 10,
+                language: @json($datatableLang),
+            });
+
+            let attributeToDeleteId = null;
+            const deleteModalElement = document.getElementById('deleteAttributeModal');
+            const deleteModal = deleteModalElement ? new bootstrap.Modal(deleteModalElement) : null;
+            const confirmDeleteButton = document.getElementById('confirmDeleteAttribute');
+
+            $(document).on('click', '.btn-edit-attribute', function () {
+                const url = $(this).data('url');
+                if (url) {
+                    window.location.href = url;
                 }
             });
-        }
-    });
 
-</script>
+            $(document).on('click', '.btn-delete-attribute', function () {
+                attributeToDeleteId = $(this).data('id') ?? null;
+                if (deleteModal) {
+                    deleteModal.show();
+                }
+            });
 
+            if (confirmDeleteButton) {
+                confirmDeleteButton.addEventListener('click', () => {
+                    if (!attributeToDeleteId) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '{{ route('admin.attributes.destroy', ':id') }}'.replace(':id', attributeToDeleteId),
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false);
+                                toastr.success(response.message, "{{ __('cms.attributes.success') }}", {
+                                    closeButton: true,
+                                    progressBar: true,
+                                    positionClass: 'toast-top-right',
+                                    timeOut: 5000,
+                                });
+                                attributeToDeleteId = null;
+                                if (deleteModal) {
+                                    deleteModal.hide();
+                                }
+                            } else {
+                                const message = response.message || 'Error deleting attribute! Please try again.';
+                                toastr.error(message, "{{ __('cms.attributes.confirm_delete') }}", {
+                                    closeButton: true,
+                                    progressBar: true,
+                                    positionClass: 'toast-top-right',
+                                    timeOut: 5000,
+                                });
+                            }
+                        },
+                        error: function () {
+                            toastr.error('Error deleting attribute! Please try again.', 'Error', {
+                                closeButton: true,
+                                progressBar: true,
+                                positionClass: 'toast-top-right',
+                                timeOut: 5000,
+                            });
+                        },
+                    });
+                });
+            }
+
+            if (deleteModalElement) {
+                deleteModalElement.addEventListener('hidden.bs.modal', () => {
+                    attributeToDeleteId = null;
+                });
+            }
+        });
+    </script>
 @endsection
