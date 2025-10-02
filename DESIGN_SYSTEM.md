@@ -150,7 +150,7 @@ is_locale_supported('es')
 
 ### Adding New Translations
 
-1. **Add to JSON files** (`resources/lang/{locale}.json`)
+1. **Add to JSON files** (`lang/{locale}.json`)
 2. **Use in Blade templates**
    ```php
    {{ trans_json('your.translation.key') }}

@@ -64,7 +64,10 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [],
+            "providers": [],
+            "aliases": [],
+            "lang-path": "lang"
         }
     },
     "config": {
