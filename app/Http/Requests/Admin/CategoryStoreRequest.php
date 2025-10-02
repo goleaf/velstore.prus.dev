@@ -23,6 +23,8 @@ class CategoryStoreRequest extends FormRequest
     {
         $rules = [
             'translations' => 'required|array',
+            'parent_category_id' => 'nullable|integer|exists:categories,id',
+            'status' => 'nullable|boolean',
         ];
 
         foreach ($this->input('translations', []) as $lang => $data) {
@@ -52,6 +54,8 @@ class CategoryStoreRequest extends FormRequest
             'translations.*.image.image' => __('validation.image', ['attribute' => 'category image']),
             'translations.*.image.mimes' => __('validation.mimes', ['attribute' => 'category image', 'values' => 'jpeg, png, jpg, gif, webp']),
             'translations.*.image.max' => __('validation.max.file', ['attribute' => 'category image', 'max' => '2048']),
+            'parent_category_id.exists' => __('validation.exists', ['attribute' => 'parent category']),
+            'status.boolean' => __('validation.boolean', ['attribute' => 'status']),
         ];
     }
 }

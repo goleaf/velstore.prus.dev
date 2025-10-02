@@ -1,184 +1,139 @@
-
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="card mt-4">
-        <div class="card-header  card-header-bg text-white">
-            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.categories.heading') }}</h6>
-        </div>
-        <div class="card-body">
-            <table id="categories-table" class="table table-bordered mt-4 dt-style">
-                <thead>
-                    <tr>
-                        <th>{{ __('cms.categories.id') }}</th>
-                        <th>{{ __('cms.categories.name') }}</th>
-                        <th>{{ __('cms.categories.status') }}</th>
-                        <th>{{ __('cms.categories.action') }}</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+<x-admin.page-header
+    :title="__('cms.categories.title_manage')"
+    :description="__('cms.categories.index_description')"
+>
+    <x-admin.button-link href="{{ route('admin.categories.create') }}" class="btn-primary">
+        {{ __('cms.categories.add_new') }}
+    </x-admin.button-link>
+</x-admin.page-header>
 
-    <!-- Delete Category Modal -->
-    <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCategoryModalLabel">{{ __('cms.categories.massage_confirm') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body"> {{ __('cms.categories.confirm_delete') }}</div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cms.categories.massage_cancel') }}</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteCategory">{{ __('cms.categories.massage_delete') }}</button>
-                </div>
-            </div>
+<x-admin.card>
+    <div class="grid gap-3 md:grid-cols-3">
+        <div class="p-4 rounded-lg bg-primary-50 border border-primary-100">
+            <p class="text-xs uppercase tracking-wide text-primary-600 mb-1">{{ __('cms.categories.total_categories') }}</p>
+            <p class="text-xl font-semibold text-primary-900">{{ number_format($stats['total']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-success-50 border border-success-100">
+            <p class="text-xs uppercase tracking-wide text-success-600 mb-1">{{ __('cms.categories.active_categories') }}</p>
+            <p class="text-xl font-semibold text-success-900">{{ number_format($stats['active']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-warning-50 border border-warning-100">
+            <p class="text-xs uppercase tracking-wide text-warning-600 mb-1">{{ __('cms.categories.inactive_categories') }}</p>
+            <p class="text-xl font-semibold text-warning-900">{{ number_format($stats['inactive']) }}</p>
         </div>
     </div>
-    <!-- End Delete Category Modal -->
+</x-admin.card>
+
+<x-admin.card class="mt-6">
+    <form method="GET" class="grid gap-4 md:grid-cols-4">
+        <div>
+            <label class="form-label" for="search">{{ __('cms.categories.search_label') }}</label>
+            <input
+                id="search"
+                type="search"
+                name="search"
+                value="{{ $filters['search'] }}"
+                placeholder="{{ __('cms.categories.search_placeholder') }}"
+                class="form-control"
+            >
+        </div>
+        <div>
+            <label class="form-label" for="status">{{ __('cms.categories.status_filter_label') }}</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">{{ __('cms.categories.status_filter_all') }}</option>
+                <option value="active" @selected($filters['status'] === 'active')>{{ __('cms.categories.status_filter_active') }}</option>
+                <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('cms.categories.status_filter_inactive') }}</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="parent">{{ __('cms.categories.parent_filter_label') }}</label>
+            <select id="parent" name="parent" class="form-select">
+                <option value="">{{ __('cms.categories.parent_filter_all') }}</option>
+                @foreach ($parentOptions as $option)
+                    <option value="{{ $option['id'] }}" @selected((string) $filters['parent'] === (string) $option['id'])>
+                        {{ $option['name'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="md:col-span-4 flex flex-wrap gap-3">
+            <button type="submit" class="btn btn-primary">
+                {{ __('cms.categories.apply_filters') }}
+            </button>
+            <x-admin.button-link href="{{ route('admin.categories.index') }}" class="btn-outline">
+                {{ __('cms.categories.reset_filters') }}
+            </x-admin.button-link>
+        </div>
+    </form>
+</x-admin.card>
+
+<x-admin.card class="mt-6">
+    <x-admin.table :columns="[
+        __('cms.categories.id'),
+        __('cms.categories.name'),
+        __('cms.categories.subcategories'),
+        __('cms.categories.products_count'),
+        __('cms.categories.status'),
+        __('cms.categories.action'),
+    ]">
+        @forelse ($categories as $node)
+            @php
+                $category = $node['category'];
+                $isActive = (bool) $category->status;
+                $depth = $node['depth'];
+                $padding = $depth * 1.5;
+            @endphp
+            <tr>
+                <td class="table-cell align-top text-sm text-gray-500">#{{ $category->id }}</td>
+                <td class="table-cell align-top">
+                    <div class="flex flex-col" style="padding-left: {{ $padding }}rem;">
+                        <span class="font-medium text-gray-900">{{ $node['name'] }}</span>
+                        <span class="text-xs text-gray-500">{{ $category->slug }}</span>
+                    </div>
+                </td>
+                <td class="table-cell align-top text-sm text-gray-700">{{ number_format($node['children_count']) }}</td>
+                <td class="table-cell align-top text-sm text-gray-700">{{ number_format($category->products_count ?? 0) }}</td>
+                <td class="table-cell align-top">
+                    <span class="badge {{ $isActive ? 'badge-success' : 'badge-danger' }}">
+                        {{ $isActive ? __('cms.products.status_active') : __('cms.products.status_inactive') }}
+                    </span>
+                </td>
+                <td class="table-cell align-top">
+                    <div class="flex flex-col gap-2">
+                        <form method="POST" action="{{ route('admin.categories.updateStatus') }}">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $category->id }}">
+                            <input type="hidden" name="status" value="{{ $isActive ? 0 : 1 }}">
+                            <button type="submit" class="btn btn-outline-primary btn-sm w-full">
+                                {{ $isActive ? __('cms.products.deactivate_button') : __('cms.products.activate_button') }}
+                            </button>
+                        </form>
+                        <x-admin.button-link href="{{ route('admin.categories.edit', $category) }}" class="btn-outline btn-sm">
+                            {{ __('cms.products.edit_button') }}
+                        </x-admin.button-link>
+                        <x-admin.button-link href="{{ route('admin.categories.create', ['parent' => $category->id]) }}" class="btn-outline btn-sm">
+                            {{ __('cms.categories.add_subcategory') }}
+                        </x-admin.button-link>
+                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('{{ __('cms.categories.confirm_delete') }}');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-full">
+                                {{ __('cms.categories.delete') }}
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" class="table-cell text-center text-gray-500 py-6">
+                    {{ __('cms.categories.empty_state') }}
+                </td>
+            </tr>
+        @endforelse
+    </x-admin.table>
+</x-admin.card>
 @endsection
-
-@section('js')
-@php
-    $datatableLang = __('cms.datatables');
-@endphp
-<script>
-    $(document).ready(function() {
-        $('#categories-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('admin.categories.data') }}",
-                type: 'POST',
-                data: function(d) {
-                    d._token = "{{ csrf_token() }}";
-                }
-            },
-            columns: [
-                { data: 'id', name: 'id' },
-                { data: 'name', name: 'name' },              
-                {
-                    data: 'status',
-                    name: 'status',
-                    render: function(data, type, row) {
-                        var isChecked = data ? 'checked' : '';
-                        return `<label class="switch">
-                                    <input type="checkbox" class="toggle-status" data-id="${row.id}" ${isChecked}>
-                                    <span class="slider round"></span>
-                                </label>`;
-                    }
-                },
-                {
-                    data: 'action',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        var editUrl = '{{ route('admin.categories.edit', ':id') }}'.replace(':id', row.id);
-                        return `
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-edit-category" data-url="${editUrl}">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-delete-category" data-id="${row.id}">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-                }
-            ],
-            pageLength: 10,
-            language: @json($datatableLang)
-        });
-
-        $(document).on('change', '.toggle-status', function() {
-            var categoryId = $(this).data('id');
-            var isActive = $(this).prop('checked') ? 1 : 0; 
-            $.ajax({
-                url: '{{ route('admin.categories.updateStatus') }}',
-                method: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id: categoryId,
-                    status: isActive
-                },
-                success: function(response) {
-                    if (response.success) {
-                        toastr.success(response.message, "Updated", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    } else {
-                        toastr.error(response.message, "Failed", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function() {
-                    alert('Error updating status!');
-                    $(this).prop('checked', !isActive);
-                }
-            });
-        });
-
-    });
-
-    let categoryToDeleteId = null;
-
-    $(document).on('click', '.btn-edit-category', function() {
-        const url = $(this).data('url');
-        if (url) {
-            window.location.href = url;
-        }
-    });
-
-    $(document).on('click', '.btn-delete-category', function() {
-        categoryToDeleteId = $(this).data('id');
-        $('#deleteCategoryModal').modal('show');
-    });
-
-    $('#confirmDeleteCategory').off('click').on('click', function() {
-        if (categoryToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.categories.destroy', ':id') }}'.replace(':id', categoryToDeleteId),
-                method: 'DELETE',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#categories-table').DataTable().ajax.reload();
-                        toastr.error(response.message, "Success", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-
-                        $('#deleteCategoryModal').modal('hide');
-                    } else {
-                        toastr.error(response.message, "Error", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function() {
-                    console.log('Error deleting category!');
-                    $('#deleteCategoryModal').modal('hide');
-                }
-            });
-        }
-    });
-</script>
-@endsection
-
-

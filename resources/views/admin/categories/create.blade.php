@@ -10,12 +10,43 @@
         <form id="categoryForm" action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div class="row">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ __('cms.categories.parent_category') }}</label>
+                    <select name="parent_category_id" class="form-select @error('parent_category_id') is-invalid @enderror">
+                        <option value="">{{ __('cms.categories.parent_none') }}</option>
+                        @foreach($parentOptions as $option)
+                            <option value="{{ $option['id'] }}" @selected(old('parent_category_id', $selectedParent) == $option['id'])>
+                                {{ $option['name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('parent_category_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label d-block">{{ __('cms.categories.status') }}</label>
+                    <div class="form-check form-switch mt-2">
+                        <input type="hidden" name="status" value="0">
+                        @php $initialStatus = old('status', 1); @endphp
+                        <input class="form-check-input" type="checkbox" id="statusToggle" name="status" value="1" {{ $initialStatus ? 'checked' : '' }}>
+                        <label class="form-check-label" for="statusToggle" id="statusToggleLabel">
+                            {{ $initialStatus ? __('cms.products.status_active') : __('cms.products.status_inactive') }}
+                        </label>
+                    </div>
+                    @error('status')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="row mt-4">
                 {{-- Language Tabs --}}
                 <ul class="nav nav-tabs" id="languageTabs" role="tablist">
                     @foreach($activeLanguages as $language)
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {{ $loop->first ? 'active' : '' }}" 
+                            <button class="nav-link {{ $loop->first ? 'active' : '' }}"
                                     id="{{ $language->name }}-tab" 
                                     data-bs-toggle="tab" 
                                     data-bs-target="#{{ $language->name }}" 
@@ -199,5 +230,19 @@ document.getElementById('categoryForm').addEventListener('submit', function (e) 
         }
     }
 });
+
+const statusToggle = document.getElementById('statusToggle');
+if (statusToggle) {
+    statusToggle.addEventListener('change', function () {
+        const label = document.getElementById('statusToggleLabel');
+        if (!label) {
+            return;
+        }
+
+        label.textContent = this.checked
+            ? @json(__('cms.products.status_active'))
+            : @json(__('cms.products.status_inactive'));
+    });
+}
 </script>
 @endsection
