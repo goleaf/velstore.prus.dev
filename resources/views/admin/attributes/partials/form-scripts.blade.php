@@ -18,51 +18,42 @@
             return;
         }
 
+        const generateRowId = () => `attribute-value-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
         const updatePlaceholders = () => {
             const rows = Array.from(valueContainer.querySelectorAll('.attribute-value-row'));
+
             rows.forEach((row, index) => {
-                const input = row.querySelector('input[name="values[]"]');
-                if (input) {
-                    input.placeholder = `${valuePlaceholder} #${index + 1}`;
-                }
-            });
-
-            languages.forEach(({ code, name }) => {
-                const container = document.getElementById(`translation-container-${code}`);
-                if (!container) {
-                    return;
+                const baseInput = row.querySelector('input[name="values[]"]');
+                if (baseInput) {
+                    baseInput.placeholder = `${valuePlaceholder} #${index + 1}`;
                 }
 
-                const inputs = container.querySelectorAll(`input[name="translations[${code}][]"]`);
-                inputs.forEach((input, index) => {
-                    input.placeholder = `${translationPlaceholder} (${name}) #${index + 1}`;
+                languages.forEach(({ code, name }) => {
+                    const translationInput = row.querySelector(`input[name="translations[${code}][]"]`);
+                    if (translationInput) {
+                        translationInput.placeholder = `${translationPlaceholder} (${name}) #${index + 1}`;
+                    }
                 });
             });
         };
 
-        const addTranslationGroup = (code) => {
-            const container = document.getElementById(`translation-container-${code}`);
-            if (!container) {
-                return null;
+        const activateFirstTab = (row) => {
+            const firstTabTrigger = row.querySelector('.attribute-language-tabs button');
+            if (firstTabTrigger && typeof bootstrap !== 'undefined') {
+                bootstrap.Tab.getOrCreateInstance(firstTabTrigger).show();
             }
-
-            const group = document.createElement('div');
-            group.className = 'translation-group';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.name = `translations[${code}][]`;
-            input.className = 'form-control';
-
-            group.appendChild(input);
-            container.appendChild(group);
-
-            return group;
         };
 
-        const addValueRow = () => {
+        const createRow = (value = '', translationValues = {}) => {
             const row = document.createElement('div');
-            row.className = 'attribute-value-row flex flex-col gap-2 md:flex-row md:items-start md:gap-3';
+            row.className = 'attribute-value-row space-y-4 rounded-lg border border-gray-200 p-4';
+
+            const rowId = generateRowId();
+            row.dataset.rowId = rowId;
+
+            const header = document.createElement('div');
+            header.className = 'flex flex-col gap-2 md:flex-row md:items-start md:gap-3';
 
             const inputWrapper = document.createElement('div');
             inputWrapper.className = 'flex-1';
@@ -70,21 +61,82 @@
             const input = document.createElement('input');
             input.type = 'text';
             input.name = 'values[]';
+            input.value = value || '';
             input.className = 'form-control';
 
             inputWrapper.appendChild(input);
-            row.appendChild(inputWrapper);
+            header.appendChild(inputWrapper);
 
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
             removeButton.className = 'btn btn-outline-danger attribute-value-remove self-start';
             removeButton.textContent = removeText;
 
-            row.appendChild(removeButton);
-            valueContainer.appendChild(row);
+            header.appendChild(removeButton);
+            row.appendChild(header);
 
-            languages.forEach(({ code }) => addTranslationGroup(code));
+            const translationWrapper = document.createElement('div');
+            translationWrapper.className = 'translation-section';
+
+            const navTabs = document.createElement('ul');
+            navTabs.className = 'nav nav-tabs attribute-language-tabs';
+            navTabs.id = `${rowId}-tabs`;
+            navTabs.setAttribute('role', 'tablist');
+
+            const tabContent = document.createElement('div');
+            tabContent.className = 'tab-content mt-3';
+            tabContent.id = `${rowId}-tab-content`;
+
+            languages.forEach(({ code, name }, index) => {
+                const tabId = `${rowId}-${code}-tab`;
+                const paneId = `${rowId}-${code}-panel`;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'nav-item';
+                listItem.setAttribute('role', 'presentation');
+
+                const tabButton = document.createElement('button');
+                tabButton.type = 'button';
+                tabButton.className = `nav-link${index === 0 ? ' active' : ''}`;
+                tabButton.id = tabId;
+                tabButton.dataset.bsToggle = 'tab';
+                tabButton.dataset.bsTarget = `#${paneId}`;
+                tabButton.setAttribute('role', 'tab');
+                tabButton.setAttribute('aria-controls', paneId);
+                tabButton.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+                tabButton.textContent = name;
+
+                listItem.appendChild(tabButton);
+                navTabs.appendChild(listItem);
+
+                const tabPane = document.createElement('div');
+                tabPane.className = `tab-pane fade show${index === 0 ? ' active' : ''}`;
+                tabPane.id = paneId;
+                tabPane.setAttribute('role', 'tabpanel');
+                tabPane.setAttribute('aria-labelledby', tabId);
+
+                const translationInput = document.createElement('input');
+                translationInput.type = 'text';
+                translationInput.name = `translations[${code}][]`;
+                translationInput.value = translationValues[code] ?? '';
+                translationInput.className = 'form-control';
+
+                tabPane.appendChild(translationInput);
+                tabContent.appendChild(tabPane);
+            });
+
+            translationWrapper.appendChild(navTabs);
+            translationWrapper.appendChild(tabContent);
+            row.appendChild(translationWrapper);
+
+            return row;
+        };
+
+        const addValueRow = (value = '', translationValues = {}) => {
+            const row = createRow(value, translationValues);
+            valueContainer.appendChild(row);
             updatePlaceholders();
+            activateFirstTab(row);
         };
 
         const clearSingleRow = (row) => {
@@ -94,28 +146,13 @@
             }
 
             languages.forEach(({ code }) => {
-                const container = document.getElementById(`translation-container-${code}`);
-                if (!container) {
-                    return;
-                }
-
-                const groups = Array.from(container.querySelectorAll('.translation-group'));
-                groups.forEach((group, index) => {
-                    const input = group.querySelector(`input[name="translations[${code}][]"]`);
-                    if (index === 0) {
-                        if (input) {
-                            input.value = '';
-                        }
-                    } else {
-                        group.remove();
-                    }
-                });
-
-                if (groups.length === 0) {
-                    addTranslationGroup(code);
+                const translationInput = row.querySelector(`input[name="translations[${code}][]"]`);
+                if (translationInput) {
+                    translationInput.value = '';
                 }
             });
 
+            activateFirstTab(row);
             updatePlaceholders();
         };
 
@@ -126,30 +163,8 @@
                 return;
             }
 
-            const index = rows.indexOf(row);
-            if (index === -1) {
-                return;
-            }
-
             row.remove();
-
-            languages.forEach(({ code }) => {
-                const container = document.getElementById(`translation-container-${code}`);
-                if (!container) {
-                    return;
-                }
-
-                const groups = Array.from(container.querySelectorAll('.translation-group'));
-                if (groups[index]) {
-                    groups[index].remove();
-                }
-            });
-
-            if (valueContainer.querySelectorAll('.attribute-value-row').length === 0) {
-                addValueRow();
-            } else {
-                updatePlaceholders();
-            }
+            updatePlaceholders();
         };
 
         valueContainer.addEventListener('click', (event) => {
@@ -175,6 +190,7 @@
             addValueRow();
         } else {
             updatePlaceholders();
+            valueContainer.querySelectorAll('.attribute-value-row').forEach((row) => activateFirstTab(row));
         }
 
         @if ($errors->any())
