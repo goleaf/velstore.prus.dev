@@ -1,12 +1,9 @@
-
-
 @extends('admin.layouts.admin')
 
 @section('content')
     <div class="card mt-4">
         <div class="card-header card-header-bg text-white">
-            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.brands.heading') }}
-            </h6>
+            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.brands.heading') }}</h6>
         </div>
 
         <div class="card-body">
@@ -24,189 +21,254 @@
         </div>
     </div>
 
-    <!-- Delete Modal -->
     <div class="modal fade" id="deleteBrandModal" tabindex="-1" aria-labelledby="deleteBrandModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="deleteBrandModalLabel">{{ __('cms.brands.massage_confirm') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteBrandModalLabel">{{ __('cms.brands.massage_confirm') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ __('cms.brands.confirm_delete') }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cms.brands.massage_cancel') }}</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBrand">{{ __('cms.brands.massage_delete') }}</button>
+                </div>
             </div>
-            <div class="modal-body"> {{ __('cms.brands.confirm_delete') }}</div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cms.brands.massage_cancel') }}</button>
-            <button type="button" class="btn btn-danger" id="confirmDeleteBrand">{{ __('cms.brands.massage_delete') }}</button>
-            </div>
-        </div>
         </div>
     </div>
-    <!-- End Delete Modal -->
-  
 @endsection
 
-@section('js')
 @php
-    $datatableLang = __('cms.datatables');
+    $labels = [
+        'logo' => __('cms.brands.logo'),
+        'noLogo' => __('cms.brands.no_logo'),
+    ];
+
+    $labelFallbacks = [
+        'logo' => 'Logo',
+        'noLogo' => 'No logo',
+    ];
+
+    foreach ($labels as $key => $value) {
+        $expected = 'cms.brands.' . ($key === 'logo' ? 'logo' : 'no_logo');
+        if ($value === $expected) {
+            $labels[$key] = $labelFallbacks[$key];
+        }
+    }
+
+    $messages = [
+        'statusUpdated' => __('cms.common.updated_successfully'),
+        'statusFailed' => __('cms.common.update_failed'),
+        'deleteSuccess' => __('cms.common.deleted_successfully'),
+        'deleteFailed' => __('cms.common.delete_failed'),
+    ];
+
+    $messageFallbacks = [
+        'statusUpdated' => 'Brand status updated successfully.',
+        'statusFailed' => 'Unable to update brand status.',
+        'deleteSuccess' => 'Brand deleted successfully.',
+        'deleteFailed' => 'Unable to delete brand.',
+    ];
+
+    $messageSuffixes = [
+        'statusUpdated' => 'updated_successfully',
+        'statusFailed' => 'update_failed',
+        'deleteSuccess' => 'deleted_successfully',
+        'deleteFailed' => 'delete_failed',
+    ];
+
+    foreach ($messages as $key => $value) {
+        if ($value === 'cms.common.' . $messageSuffixes[$key]) {
+            $messages[$key] = $messageFallbacks[$key];
+        }
+    }
 @endphp
 
-<script>
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const csrfToken = @json(csrf_token());
+            const datatableLang = @json(__('cms.datatables'));
+            const labels = @json($labels);
+            const messages = {
+                ...@json($messages),
+                statusError: 'Error updating status!',
+                deleteError: 'Error deleting brand!',
+            };
+            const deleteBrandModalElement = document.getElementById('deleteBrandModal');
+            const deleteBrandModal = deleteBrandModalElement ? new bootstrap.Modal(deleteBrandModalElement) : null;
+            let brandToDeleteId = null;
 
-    $(document).ready(function() {
-        $('#brands-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('admin.brands.getData') }}",
-                type: 'GET',
-                data: function(d) {
-                    d._token = "{{ csrf_token() }}";
-                }
-            },
-            columns: [
-                { data: 'id', name: 'id' },
-                { data: 'slug', name: 'slug' },
-                { 
-                    data: 'logo_url', 
-                    render: function(data) {
-                        if (data) {
-                            var logoPath = data.startsWith('http') ? data : '/storage/' + data;
-                            return '<img src="' + logoPath + '" alt="Logo" width="50">';
-                        } else {
-                            return 'No Logo';
-                        }
+            const brandsTable = $('#brands-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('admin.brands.getData') }}",
+                    type: 'GET',
+                    data: function (request) {
+                        request._token = csrfToken;
                     }
                 },
-                { 
-                    data: 'status', 
-                    name: 'status',
-                    render: function(data, type, row) {
-                        // Render a toggle switch based on the status value
-                        var isChecked = data ? 'checked' : ''; // If active, checked
-                        return `<label class="switch">
+                columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'slug', name: 'slug' },
+                    {
+                        data: 'logo_url',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data) {
+                            if (!data) {
+                                return `<span class="text-muted">${labels.noLogo}</span>`;
+                            }
+
+                            const normalizedPath = data.replace(/^\/+/, '');
+                            const logoPath = data.startsWith('http') ? data : `/storage/${normalizedPath}`;
+                            return `<img src="${logoPath}" alt="${labels.logo}" width="50" class="img-fluid">`;
+                        }
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        render: function (data, type, row) {
+                            const isChecked = data ? 'checked' : '';
+                            return `
+                                <label class="switch mb-0">
                                     <input type="checkbox" class="toggle-status" data-id="${row.id}" ${isChecked}>
                                     <span class="slider round"></span>
-                                </label>`;
+                                </label>
+                            `;
+                        }
+                    },
+                    {
+                        data: 'action',
+                        orderable: false,
+                        searchable: false,
+                        render: function (_data, _type, row) {
+                            const editUrl = `{{ route('admin.brands.edit', ':id') }}`.replace(':id', row.id);
+                            return `
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary btn-edit-brand" data-url="${editUrl}">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-delete-brand" data-id="${row.id}">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
                     }
-                },
-                {
-                    data: 'action',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        var editUrl = '{{ route('admin.brands.edit', ':id') }}'.replace(':id', row.id);
-                        return `
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-edit-brand" data-url="${editUrl}">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-delete-brand" data-id="${row.id}">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-                }
-            ],
-            pageLength: 10,
-            language: @json($datatableLang)
-        });
+                ],
+                pageLength: 10,
+                language: datatableLang
+            });
 
-        $(document).on('click', '.btn-edit-brand', function() {
-            const url = $(this).data('url');
-            if (url) {
-                window.location.href = url;
+            $(document).on('click', '.btn-edit-brand', function () {
+                const url = $(this).data('url');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+
+            $(document).on('click', '.btn-delete-brand', function () {
+                brandToDeleteId = $(this).data('id');
+                if (deleteBrandModal) {
+                    deleteBrandModal.show();
+                }
+            });
+
+            $(document).on('change', '.toggle-status', function () {
+                const $toggle = $(this);
+                const brandId = $toggle.data('id');
+                const isActive = $toggle.prop('checked') ? 1 : 0;
+
+                $.ajax({
+                    url: '{{ route('admin.brands.updateStatus') }}',
+                    method: 'POST',
+                    data: {
+                        _token: csrfToken,
+                        id: brandId,
+                        status: isActive,
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message || messages.statusUpdated, 'Updated', {
+                                closeButton: true,
+                                progressBar: true,
+                                positionClass: 'toast-top-right',
+                                timeOut: 5000,
+                            });
+                            return;
+                        }
+
+                        $toggle.prop('checked', !isActive);
+                        toastr.error(response.message || messages.statusFailed, 'Failed', {
+                            closeButton: true,
+                            progressBar: true,
+                            positionClass: 'toast-top-right',
+                            timeOut: 5000,
+                        });
+                    },
+                    error: function () {
+                        $toggle.prop('checked', !isActive);
+                        toastr.error(messages.statusError, 'Error', {
+                            closeButton: true,
+                            progressBar: true,
+                            positionClass: 'toast-top-right',
+                            timeOut: 5000,
+                        });
+                    },
+                });
+            });
+
+            const confirmDeleteButton = document.getElementById('confirmDeleteBrand');
+            if (confirmDeleteButton) {
+                confirmDeleteButton.addEventListener('click', () => {
+                    if (!brandToDeleteId) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: `{{ route('admin.brands.destroy', ':id') }}`.replace(':id', brandToDeleteId),
+                        method: 'DELETE',
+                        data: {
+                            _token: csrfToken,
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                brandsTable.ajax.reload(null, false);
+                                toastr.success(response.message || messages.deleteSuccess, 'Deleted', {
+                                    closeButton: true,
+                                    progressBar: true,
+                                    positionClass: 'toast-top-right',
+                                    timeOut: 5000,
+                                });
+                                if (deleteBrandModal) {
+                                    deleteBrandModal.hide();
+                                }
+                                brandToDeleteId = null;
+                                return;
+                            }
+
+                            toastr.error(response.message || messages.deleteFailed, 'Error', {
+                                closeButton: true,
+                                progressBar: true,
+                                positionClass: 'toast-top-right',
+                                timeOut: 5000,
+                            });
+                        },
+                        error: function () {
+                            toastr.error(messages.deleteError, 'Error', {
+                                closeButton: true,
+                                progressBar: true,
+                                positionClass: 'toast-top-right',
+                                timeOut: 5000,
+                            });
+                        },
+                    });
+                });
             }
         });
-
-        $(document).on('click', '.btn-delete-brand', function() {
-            brandToDeleteId = $(this).data('id');
-            $('#deleteBrandModal').modal('show');
-        });
-
-        // Handle toggle switch (activate/deactivate status)
-        $(document).on('change', '.toggle-status', function() {
-            var brandId = $(this).data('id');
-            var isActive = $(this).prop('checked') ? 1 : 0; // 1 for active, 0 for inactive
-            $.ajax({
-                url: '{{ route('admin.brands.updateStatus') }}',
-                method: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    id: brandId,
-                    status: isActive
-                },
-                success: function(response) {
-                    // Optionally show a success message
-                    if (response.success) {
-                        toastr.success(response.message, "Updated", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    } else {
-                        toastr.error(response.message, "Failed", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function() {
-                    // Optionally show an error message
-                    alert('Error updating status!');
-                    // Revert the toggle if something goes wrong
-                    $(this).prop('checked', !isActive);
-                }
-            });
-        });
-
-    });
-
-
-    let brandToDeleteId = null;
-
-    $('#confirmDeleteBrand').off('click').on('click', function() {
-        if (brandToDeleteId !== null) {
-            $.ajax({
-                url: '{{ route('admin.brands.destroy', ':id') }}'.replace(':id', brandToDeleteId),
-                method: 'DELETE',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#brands-table').DataTable().ajax.reload();
-                        toastr.error(response.message, "Deleted", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        
-                        $('#deleteBrandModal').modal('hide');
-                    } else {
-                        toastr.error(response.message || 'Error deleting brand', "Error", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                    }
-                },
-                error: function() {
-                    toastr.error('Error deleting brand!', "Error", {
-                        closeButton: true,
-                        progressBar: true,
-                        positionClass: "toast-top-right",
-                        timeOut: 5000
-                    });
-                    $('#deleteBrandModal').modal('hide');
-                }
-            });
-        }
-    });
-
-</script>
-@endsection
+    </script>
+@endpush
