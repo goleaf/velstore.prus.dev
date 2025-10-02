@@ -85,7 +85,7 @@ class CategoryRepository implements CategoryRepositoryInterface
                 'language_code' => $languageCode,
                 'name' => $translation['name'],
                 'description' => $translation['description'] ?? null,
-                'image_url' => $imagePath,
+                'image_url' => $imagePath ?? 'assets/images/placeholder-promo.svg',
             ]);
         }
 
@@ -115,7 +115,7 @@ class CategoryRepository implements CategoryRepositoryInterface
                 [
                     'name' => $translation['name'],
                     'description' => $translation['description'] ?? null,
-                    'image_url' => $imagePath,
+                    'image_url' => $imagePath ?? 'assets/images/placeholder-promo.svg',
                 ]
             );
         }
