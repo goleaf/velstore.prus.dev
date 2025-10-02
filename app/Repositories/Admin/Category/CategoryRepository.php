@@ -4,10 +4,13 @@ namespace App\Repositories\Admin\Category;
 
 use App\Models\Category;
 use App\Models\CategoryTranslation;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
+    private const DEFAULT_IMAGE_PATH = CategoryTranslation::DEFAULT_IMAGE_PATH;
+
     public function all()
     {
         return Category::all();
@@ -20,7 +23,7 @@ class CategoryRepository implements CategoryRepositoryInterface
 
     public function store($data)
     {
-        $slug = \Str::slug($data['name']);
+        $slug = Str::slug($data['name']);
 
         $category = $this->create([
             'slug' => $slug,
@@ -36,7 +39,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function update($id, array $data)
     {
         $category = $this->find($id);
-        $slug = \Str::slug($data['name']);
+        $slug = Str::slug($data['name']);
 
         $category->update([
             'slug' => $slug,
@@ -54,8 +57,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         $category = $this->find($id);
 
         foreach ($category->translations as $translation) {
-            if ($translation->image_url) {
-                \Storage::disk('public')->delete($translation->image_url);
+            if ($translation->image_url && $translation->image_url !== self::DEFAULT_IMAGE_PATH) {
+                Storage::disk('public')->delete($translation->image_url);
             }
         }
 
@@ -74,7 +77,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = null;
+            $imagePath = self::DEFAULT_IMAGE_PATH;
 
             if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
                 $imagePath = $translation['image']->store('categories', 'public');
@@ -104,9 +107,14 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         foreach ($translations as $languageCode => $translation) {
-            $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url');
+            $imagePath = $category->translations()->where('language_code', $languageCode)->value('image_url')
+                ?? self::DEFAULT_IMAGE_PATH;
 
             if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
+                if ($imagePath && $imagePath !== self::DEFAULT_IMAGE_PATH) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+
                 $imagePath = $translation['image']->store('categories', 'public');
             }
 

@@ -18,6 +18,7 @@ use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepository;
 use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepositoryInterface;
 use App\Services\Admin\ImageService;
 use App\Services\Admin\MenuService;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Admin\Category\CategoryRepositoryInterface::class,
             \App\Repositories\Admin\Category\CategoryRepository::class
         );
+
+        $this->app->singleton('auth.customer', function ($app): StatefulGuard {
+            return $app['auth']->guard('customer');
+        });
 
         $this->app->singleton(ImageService::class, function ($app) {
             return new ImageService;

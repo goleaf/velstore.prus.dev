@@ -198,12 +198,13 @@ class PageController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        $page = Page::find($request->id);
-        $page->status = $request->status;
+        $page = Page::findOrFail($request->id);
+        $page->status = (bool) $request->boolean('status');
         $page->save();
 
         return response()->json([
             'success' => true,
+            'status' => $page->status,
             'message' => 'Page status updated.',
         ]);
     }

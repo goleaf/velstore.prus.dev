@@ -160,6 +160,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'name' => 'Test Category',
             'description' => 'Category description',
+            'image_url' => 'assets/images/placeholder-promo.svg',
         ]);
 
         $this->brand = Brand::create([
