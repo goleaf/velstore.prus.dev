@@ -129,7 +129,7 @@ class AdminPageBrowsingTest extends TestCase
             ['admin.refunds.show', ['refund' => $this->refund->id]],
             ['admin.payment-gateways.index'],
             ['admin.payment-gateways.edit', ['payment_gateway' => $this->paymentGateway->id]],
-            ['site-settings.index'],
+            ['admin.site-settings.index'],
             ['admin.site-settings.edit'],
         ];
 
