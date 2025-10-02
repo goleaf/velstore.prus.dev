@@ -5,41 +5,42 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
-    public function index()
-    {
-        return view('admin.orders.index');
-    }
+    protected array $statusFilters = [
+        'pending',
+        'processing',
+        'completed',
+        'canceled',
+    ];
 
-    public function getData(Request $request)
+    public function index(Request $request)
     {
-        $query = Order::query()->latest();
+        $status = $request->query('status');
+        $ordersQuery = Order::query()->latest();
 
-        $status = $request->input('status');
-        if ($status && in_array($status, ['pending', 'processing', 'completed', 'canceled'])) {
-            $query->where('status', $status);
+        if (is_string($status) && in_array($status, $this->statusFilters, true)) {
+            $ordersQuery->where('status', $status);
+        } else {
+            $status = '';
         }
 
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('order_date', function (Order $order) {
-                return $order->created_at?->format('Y-m-d H:i');
-            })
-            ->addColumn('total_price', function (Order $order) {
-                return number_format((float) $order->total_amount, 2);
-            })
-            ->editColumn('status', function (Order $order) {
-                return ucfirst($order->status);
-            })
-            ->addColumn('action', function (Order $order) {
-                return view('admin.orders.partials.actions', compact('order'))->render();
-            })
-            ->rawColumns(['action'])
-            ->setRowId('id')
-            ->make(true);
+        $orders = $ordersQuery->paginate(10)->withQueryString();
+
+        $statusFilterLabels = [
+            '' => __('cms.orders.all_orders'),
+            'pending' => __('cms.orders.pending_orders'),
+            'processing' => __('cms.orders.processing_orders'),
+            'completed' => __('cms.orders.completed_orders'),
+            'canceled' => __('cms.orders.cancelled_orders'),
+        ];
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'statusFilters' => $statusFilterLabels,
+            'currentStatus' => $status,
+        ]);
     }
 
     public function destroy($id)
@@ -47,7 +48,10 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $order->delete();
 
-        return response()->json(['success' => true, 'message' => 'Order deleted successfully.']);
+        return response()->json([
+            'success' => true,
+            'message' => __('cms.orders.deleted_success'),
+        ]);
     }
 
     public function show(Order $order)

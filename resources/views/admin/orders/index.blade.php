@@ -2,19 +2,36 @@
 
 @section('content')
     @php
-        $datatableLang = __('cms.datatables');
         $deleteTemplate = route('admin.orders.destroy', ['order' => '__ORDER_ID__']);
     @endphp
 
     <x-admin.page-header :title="__('cms.orders.title')" />
 
     <x-admin.card noMargin class="mt-6">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach ($statusFilters as $value => $label)
+                    @php
+                        $isActive = $currentStatus === $value;
+                        $filterUrl = $value === ''
+                            ? route('admin.orders.index')
+                            : route('admin.orders.index', ['status' => $value]);
+                    @endphp
+                    <a
+                        href="{{ $filterUrl }}"
+                        class="btn btn-sm {{ $isActive ? 'btn-primary' : 'btn-outline' }}"
+                    >
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
         <x-admin.table
             id="orders-table"
             data-orders-table
-            data-source="{{ route('admin.orders.data') }}"
-            data-language='@json($datatableLang)'
-            data-page-length="10"
+            data-column-count="5"
+            data-empty-message="{{ __('cms.dashboard.no_data') }}"
             :columns="[
                 __('cms.orders.id'),
                 __('cms.orders.order_date'),
@@ -22,7 +39,35 @@
                 __('cms.orders.total_price'),
                 __('cms.orders.action'),
             ]"
-        ></x-admin.table>
+        >
+            @forelse ($orders as $order)
+                <tr class="table-row" data-order-row="{{ $order->id }}">
+                    <td class="table-cell text-sm font-semibold text-gray-900">#{{ $order->id }}</td>
+                    <td class="table-cell text-sm text-gray-700">
+                        {{ optional($order->created_at)->format('Y-m-d H:i') ?? '—' }}
+                    </td>
+                    <td class="table-cell text-sm text-gray-700">{{ ucfirst($order->status) }}</td>
+                    <td class="table-cell text-sm text-gray-900 font-semibold">
+                        {{ number_format((float) $order->total_amount, 2) }}
+                    </td>
+                    <td class="table-cell text-sm text-gray-700">
+                        @include('admin.orders.partials.actions', ['order' => $order])
+                    </td>
+                </tr>
+            @empty
+                <tr data-orders-empty-row>
+                    <td colspan="5" class="table-cell py-6 text-center text-sm text-gray-500">
+                        {{ __('cms.dashboard.no_data') }}
+                    </td>
+                </tr>
+            @endforelse
+        </x-admin.table>
+
+        @if ($orders->hasPages())
+            <div class="mt-4">
+                {{ $orders->links() }}
+            </div>
+        @endif
     </x-admin.card>
 
     <div
