@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AuthenticateCustomer;
+use App\Http\Middleware\AuthenticateVendor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,7 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'auth.customer' => AuthenticateCustomer::class,
+            'auth.vendor' => AuthenticateVendor::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

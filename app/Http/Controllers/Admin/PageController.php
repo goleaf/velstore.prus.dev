@@ -205,6 +205,7 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Page status updated.',
-        ]);
+            'status' => (bool) $page->status,
+        ], 200);
     }
 }

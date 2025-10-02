@@ -269,7 +269,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'title' => 'Homepage Banner',
             'description' => 'Banner description',
-            'image_url' => null,
+            'image_url' => 'banners/test-banner.jpg',
             'type' => 'hero',
         ]);
 
@@ -368,7 +368,7 @@ class AdminPageBrowsingTest extends TestCase
             'language_code' => 'en',
             'title' => 'About us',
             'content' => 'About page content',
-            'image_url' => null,
+            'image_url' => 'pages/about-us.jpg',
         ]);
 
         SiteSetting::create([
