@@ -83,7 +83,7 @@ class DataImport extends Command
         $shop = Shop::firstOrCreate(
             ['name' => 'Soft Shoes'],
             [
-                'vendor_id' => 1,
+                'vendor_id' => $seller->id,
                 'name' => 'Soft Shoes',
                 'logo' => 'N/A',
                 'description' => 'Luxurious comfort in every step. Crafted with premium materials for a soft, stylish, and effortless walking experience. ',
