@@ -10,12 +10,39 @@
         const languages = @json($languageMeta);
         const valueContainer = document.getElementById('attribute-values-container');
         const addButton = document.getElementById('add-attribute-value');
+        const tabTriggers = Array.from(document.querySelectorAll('[data-language-tab-target]'));
+        const tabPanels = Array.from(document.querySelectorAll('[data-language-panel]'));
         const removeText = @json(__('cms.attributes.remove_value'));
         const valuePlaceholder = @json(__('cms.attributes.attribute_values'));
         const translationPlaceholder = @json(__('cms.attributes.translated_value'));
 
         if (!valueContainer) {
             return;
+        }
+
+        const setActiveTab = (code) => {
+            tabTriggers.forEach((trigger) => {
+                const isActive = trigger.dataset.languageTabTarget === code;
+                trigger.classList.toggle('nav-tab-active', isActive);
+                trigger.classList.toggle('nav-tab-inactive', !isActive);
+                trigger.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            tabPanels.forEach((panel) => {
+                const isActive = panel.dataset.languagePanel === code;
+                panel.classList.toggle('hidden', !isActive);
+                panel.classList.toggle('block', isActive);
+            });
+        };
+
+        tabTriggers.forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                setActiveTab(trigger.dataset.languageTabTarget);
+            });
+        });
+
+        if (tabTriggers.length) {
+            setActiveTab(tabTriggers[0].dataset.languageTabTarget);
         }
 
         const updatePlaceholders = () => {
@@ -47,7 +74,7 @@
             }
 
             const group = document.createElement('div');
-            group.className = 'translation-group';
+            group.className = 'translation-group space-y-2';
 
             const input = document.createElement('input');
             input.type = 'text';
@@ -180,11 +207,12 @@
         @if ($errors->any())
             const firstInvalid = document.querySelector('.is-invalid');
             if (firstInvalid) {
-                const tabPane = firstInvalid.closest('.tab-pane');
-                if (tabPane && typeof bootstrap !== 'undefined') {
-                    const trigger = document.querySelector(`[data-bs-target="#${tabPane.id}"]`);
+                const tabPane = firstInvalid.closest('[data-language-panel]');
+                if (tabPane) {
+                    const code = tabPane.dataset.languagePanel;
+                    const trigger = document.querySelector(`[data-language-tab-target="${code}"]`);
                     if (trigger) {
-                        bootstrap.Tab.getOrCreateInstance(trigger).show();
+                        setActiveTab(code);
                     }
                 }
             }

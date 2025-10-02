@@ -90,38 +90,32 @@
     </x-admin.card>
 
     <x-admin.card :title="__('cms.attributes.translations')">
-        <ul class="nav nav-tabs" id="languageTabs" role="tablist">
+        <div class="nav-tabs" id="languageTabs" role="tablist">
             @foreach ($languages as $language)
-                <li class="nav-item" role="presentation">
-                    <button
-                        class="nav-link {{ $loop->first ? 'active' : '' }}"
-                        id="attribute-{{ $language->code }}-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#attribute-{{ $language->code }}-panel"
-                        type="button"
-                        role="tab"
-                        aria-controls="attribute-{{ $language->code }}-panel"
-                        aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                    >
-                        {{ ucwords($language->name) }}
-                    </button>
-                </li>
+                <button
+                    type="button"
+                    class="{{ $loop->first ? 'nav-tab-active' : 'nav-tab-inactive' }}"
+                    role="tab"
+                    aria-selected="{{ $loop->first ? 'true' : 'false' }}"
+                    data-language-tab-target="{{ $language->code }}"
+                >
+                    {{ ucwords($language->name) }}
+                </button>
             @endforeach
-        </ul>
-        <div class="tab-content mt-3" id="languageTabContent">
+        </div>
+        <div class="mt-4" id="languageTabContent">
             @foreach ($languages as $language)
                 @php
                     $code = $language->code;
                 @endphp
                 <div
-                    class="tab-pane fade show {{ $loop->first ? 'active' : '' }}"
-                    id="attribute-{{ $code }}-panel"
+                    class="language-tab-panel {{ $loop->first ? 'block' : 'hidden' }}"
                     role="tabpanel"
-                    aria-labelledby="attribute-{{ $code }}-tab"
+                    data-language-panel="{{ $code }}"
                 >
                     <div id="translation-container-{{ $code }}" class="space-y-3">
                         @foreach ($translations[$code] as $translationIndex => $translationValue)
-                            <div class="translation-group">
+                            <div class="translation-group space-y-2">
                                 <input
                                     type="text"
                                     name="translations[{{ $code }}][]"
