@@ -26,8 +26,10 @@ class CustomerAddressController extends Controller
         $address = $customer->addresses()->create($request->validated());
 
         if ($address->is_default) {
-            $customer->addresses()->where('id', '!=', $address->id)->update(['is_default' => false]);
+            $customer->markAddressAsDefault($address);
         }
+
+        $customer->ensureDefaultAddress();
 
         return back()->with('success', __('cms.customers.address_created'));
     }
@@ -39,8 +41,10 @@ class CustomerAddressController extends Controller
         $address->update($request->validated());
 
         if ($address->is_default) {
-            $customer->addresses()->where('id', '!=', $address->id)->update(['is_default' => false]);
+            $customer->markAddressAsDefault($address);
         }
+
+        $customer->ensureDefaultAddress();
 
         return back()->with('success', __('cms.customers.address_updated'));
     }
@@ -49,7 +53,12 @@ class CustomerAddressController extends Controller
     {
         $customer = Auth::guard('customer')->user();
         abort_if($address->customer_id !== $customer->id, 403);
+        $wasDefault = $address->is_default;
         $address->delete();
+
+        if ($wasDefault) {
+            $customer->ensureDefaultAddress();
+        }
 
         return back()->with('success', __('cms.customers.address_deleted'));
     }
@@ -58,8 +67,7 @@ class CustomerAddressController extends Controller
     {
         $customer = Auth::guard('customer')->user();
         abort_if($address->customer_id !== $customer->id, 403);
-        $customer->addresses()->update(['is_default' => false]);
-        $address->update(['is_default' => true]);
+        $customer->markAddressAsDefault($address);
 
         return back()->with('success', __('cms.customers.address_set_default'));
     }

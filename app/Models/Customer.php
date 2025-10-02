@@ -64,4 +64,34 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(ShippingAddress::class);
     }
+
+    public function markAddressAsDefault(CustomerAddress $address): void
+    {
+        if ($address->customer_id !== $this->id) {
+            return;
+        }
+
+        $this->addresses()
+            ->where('id', '!=', $address->id)
+            ->update(['is_default' => false]);
+
+        if (! $address->is_default) {
+            $address->forceFill(['is_default' => true])->save();
+        }
+    }
+
+    public function ensureDefaultAddress(): void
+    {
+        $hasDefault = $this->addresses()->where('is_default', true)->exists();
+
+        if ($hasDefault) {
+            return;
+        }
+
+        $nextDefault = $this->addresses()->oldest()->first();
+
+        if ($nextDefault) {
+            $nextDefault->update(['is_default' => true]);
+        }
+    }
 }

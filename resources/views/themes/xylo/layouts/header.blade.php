@@ -88,7 +88,9 @@
                     @guest('customer')
                         <li><a class="dropdown-item" href="{{ route('customer.login') }}">Sign In</a></li>
                         <li><a class="dropdown-item" href="{{ route('customer.register') }}">Sign Up</a></li>
-                    @elseauth('customer')
+                    @else
+                        <li><a class="dropdown-item" href="{{ route('customer.addresses.index') }}">{{ __('cms.customers.addresses') }}</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" href="{{ route('customer.logout') }}"
                                onclick="event.preventDefault(); document.getElementById('customer-logout-form').submit();">
