@@ -57,9 +57,17 @@ class CustomerController extends Controller
 
     public function getCustomerData()
     {
-        $customers = Customer::select(['id', 'name', 'email', 'phone', 'address', 'status']);
+        $customers = Customer::with('defaultAddress')
+            ->select(['id', 'name', 'email', 'phone', 'address', 'status']);
 
         return DataTables::of($customers)
+            ->editColumn('address', function (Customer $customer) {
+                $address = $customer->primary_address_line;
+
+                return $address
+                    ? e($address)
+                    : e(__('cms.customers.not_available'));
+            })
             ->addColumn('status', function ($customer) {
                 $label = $customer->status === 'active'
                     ? __('cms.customers.active')

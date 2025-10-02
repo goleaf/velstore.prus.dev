@@ -8,6 +8,33 @@
             <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
         @endif
 
+        @php
+            $defaultAddress = $addresses->firstWhere('is_default');
+        @endphp
+
+        @if ($defaultAddress)
+            @php
+                $defaultLocation = collect([
+                    $defaultAddress->city,
+                    $defaultAddress->postal_code,
+                    $defaultAddress->country,
+                ])->filter()->implode(', ');
+            @endphp
+            <div class="mb-8 border border-gray-200 rounded p-4 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold">{{ __('cms.customers.default_address') }}</h2>
+                    <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">{{ __('cms.customers.default') }}</span>
+                </div>
+                <p class="text-sm text-gray-600 mt-1">{{ __('cms.customers.default_address_hint') }}</p>
+                <div class="mt-4 space-y-1">
+                    <p class="font-medium">{{ $defaultAddress->name }}</p>
+                    <p class="text-sm text-gray-600">{{ $defaultAddress->phone ?? __('cms.customers.not_available') }}</p>
+                    <p>{{ $defaultAddress->address ?? __('cms.customers.not_available') }}</p>
+                    <p class="text-sm text-gray-600">{{ $defaultLocation !== '' ? $defaultLocation : __('cms.customers.not_available') }}</p>
+                </div>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             @forelse($addresses as $addr)
                 <div class="border rounded p-4">

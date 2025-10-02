@@ -28,6 +28,10 @@ class Customer extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $appends = [
+        'primary_address_line',
+    ];
+
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
@@ -93,5 +97,21 @@ class Customer extends Authenticatable
         if ($nextDefault) {
             $nextDefault->update(['is_default' => true]);
         }
+    }
+
+    public function getPrimaryAddressLineAttribute(): ?string
+    {
+        $default = $this->defaultAddress;
+
+        if ($default) {
+            return collect([
+                $default->address,
+                $default->city,
+                $default->postal_code,
+                $default->country,
+            ])->filter()->implode(', ');
+        }
+
+        return $this->address;
     }
 }

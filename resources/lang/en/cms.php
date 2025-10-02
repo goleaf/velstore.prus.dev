@@ -395,6 +395,8 @@ return [
         'city' => 'City',
         'postal_code' => 'Postal Code',
         'country' => 'Country',
+        'default_address' => 'Default Address',
+        'default_address_hint' => 'Used as the primary shipping location across the storefront and admin.',
         'default' => 'Default',
         'set_default' => 'Set Default',
         'set_as_default' => 'Set as default',
