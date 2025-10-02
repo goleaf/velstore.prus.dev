@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'Elenco Clienti',
 
+        // Create form
+        'create_title' => 'Crea cliente',
+        'create_description' => 'Aggiungi un nuovo cliente fornendo le sue informazioni di base.',
+        'create_button' => 'Crea cliente',
+        'password' => 'Password',
+
         // Table columns
         'id' => 'ID',
         'name' => 'Nome',

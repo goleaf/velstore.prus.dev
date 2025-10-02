@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => '고객 목록',
 
+        // Create form
+        'create_title' => '고객 생성',
+        'create_description' => '기본 정보를 입력하여 새로운 고객을 추가하세요.',
+        'create_button' => '고객 생성',
+        'password' => '비밀번호',
+
         // Table columns
         'id' => '아이디',
         'name' => '이름',

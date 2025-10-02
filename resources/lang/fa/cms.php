@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'لیست مشتریان',
 
+        // Create form
+        'create_title' => 'ایجاد مشتری',
+        'create_description' => 'با وارد کردن اطلاعات پایه، مشتری جدیدی اضافه کنید.',
+        'create_button' => 'ایجاد مشتری',
+        'password' => 'رمز عبور',
+
         // Table columns
         'id' => 'شناسه',
         'name' => 'نام',

@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => '客户列表',
 
+        // Create form
+        'create_title' => '创建客户',
+        'create_description' => '通过提供基本信息添加新客户。',
+        'create_button' => '创建客户',
+        'password' => '密码',
+
         // Table columns
         'id' => '编号',
         'name' => '姓名',

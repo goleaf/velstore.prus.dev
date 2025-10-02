@@ -75,13 +75,16 @@ class CustomerController extends Controller
                 $viewUrl = route('admin.customers.show', $customer);
                 $viewLabel = __('cms.customers.view_button');
                 $deleteLabel = __('cms.customers.delete_button');
+                $viewLabelEscaped = e($viewLabel);
+                $deleteLabelEscaped = e($deleteLabel);
 
                 return <<<HTML
                         <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary" data-url="{$viewUrl}" title="{$viewLabel}">
+                            <button type="button" class="btn btn-outline-primary" data-url="{$viewUrl}" title="{$viewLabelEscaped}">
                                 <i class="bi bi-eye"></i>
+                                <span class="ms-1">{$viewLabelEscaped}</span>
                             </button>
-                            <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="{$customer->id}" title="{$deleteLabel}">
+                            <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="{$customer->id}" title="{$deleteLabelEscaped}">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                         </div>

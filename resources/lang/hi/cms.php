@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'ग्राहक सूची',
 
+        // Create form
+        'create_title' => 'ग्राहक बनाएं',
+        'create_description' => 'उनकी बुनियादी जानकारी देकर एक नया ग्राहक जोड़ें।',
+        'create_button' => 'ग्राहक बनाएं',
+        'password' => 'पासवर्ड',
+
         // Table columns
         'id' => 'आईडी',
         'name' => 'नाम',

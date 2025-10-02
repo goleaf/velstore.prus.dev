@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'Daftar Pelanggan',
 
+        // Create form
+        'create_title' => 'Buat Pelanggan',
+        'create_description' => 'Tambahkan pelanggan baru dengan memberikan informasi dasarnya.',
+        'create_button' => 'Buat Pelanggan',
+        'password' => 'Kata sandi',
+
         // Table columns
         'id' => 'ID',
         'name' => 'Nama',

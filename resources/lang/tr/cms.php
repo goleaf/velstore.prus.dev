@@ -266,6 +266,12 @@ return [
     'customers' => [
         'customer_list' => 'Müşteri Listesi',
 
+        // Create form
+        'create_title' => 'Müşteri oluştur',
+        'create_description' => 'Temel bilgilerini girerek yeni bir müşteri ekleyin.',
+        'create_button' => 'Müşteri oluştur',
+        'password' => 'Parola',
+
         // Table columns
         'id' => 'ID',
         'name' => 'Adı',
