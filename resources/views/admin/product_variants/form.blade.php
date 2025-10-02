@@ -14,6 +14,16 @@
         ? route('admin.product_variants.update', $productVariant->id)
         : route('admin.product_variants.store');
     $formMethod = $isEdit ? 'PUT' : 'POST';
+
+    $languageCodes = $languages->pluck('code')->filter()->values();
+    $errorTab = $languageCodes->first(function ($code) use ($errors) {
+        return $errors->has("translations.$code.name") || $errors->has("translations.$code.value");
+    });
+    $initialTab = old('active_tab', $errorTab ?? ($languageCodes->first() ?? null));
+
+    if (! $initialTab) {
+        $initialTab = 'en';
+    }
 @endphp
 
 @section('content')
@@ -215,7 +225,7 @@
                 </div>
             </section>
 
-            <section>
+            <section x-data="{ activeTab: '{{ $initialTab }}' }">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
