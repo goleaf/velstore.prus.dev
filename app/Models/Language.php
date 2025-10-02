@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Language extends Model
 {
+    use HasFactory;
+
     // Assume that you have an 'active' column in your languages table
     protected $fillable = ['name', 'code', 'translated_text', 'active'];
 
