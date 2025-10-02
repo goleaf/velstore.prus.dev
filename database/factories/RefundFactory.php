@@ -19,7 +19,7 @@ class RefundFactory extends Factory
             'payment_id' => Payment::factory(),
             'amount' => $this->faker->randomFloat(2, 5, 200),
             'currency' => $this->faker->currencyCode(),
-            'status' => $this->faker->randomElement(['pending', 'processed', 'failed']),
+            'status' => $this->faker->randomElement(['requested', 'approved', 'rejected', 'completed', 'failed']),
             'refund_id' => $this->faker->uuid(),
             'reason' => $this->faker->sentence(),
             'response' => ['reference' => $this->faker->uuid()],

@@ -17,7 +17,7 @@ class BannerFactory extends Factory
         return [
             'title' => $this->faker->sentence(3),
             'status' => $this->faker->boolean(85),
-            'type' => $this->faker->randomElement(['homepage', 'category', 'product']),
+            'type' => $this->faker->randomElement(['promotion', 'sale', 'seasonal', 'featured', 'announcement']),
         ];
     }
 }

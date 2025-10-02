@@ -19,7 +19,7 @@ class OrderFactory extends Factory
             'customer_id' => Customer::factory(),
             'guest_email' => null,
             'total_amount' => $this->faker->randomFloat(2, 10, 500),
-            'status' => $this->faker->randomElement(['pending', 'processing', 'completed', 'cancelled']),
+            'status' => $this->faker->randomElement(['pending', 'processing', 'completed', 'canceled']),
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Shop;
+use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ class ShopFactory extends Factory
         $name = $this->faker->company();
 
         return [
-            'seller_id' => null,
+            'vendor_id' => Vendor::factory(),
             'name' => $name,
             'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
             'logo' => $this->faker->imageUrl(),
