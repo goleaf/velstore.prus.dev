@@ -36,6 +36,7 @@ use App\Models\SocialMediaLinkTranslation;
 use App\Models\User;
 use App\Models\Vendor;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -139,6 +140,99 @@ class AdminPageBrowsingTest extends TestCase
             $response = $this->get(route($name, $parameters));
             $response->assertOk();
         }
+    }
+
+    /**
+     * @dataProvider adminPageViewProvider
+     */
+    public function test_admin_pages_render_expected_views(string $routeName, array $parameterBindings, string $expectedView): void
+    {
+        $parameters = [];
+
+        foreach ($parameterBindings as $parameter => $binding) {
+            if (! property_exists($this, $binding)) {
+                $parameters[$parameter] = $binding;
+
+                continue;
+            }
+
+            $value = $this->{$binding};
+
+            if ($value instanceof Model) {
+                $parameters[$parameter] = $value->getRouteKey();
+
+                continue;
+            }
+
+            $parameters[$parameter] = $value;
+        }
+
+        $response = $this->get(route($routeName, $parameters));
+
+        $response
+            ->assertOk()
+            ->assertViewIs($expectedView);
+    }
+
+    public static function adminPageViewProvider(): array
+    {
+        return [
+            'dashboard' => ['admin.dashboard', [], 'admin.home'],
+            'categories index' => ['admin.categories.index', [], 'admin.categories.index'],
+            'categories create' => ['admin.categories.create', [], 'admin.categories.create'],
+            'categories edit' => ['admin.categories.edit', ['category' => 'category'], 'admin.categories.edit'],
+            'products index' => ['admin.products.index', [], 'admin.products.index'],
+            'products create' => ['admin.products.create', [], 'admin.products.create'],
+            'products edit' => ['admin.products.edit', ['product' => 'product'], 'admin.products.edit'],
+            'brands index' => ['admin.brands.index', [], 'admin.brands.index'],
+            'brands create' => ['admin.brands.create', [], 'admin.brands.create'],
+            'brands edit' => ['admin.brands.edit', ['brand' => 'brand'], 'admin.brands.edit'],
+            'profile show' => ['admin.profile.show', [], 'admin.profile.show'],
+            'menus index' => ['admin.menus.index', [], 'admin.menus.index'],
+            'menus create' => ['admin.menus.create', [], 'admin.menus.create'],
+            'menus edit' => ['admin.menus.edit', ['menu' => 'menu'], 'admin.menus.edit'],
+            'menu items index (scoped)' => ['admin.menus.items.index', ['menu' => 'menu'], 'admin.menu_items.index'],
+            'menu items global index' => ['admin.menus.item.index', [], 'admin.menu_items.index'],
+            'menu items create' => ['admin.menus.items.create', ['menu' => 'menu'], 'admin.menu_items.create'],
+            'menu items edit' => ['admin.menus.items.edit', ['item' => 'menuItem'], 'admin.menu_items.edit'],
+            'banners index' => ['admin.banners.index', [], 'admin.banners.index'],
+            'banners create' => ['admin.banners.create', [], 'admin.banners.create'],
+            'banners edit' => ['admin.banners.edit', ['banner' => 'banner'], 'admin.banners.edit'],
+            'social links index' => ['admin.social-media-links.index', [], 'admin.social-media-links.index'],
+            'social links create' => ['admin.social-media-links.create', [], 'admin.social-media-links.create'],
+            'social links edit' => ['admin.social-media-links.edit', ['social_media_link' => 'socialLink'], 'admin.social-media-links.edit'],
+            'orders index' => ['admin.orders.index', [], 'admin.orders.index'],
+            'orders show' => ['admin.orders.show', ['order' => 'order'], 'admin.orders.show'],
+            'coupons index' => ['admin.coupons.index', [], 'admin.coupons.index'],
+            'coupons create' => ['admin.coupons.create', [], 'admin.coupons.create'],
+            'coupons edit' => ['admin.coupons.edit', ['coupon' => 'coupon'], 'admin.coupons.edit'],
+            'product variants index' => ['admin.product_variants.index', [], 'admin.product_variants.index'],
+            'product variants create' => ['admin.product_variants.create', [], 'admin.product_variants.create'],
+            'product variants edit' => ['admin.product_variants.edit', ['product_variant' => 'productVariant'], 'admin.product_variants.edit'],
+            'customers index' => ['admin.customers.index', [], 'admin.customers.index'],
+            'customers create' => ['admin.customers.create', [], 'admin.customers.create'],
+            'customers edit' => ['admin.customers.edit', ['customer' => 'customer'], 'admin.customers.edit'],
+            'customers show' => ['admin.customers.show', ['customer' => 'customer'], 'admin.customers.show'],
+            'reviews index' => ['admin.reviews.index', [], 'admin.reviews.index'],
+            'reviews show' => ['admin.reviews.show', ['review' => 'review'], 'admin.reviews.show'],
+            'reviews edit' => ['admin.reviews.edit', ['review' => 'review'], 'admin.reviews.edit'],
+            'attributes index' => ['admin.attributes.index', [], 'admin.attributes.index'],
+            'attributes create' => ['admin.attributes.create', [], 'admin.attributes.create'],
+            'attributes edit' => ['admin.attributes.edit', ['attribute' => 'attribute'], 'admin.attributes.edit'],
+            'vendors index' => ['admin.vendors.index', [], 'admin.vendors.index'],
+            'vendors create' => ['admin.vendors.create', [], 'admin.vendors.create'],
+            'pages index' => ['admin.pages.index', [], 'admin.pages.index'],
+            'pages create' => ['admin.pages.create', [], 'admin.pages.create'],
+            'pages edit' => ['admin.pages.edit', ['page' => 'page'], 'admin.pages.edit'],
+            'payments index' => ['admin.payments.index', [], 'admin.payments.index'],
+            'payments show' => ['admin.payments.show', ['payment' => 'payment'], 'admin.payments.show'],
+            'refunds index' => ['admin.refunds.index', [], 'admin.refunds.index'],
+            'refunds show' => ['admin.refunds.show', ['refund' => 'refund'], 'admin.refunds.show'],
+            'payment gateways index' => ['admin.payment-gateways.index', [], 'admin.payment_gateways.index'],
+            'payment gateways edit' => ['admin.payment-gateways.edit', ['payment_gateway' => 'paymentGateway'], 'admin.payment_gateways.edit'],
+            'site settings index' => ['admin.site-settings.index', [], 'admin.site-settings.index'],
+            'site settings edit' => ['admin.site-settings.edit', [], 'admin.site-settings.edit'],
+        ];
     }
 
     private function seedReferenceData(): void
