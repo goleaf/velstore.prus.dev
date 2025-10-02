@@ -29,12 +29,13 @@ class MenuController extends Controller
 
         return DataTables::of($menus)
             ->addColumn('action', function ($menu) {
-                return '<a href="'.route('admin.menus.edit', $menu->id).'" class="btn btn-sm btn-primary">Edit</a>
-                        <a href="'.route('admin.menus.destroy', $menu->id).'" class="btn btn-sm btn-danger" 
-                        onclick="event.preventDefault(); document.getElementById(\'delete-form-'.$menu->id.'\').submit();">Delete</a>
-                        <form id="delete-form-'.$menu->id.'" action="'.route('admin.menus.destroy', $menu->id).'" method="POST" style="display: none;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
+                return '<div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-primary" data-url="' . route('admin.menus.edit', $menu->id) . '">Edit</button>
+                            <button type="button" class="btn btn-danger" onclick="event.preventDefault(); document.getElementById(\'delete-form-' . $menu->id . '\').submit();">Delete</button>
+                        </div>
+                        <form id="delete-form-' . $menu->id . '" action="' . route('admin.menus.destroy', $menu->id) . '" method="POST" style="display: none;">
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
                         </form>';
             })
             ->rawColumns(['action'])
@@ -60,7 +61,8 @@ class MenuController extends Controller
             'date' => now(),
         ]);
 
-        return redirect()->route('admin.menus.items.create', ['menu' => $menu->id])
+        return redirect()
+            ->route('admin.menus.items.create', ['menu' => $menu->id])
             ->with('success', __('cms.menus.created'));
     }
 
@@ -95,7 +97,7 @@ class MenuController extends Controller
                 'message' => __('cms.menus.deleted'),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error deleting menu: '.$e->getMessage());
+            \Log::error('Error deleting menu: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,

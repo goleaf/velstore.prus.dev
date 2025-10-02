@@ -77,15 +77,15 @@ class CustomerController extends Controller
                 $deleteLabel = __('cms.customers.delete_button');
 
                 return <<<HTML
-                    <div class="btn-group btn-group-sm" role="group">
-                        <a href="{$viewUrl}" class="btn btn-outline-primary" title="{$viewLabel}">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="{$customer->id}" title="{$deleteLabel}">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                    </div>
-                HTML;
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" data-url="{$viewUrl}" title="{$viewLabel}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-delete-customer" data-id="{$customer->id}" title="{$deleteLabel}">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    HTML;
             })
             ->rawColumns(['status', 'action'])
             ->make(true);
@@ -119,7 +119,8 @@ class CustomerController extends Controller
             'reviews' => function ($query) {
                 $query->with(['product.translation'])->latest();
             },
-            'shippingAddresses',
+            'addresses',
+            'defaultAddress',
         ]);
 
         return view('admin.customers.show', compact('customer'));

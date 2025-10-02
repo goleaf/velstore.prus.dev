@@ -4,7 +4,8 @@
     <div class="card mt-4">
         <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
             <h6 class="mb-0">{{ __('cms.coupons.heading') }}</h6>
-            <a href="{{ route('admin.coupons.create') }}" class="btn btn-light btn-sm">{{ __('cms.coupons.add_new') }}</a>
+            <button type="button" class="btn btn-light btn-sm"
+                    data-url="{{ route('admin.coupons.create') }}">{{ __('cms.coupons.add_new') }}</button>
         </div>
         <div class="card-body">
             <table id="coupons-table" class="table table-bordered mt-4 w-100">
@@ -31,8 +32,10 @@
                 </div>
                 <div class="modal-body">{{ __('cms.coupons.delete_confirm_message') }}</div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cms.coupons.delete_cancel') }}</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteCoupon">{{ __('cms.coupons.delete_button') }}</button>
+                    <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('cms.coupons.delete_cancel') }}</button>
+                    <button type="button" class="btn btn-danger"
+                            id="confirmDeleteCoupon">{{ __('cms.coupons.delete_button') }}</button>
                 </div>
             </div>
         </div>
@@ -56,13 +59,36 @@
                         d._token = "{{ csrf_token() }}";
                     }
                 },
-                columns: [
-                    { data: 'id', name: 'id' },
-                    { data: 'code', name: 'code' },
-                    { data: 'discount', name: 'discount', orderable: false, searchable: false },
-                    { data: 'type', name: 'type' },
-                    { data: 'expires_at', name: 'expires_at', orderable: false, searchable: false },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                columns: [{
+                        data: 'id',
+                        name: 'id'
+                    },
+                    {
+                        data: 'code',
+                        name: 'code'
+                    },
+                    {
+                        data: 'discount',
+                        name: 'discount',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'type',
+                        name: 'type'
+                    },
+                    {
+                        data: 'expires_at',
+                        name: 'expires_at',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }
                 ],
                 pageLength: 10,
                 language: @json($datatableLang)
@@ -88,7 +114,8 @@
                 }
 
                 $.ajax({
-                    url: '{{ route('admin.coupons.destroy', ':id') }}'.replace(':id', couponToDeleteId),
+                    url: '{{ route('admin.coupons.destroy', ':id') }}'.replace(':id',
+                        couponToDeleteId),
                     type: 'DELETE',
                     data: {
                         _token: "{{ csrf_token() }}"
@@ -96,30 +123,35 @@
                     success: function(response) {
                         if (response.success) {
                             table.ajax.reload(null, false);
-                            toastr.success(response.message || '{{ __('cms.coupons.deleted') }}', "{{ __('cms.coupons.success') }}", {
-                                closeButton: true,
-                                progressBar: true,
-                                positionClass: "toast-top-right",
-                                timeOut: 4000
-                            });
+                            toastr.success(response.message ||
+                                '{{ __('cms.coupons.deleted') }}',
+                                "{{ __('cms.coupons.success') }}", {
+                                    closeButton: true,
+                                    progressBar: true,
+                                    positionClass: "toast-top-right",
+                                    timeOut: 4000
+                                });
                         } else {
-                            toastr.error(response.message || '{{ __('cms.coupons.errors.delete_failed') }}', "{{ __('cms.coupons.error_title') }}", {
-                                closeButton: true,
-                                progressBar: true,
-                                positionClass: "toast-top-right",
-                                timeOut: 5000
-                            });
+                            toastr.error(response.message ||
+                                '{{ __('cms.coupons.errors.delete_failed') }}',
+                                "{{ __('cms.coupons.error_title') }}", {
+                                    closeButton: true,
+                                    progressBar: true,
+                                    positionClass: "toast-top-right",
+                                    timeOut: 5000
+                                });
                         }
                         $('#deleteCouponModal').modal('hide');
                         couponToDeleteId = null;
                     },
                     error: function() {
-                        toastr.error('{{ __('cms.coupons.errors.delete_failed') }}', "{{ __('cms.coupons.error_title') }}", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
+                        toastr.error('{{ __('cms.coupons.errors.delete_failed') }}',
+                            "{{ __('cms.coupons.error_title') }}", {
+                                closeButton: true,
+                                progressBar: true,
+                                positionClass: "toast-top-right",
+                                timeOut: 5000
+                            });
                         $('#deleteCouponModal').modal('hide');
                     }
                 });

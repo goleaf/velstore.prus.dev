@@ -11,7 +11,7 @@ use App\Models\Language;
 use App\Models\Product;
 use App\Models\ProductAttributeValue;
 use App\Services\Admin\CategoryService;
-use App\Services\vendor\ProductService;
+use App\Services\Vendor\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ class ProductController extends Controller
 
             return $this->productService->getProductsForDataTable($request);
         } catch (\Exception $e) {
-            \Log::error('Error fetching vendor product data: '.$e->getMessage());
+            \Log::error('Error fetching vendor product data: ' . $e->getMessage());
 
             return response()->json(['error' => 'An error occurred while fetching products.'], 500);
         }
@@ -135,7 +135,7 @@ class ProductController extends Controller
 
             foreach ($request->variants as $variantData) {
                 $variant = $product->variants()->create([
-                    'variant_slug' => Str::slug($variantData['name']).'-'.uniqid(),
+                    'variant_slug' => Str::slug($variantData['name']) . '-' . uniqid(),
                     'price' => $variantData['price'],
                     'discount_price' => $variantData['discount_price'] ?? null,
                     'stock' => $variantData['stock'],
@@ -152,7 +152,7 @@ class ProductController extends Controller
                 ]);
 
                 foreach (['size_id', 'color_id'] as $type) {
-                    if (! empty($variantData[$type])) {
+                    if (!empty($variantData[$type])) {
                         DB::table('product_variant_attribute_values')->insert([
                             'product_id' => $product->id,
                             'product_variant_id' => $variant->id,
@@ -179,7 +179,7 @@ class ProductController extends Controller
         $original = $slug;
         $i = 1;
         while (Product::where('slug', $slug)->exists()) {
-            $slug = $original.'-'.$i++;
+            $slug = $original . '-' . $i++;
         }
 
         return $slug;
@@ -228,7 +228,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
-            'translations.'.$defaultLang.'.name' => 'required|string|max:255',
+            'translations.' . $defaultLang . '.name' => 'required|string|max:255',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'variants' => 'required|array|min:1',
             'variants.*.name' => 'required|string|max:255',
@@ -289,7 +289,7 @@ class ProductController extends Controller
 
             foreach ($request->variants as $variantData) {
                 $variant = $product->variants()->create([
-                    'variant_slug' => Str::slug($variantData['name']).'-'.uniqid(),
+                    'variant_slug' => Str::slug($variantData['name']) . '-' . uniqid(),
                     'price' => $variantData['price'],
                     'discount_price' => $variantData['discount_price'] ?? null,
                     'stock' => $variantData['stock'],
@@ -306,7 +306,7 @@ class ProductController extends Controller
                 ]);
 
                 foreach (['size_id', 'color_id'] as $type) {
-                    if (! empty($variantData[$type])) {
+                    if (!empty($variantData[$type])) {
                         DB::table('product_variant_attribute_values')->insert([
                             'product_id' => $product->id,
                             'product_variant_id' => $variant->id,
@@ -345,7 +345,7 @@ class ProductController extends Controller
                 'message' => __('cms.products.success_delete'),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Vendor product delete error: '.$e->getMessage());
+            \Log::error('Vendor product delete error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,

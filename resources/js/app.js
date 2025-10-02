@@ -1,10 +1,17 @@
 import './bootstrap';
-// If you're using jQuery and DataTables, make sure those are also included
-import $ from 'jquery';
-import 'datatables.net';
 import './admin/sidebar';
 
-// If you want the DataTables default styling, you can import the CSS file
-// import 'datatables.net-dt/css/jquery.dataTables.min.css'; // Uncomment if you need DataTables CSS
-
-
+document.addEventListener('click', function (event) {
+    const target = event.target;
+    if (!target) {
+        return;
+    }
+    const button = target.closest && target.closest('button[data-url]');
+    if (button && button.dataset && button.dataset.url) {
+        event.preventDefault();
+        const url = button.dataset.url;
+        if (url && typeof url === 'string') {
+            window.location.href = url;
+        }
+    }
+}, true);

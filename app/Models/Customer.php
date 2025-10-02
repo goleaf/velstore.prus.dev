@@ -35,7 +35,8 @@ class Customer extends Authenticatable
 
     public function wishlistProducts()
     {
-        return $this->belongsToMany(Product::class, 'wishlists')
+        return $this
+            ->belongsToMany(Product::class, 'wishlists')
             ->withPivot(['created_at', 'updated_at']);
     }
 
@@ -47,6 +48,16 @@ class Customer extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function defaultAddress()
+    {
+        return $this->hasOne(CustomerAddress::class)->where('is_default', true);
     }
 
     public function shippingAddresses()

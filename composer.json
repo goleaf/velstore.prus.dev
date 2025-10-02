@@ -2,7 +2,13 @@
     "name": "velstorelabs/velstore",
     "type": "project",
     "description": "Velstore - A multi-vendor, multi-lingual Laravel eCommerce boilerplate.",
-    "keywords": ["laravel", "ecommerce", "boilerplate", "multi-vendor", "multilingual"],
+    "keywords": [
+        "laravel",
+        "ecommerce",
+        "boilerplate",
+        "multi-vendor",
+        "multilingual"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.1",
@@ -32,7 +38,8 @@
         },
         "files": [
             "app/Helpers/cms_translate.php",
-            "app/Helpers/currency.php"
+            "app/Helpers/currency.php",
+            "app/helpers.php"
         ]
     },
     "autoload-dev": {

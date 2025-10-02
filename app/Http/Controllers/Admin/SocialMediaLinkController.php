@@ -32,15 +32,23 @@ class SocialMediaLinkController extends Controller
         return DataTables::of($socialMediaLinks)
             ->addColumn('action', function ($socialMediaLink) {
                 $editRoute = route('admin.social-media-links.edit', $socialMediaLink->id);
+                $editLabel = e(__('cms.social_media_links.edit'));
+                $deleteLabel = e(__('cms.social_media_links.delete'));
 
-                return '<div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary btn-edit-social-link" data-url="'.$editRoute.'">
-                                <i class="bi bi-pencil-fill"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-danger btn-delete-social-link" data-id="'.$socialMediaLink->id.'">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </div>';
+                return <<<HTML
+                    <div class="flex flex-col gap-2">
+                        <button type="button"
+                                class="btn btn-outline btn-sm w-full btn-edit-social-link"
+                                data-url="{$editRoute}" title="{$editLabel}">
+                            {$editLabel}
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm w-full btn-delete-social-link"
+                                data-id="{$socialMediaLink->id}" title="{$deleteLabel}">
+                            {$deleteLabel}
+                        </button>
+                    </div>
+                HTML;
             })
             ->rawColumns(['action'])
             ->make(true);

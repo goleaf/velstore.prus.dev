@@ -47,8 +47,8 @@ class Velstore extends Command
             'en'
         );
 
-        if (! array_key_exists($locale, $availableLocales)) {
-            $this->error("Invalid locale '{$locale}'. Supported locales are: ".implode(', ', array_keys($availableLocales)));
+        if (!array_key_exists($locale, $availableLocales)) {
+            $this->error("Invalid locale '{$locale}'. Supported locales are: " . implode(', ', array_keys($availableLocales)));
 
             return 1;
         }
@@ -114,7 +114,7 @@ class Velstore extends Command
             if (preg_match($pattern, $content)) {
                 $content = preg_replace($pattern, "{$key}={$value}", $content);
             } else {
-                $content .= PHP_EOL."{$key}={$value}";
+                $content .= PHP_EOL . "{$key}={$value}";
             }
 
             file_put_contents($path, $content);

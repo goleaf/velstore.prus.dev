@@ -1,129 +1,62 @@
 @extends('vendor.layouts.master')
 
 @section('css')
-<style>
-    body {
-        background-color: #ffffff;
-        color: #333333;
-    }
-    .login-container {
-        max-width: 400px;
-        margin: 50px auto;
-        background-color: #ffffff;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .form-control:focus {
-        border-color: #66b3ff;
-        box-shadow: 0 0 0 0.2rem rgba(102, 179, 255, 0.25);
-    }
-    .btn-primary {
-        background-color: #66b3ff;
-        border-color: #66b3ff;
-    }
-    .btn-primary:hover {
-        background-color: #559fdc;
-        border-color: #559fdc;
-    }
-    .dashboard-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-        border: 1px solid #b0b0b0;
-    }
-    .dashboard-item:hover {
-        background: #f8f9fa;
-    }
-    .icon-container {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: #e0e0e0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        border: 1px solid #b0b0b0;
-    }
-    .icon-container i {
-        font-size: 20px;
-        color: #555;
-    }
-    .text-container {
-        flex-grow: 1;
-    }
-    .text-container h6 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: #2d2d2d;
-    }
-    .text-container p {
-        margin: 0;
-        font-size: 14px;
-        color: #6c757d;
-    }
-    .arrow {
-        color: #555;
-        font-size: 16px;
-    }
-</style>
 @endsection
 
 @section('content')
-    <div class="container mt-4">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <div class="dashboard-item">
-                    <div class="icon-container">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="text-container">
-                        <h6>Total Sales</h6>
-                        <p>Today: $1,200</p>
-                    </div>
+    <div class="max-w-7xl mx-auto mt-4 px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="flex items-center p-4 rounded-xl border border-gray-300 hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4 border border-gray-300">
+                    <i class="fas fa-dollar-sign text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h6 class="m-0 text-base font-semibold text-gray-800">{{ __('cms.payments.title') }}</h6>
+                    <p class="m-0 text-sm text-gray-500">{{ __('cms.payments.payment_amount') }}: {{ number_format($kpi['revenue'] ?? 0, 2) }}</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="dashboard-item">
-                    <div class="icon-container">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="text-container">
-                        <h6>Total Orders</h6>
-                        <p>Completed: 340</p>
-                    </div>
+            <div class="flex items-center p-4 rounded-xl border border-gray-300 hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4 border border-gray-300">
+                    <i class="fas fa-shopping-cart text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h6 class="m-0 text-base font-semibold text-gray-800">{{ __('cms.orders.title') }}</h6>
+                    <p class="m-0 text-sm text-gray-500">{{ __('cms.orders.details_title') }}: {{ $kpi['orders_completed'] ?? 0 }}/{{ $kpi['orders_total'] ?? 0 }}</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="dashboard-item">
-                    <div class="icon-container">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <div class="text-container">
-                        <h6>Total Vendors</h6>
-                        <p>Active: 45</p>
-                    </div>
+            <div class="flex items-center p-4 rounded-xl border border-gray-300 hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4 border border-gray-300">
+                    <i class="fas fa-store text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h6 class="m-0 text-base font-semibold text-gray-800">{{ __('cms.vendors.title_list') }}</h6>
+                    <p class="m-0 text-sm text-gray-500">{{ __('cms.products.title_manage') }}: {{ $kpi['products'] ?? 0 }}</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="dashboard-item">
-                    <div class="icon-container">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="text-container">
-                        <h6>Total Customers</h6>
-                        <p>Completed: 340</p>
-                    </div>
+            <div class="flex items-center p-4 rounded-xl border border-gray-300 hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4 border border-gray-300">
+                    <i class="fas fa-users text-gray-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h6 class="m-0 text-base font-semibold text-gray-800">{{ __('cms.messages.profile') }}</h6>
+                    <p class="m-0 text-sm text-gray-500">{{ __('cms.messages.view_details') }}</p>
                 </div>
             </div>
         </div>
     </div>
+    @if (isset($revenueTrend))
+        <div class="max-w-7xl mx-auto mt-4 px-4">
+            <div class="p-4 rounded-xl border border-gray-300">
+                <h6 class="m-0 mb-2 text-base font-semibold text-gray-800">{{ __('cms.messages.view_details') }}</h6>
+                <ul class="list-disc pl-6 text-sm text-gray-600">
+                    @foreach ($revenueTrend as $point)
+                        <li>{{ $point['date'] }}: {{ number_format($point['amount'], 2) }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
 @endsection

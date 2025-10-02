@@ -43,15 +43,23 @@ class ProductVariantController extends Controller
             })
             ->addColumn('action', function ($productVariant) {
                 $editRoute = route('admin.product_variants.edit', $productVariant->id);
+                $editLabel = e(__('cms.products.edit_button'));
+                $deleteLabel = e(__('cms.coupons.delete_button'));
 
-                return '<div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary btn-edit-variant" data-url="'.$editRoute.'">
-                                <i class="bi bi-pencil-fill"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-danger btn-delete-variant" data-id="'.$productVariant->id.'">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </div>';
+                return <<<HTML
+                    <div class="flex flex-col gap-2">
+                        <button type="button"
+                                class="btn btn-outline btn-sm w-full btn-edit-variant"
+                                data-url="{$editRoute}" title="{$editLabel}">
+                            {$editLabel}
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm w-full btn-delete-variant"
+                                data-id="{$productVariant->id}" title="{$deleteLabel}">
+                            {$deleteLabel}
+                        </button>
+                    </div>
+                HTML;
             })
             ->rawColumns(['action'])
             ->make(true);

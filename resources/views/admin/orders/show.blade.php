@@ -3,7 +3,8 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mt-4">
         <h6 class="mb-0">{{ __('cms.orders.details_title') }} <span class="text-primary">#{{ $order->id }}</span></h6>
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-light btn-sm">{{ __('cms.orders.back_to_orders') }}</a>
+        <button type="button" class="btn btn-light btn-sm"
+                data-url="{{ route('admin.orders.index') }}">{{ __('cms.orders.back_to_orders') }}</button>
     </div>
 
     @php
@@ -15,7 +16,7 @@
         ];
         $statusClass = $statusClasses[$order->status] ?? 'badge bg-secondary';
         $itemsTotal = $order->details->reduce(function ($carry, $detail) {
-            return $carry + ($detail->quantity * (float) $detail->price);
+            return $carry + $detail->quantity * (float) $detail->price;
         }, 0);
     @endphp
 
@@ -27,7 +28,8 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <p class="mb-1 text-muted">{{ __('cms.orders.placed_at') }}</p>
-                    <p class="fw-semibold">{{ optional($order->created_at)->format('Y-m-d H:i') ?? __('cms.orders.not_available') }}</p>
+                    <p class="fw-semibold">
+                        {{ optional($order->created_at)->format('Y-m-d H:i') ?? __('cms.orders.not_available') }}</p>
                 </div>
                 <div class="col-md-3">
                     <p class="mb-1 text-muted">{{ __('cms.orders.status') }}</p>
@@ -54,15 +56,20 @@
                 <div class="card-body">
                     @if ($order->customer)
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_name') }}:</span>
-                            <span class="fw-semibold">{{ $order->customer->name }}</span></p>
+                            <span class="fw-semibold">{{ $order->customer->name }}</span>
+                        </p>
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_email') }}:</span>
-                            <span class="fw-semibold">{{ $order->customer->email }}</span></p>
+                            <span class="fw-semibold">{{ $order->customer->email }}</span>
+                        </p>
                         <p class="mb-0"><span class="text-muted">{{ __('cms.orders.customer_phone') }}:</span>
-                            <span class="fw-semibold">{{ $order->customer->phone ?? __('cms.orders.not_available') }}</span></p>
+                            <span
+                                  class="fw-semibold">{{ $order->customer->phone ?? __('cms.orders.not_available') }}</span>
+                        </p>
                     @else
                         <p class="mb-2 text-muted">{{ __('cms.orders.customer_guest') }}</p>
                         <p class="mb-0"><span class="text-muted">{{ __('cms.orders.guest_email') }}:</span>
-                            <span class="fw-semibold">{{ $order->guest_email ?? __('cms.orders.not_available') }}</span></p>
+                            <span class="fw-semibold">{{ $order->guest_email ?? __('cms.orders.not_available') }}</span>
+                        </p>
                     @endif
                 </div>
             </div>
@@ -75,17 +82,23 @@
                 <div class="card-body">
                     @if ($order->shippingAddress)
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_name') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->name }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->name }}</span>
+                        </p>
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_phone') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->phone }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->phone }}</span>
+                        </p>
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.address') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->address }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->address }}</span>
+                        </p>
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.city') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->city }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->city }}</span>
+                        </p>
                         <p class="mb-2"><span class="text-muted">{{ __('cms.orders.postal_code') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->postal_code }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->postal_code }}</span>
+                        </p>
                         <p class="mb-0"><span class="text-muted">{{ __('cms.orders.country') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->country }}</span></p>
+                            <span class="fw-semibold">{{ $order->shippingAddress->country }}</span>
+                        </p>
                     @else
                         <p class="mb-0 text-muted">{{ __('cms.orders.shipping_none') }}</p>
                     @endif
@@ -114,7 +127,9 @@
                         @forelse ($order->details as $detail)
                             @php
                                 $product = $detail->product;
-                                $productName = $product ? (optional($product->translation)->name ?? $product->slug) : __('cms.orders.product_missing');
+                                $productName = $product
+                                    ? optional($product->translation)->name ?? $product->slug
+                                    : __('cms.orders.product_missing');
                                 $unitPrice = (float) $detail->price;
                                 $lineTotal = $unitPrice * $detail->quantity;
                             @endphp
@@ -122,7 +137,8 @@
                                 <td>
                                     <span class="fw-semibold">{{ $productName }}</span>
                                     @if ($product && $product->brand)
-                                        <small class="d-block text-muted">{{ optional($product->brand->translation)->name ?? $product->brand->slug }}</small>
+                                        <small
+                                               class="d-block text-muted">{{ optional($product->brand->translation)->name ?? $product->brand->slug }}</small>
                                     @endif
                                 </td>
                                 <td>{{ optional($product)->SKU ?? '—' }}</td>
@@ -132,7 +148,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">{{ __('cms.orders.items_empty') }}</td>
+                                <td colspan="5" class="text-center text-muted py-4">{{ __('cms.orders.items_empty') }}
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -177,8 +194,11 @@
                                         <ul class="list-unstyled mb-0">
                                             @foreach ($payment->refunds as $refund)
                                                 <li>
-                                                    <span class="fw-semibold">{{ number_format((float) $refund->amount, 2) }} {{ $refund->currency }}</span>
-                                                    <small class="text-muted">{{ ucfirst($refund->status) }} • {{ optional($refund->created_at)->format('Y-m-d H:i') }}</small>
+                                                    <span
+                                                          class="fw-semibold">{{ number_format((float) $refund->amount, 2) }}
+                                                        {{ $refund->currency }}</span>
+                                                    <small class="text-muted">{{ ucfirst($refund->status) }} •
+                                                        {{ optional($refund->created_at)->format('Y-m-d H:i') }}</small>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -189,7 +209,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">{{ __('cms.orders.payments_none') }}</td>
+                                <td colspan="6" class="text-center text-muted py-4">{{ __('cms.orders.payments_none') }}
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

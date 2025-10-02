@@ -11,7 +11,6 @@ class Payment extends Model
 
     protected $fillable = [
         'order_id',
-        'user_id',
         'gateway_id',
         'amount',
         'currency',
@@ -25,11 +24,6 @@ class Payment extends Model
         'response' => 'array',
         'meta' => 'array',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function order()
     {

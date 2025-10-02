@@ -41,7 +41,6 @@ Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.in
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
 Route::prefix('customer')->name('customer.')->group(function () {
-
     // Guest routes
     Route::middleware('guest:customer')->group(function () {
         Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -62,6 +61,13 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
         Route::post('/wishlist', [WishlistController::class, 'store'])->name('wishlist.store');
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+
+        // Customer Addresses (Profile)
+        Route::get('/addresses', [\App\Http\Controllers\Store\CustomerAddressController::class, 'index'])->name('addresses.index');
+        Route::post('/addresses', [\App\Http\Controllers\Store\CustomerAddressController::class, 'store'])->name('addresses.store');
+        Route::put('/addresses/{address}', [\App\Http\Controllers\Store\CustomerAddressController::class, 'update'])->name('addresses.update');
+        Route::delete('/addresses/{address}', [\App\Http\Controllers\Store\CustomerAddressController::class, 'destroy'])->name('addresses.destroy');
+        Route::post('/addresses/{address}/default', [\App\Http\Controllers\Store\CustomerAddressController::class, 'setDefault'])->name('addresses.default');
     });
 });
 

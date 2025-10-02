@@ -20,16 +20,26 @@ class PaymentGatewayController extends Controller
             $gateways = PaymentGateway::select('payment_gateways.*');
 
             return DataTables::of($gateways)
-                ->addColumn('status', fn ($row) => $row->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>')
+                ->addColumn('status', fn ($row) => $row->is_active ? '<span class="badge badge-success">'.e(__('cms.payment_gateways.active')).'</span>' : '<span class="badge badge-danger">'.e(__('cms.payment_gateways.inactive')).'</span>')
                 ->addColumn('action', function ($row) {
-                    return '
-                        <a href="'.route('admin.payment-gateways.edit', $row->id).'" class="btn btn-sm btn-primary me-1">
-                            <i class="bi bi-pencil-fill"></i>
-                        </a>
-                        <span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="deleteGateway('.$row->id.')">
-                            <i class="bi bi-trash-fill text-danger"></i>
-                        </span>
-                    ';
+                    $editRoute = route('admin.payment-gateways.edit', $row->id);
+                    $editLabel = e(__('cms.payment_gateways.edit_title'));
+                    $deleteLabel = e(__('cms.payment_gateways.delete'));
+
+                    return <<<HTML
+                        <div class="flex flex-col gap-2">
+                            <button type="button"
+                                    class="btn btn-outline btn-sm w-full btn-edit-gateway"
+                                    data-url="{$editRoute}" title="{$editLabel}">
+                                {$editLabel}
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm w-full btn-delete-gateway"
+                                    data-id="{$row->id}" title="{$deleteLabel}">
+                                {$deleteLabel}
+                            </button>
+                        </div>
+                    HTML;
                 })
                 ->rawColumns(['status', 'action'])
                 ->make(true);

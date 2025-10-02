@@ -50,6 +50,7 @@ return [
         ],
         'customers' => [
             'title' => 'Customers',
+            'add_new' => 'Add New',
             'list' => 'List',
         ],
         'vendors' => [
@@ -113,6 +114,11 @@ return [
 
         'payment_gateways' => [
             'title' => 'Payment Gateways',
+            'list' => 'List',
+        ],
+        'product_variants' => [
+            'title' => 'Product Variants',
+            'add_new' => 'Add New',
             'list' => 'List',
         ],
     ],
@@ -304,6 +310,7 @@ return [
         'delete_success_message' => 'Customer deleted successfully!',
         'delete_error_message' => 'Error deleting customer!',
 
+        // Details view
         'view_button' => 'View',
         'back_to_list' => 'Back to Customers',
         'details_title' => 'Customer Details',
@@ -316,9 +323,25 @@ return [
         'registered_at' => 'Registered At',
         'last_updated' => 'Last Updated',
 
-        'shipping_addresses' => 'Shipping Addresses',
-        'no_addresses' => 'No shipping addresses recorded for this customer.',
+        // Addresses
+        'addresses' => 'Addresses',
+        'address_name' => 'Address Name',
+        'city' => 'City',
+        'postal_code' => 'Postal Code',
+        'country' => 'Country',
+        'default' => 'Default',
+        'set_default' => 'Set Default',
+        'set_as_default' => 'Set as default',
+        'add_address' => 'Add Address',
+        'delete' => 'Delete',
+        'delete_confirm' => 'Are you sure you want to delete this address?',
+        'no_addresses' => 'No addresses recorded for this customer.',
+        'address_created' => 'Address saved successfully.',
+        'address_updated' => 'Address updated successfully.',
+        'address_deleted' => 'Address deleted successfully.',
+        'address_set_default' => 'Default address updated.',
 
+        // Orders
         'orders' => 'Orders',
         'orders_table_id' => 'Order',
         'orders_table_status' => 'Status',
@@ -330,12 +353,14 @@ return [
         'view_order' => 'View Order',
         'no_orders' => 'No orders found for this customer.',
 
+        // Wishlist
         'wishlist_title' => 'Wishlist',
         'wishlist_product' => 'Product',
         'wishlist_added_at' => 'Added At',
         'no_wishlists' => 'No wishlist items for this customer.',
         'product_missing' => 'Item unavailable',
 
+        // Reviews
         'reviews_title' => 'Product Reviews',
         'reviews_product' => 'Product',
         'reviews_rating' => 'Rating',
@@ -456,6 +481,11 @@ return [
         'title_create' => 'Create Product',
         'title_edit' => 'Edit Product',
         'title_manage' => 'Manage Products',
+        'index_description' => 'Browse, filter, and maintain every product in your catalogue.',
+        'create_description' => 'Add a new product, manage translations, variants, and images.',
+        'edit_description' => 'Update product information, translations, variants, and media.',
+        'add_new' => 'Add Product',
+        'back_to_index' => 'Back to products',
 
         // Form Fields
         'vendor' => 'Vendor',
@@ -484,6 +514,51 @@ return [
         'attributes' => 'Attributes',
         'attribute_values' => 'Attribute Values',
         'variants' => 'Variants',
+        'section_information_title' => 'Product Information',
+        'section_details_title' => 'Product Details',
+        'section_variants_title' => 'Variants',
+        'section_images_title' => 'Product Images',
+        'variant_label' => 'Variant #:number',
+        'variant_new_label' => 'New Variant',
+        'select_size' => 'Select size',
+        'select_color' => 'Select color',
+        'short_description' => 'Short Description',
+        'short_description_placeholder' => 'Write a concise summary shown on listings',
+        'short_description_helper' => 'Keep it under 200 characters for optimal storefront previews.',
+        'tags' => 'Tags',
+        'tags_placeholder' => 'summer, eco, limited edition',
+        'tags_helper' => 'Separate tags with commas to improve search and merchandising filters.',
+        'translation_overview_title' => 'Translation coverage',
+        'translation_overview_description' => 'Compare required copy across each locale before saving.',
+        'translation_status_complete' => 'Complete',
+        'translation_status_missing' => 'Needs attention',
+        'translation_status_all_good' => 'All required fields translated.',
+        'translation_status_missing_fields' => 'Missing fields',
+
+        // Insights & summary
+        'insights_title' => 'Product Insights',
+        'insights_subtitle' => 'Snapshot of performance, associations, and stock health for this product.',
+        'summary_section_profile' => 'Product profile',
+        'summary_section_performance' => 'Performance',
+        'summary_section_inventory' => 'Inventory',
+        'summary_product_id' => 'Product ID',
+        'summary_slug' => 'Slug',
+        'summary_status' => 'Status',
+        'summary_category' => 'Category',
+        'summary_brand' => 'Brand',
+        'summary_vendor' => 'Vendor',
+        'summary_created_at' => 'Created at',
+        'summary_updated_at' => 'Updated at',
+        'summary_total_sales' => 'Units sold',
+        'summary_total_revenue' => 'Total revenue',
+        'summary_average_rating' => 'Average rating',
+        'summary_review_count' => 'Reviews',
+        'summary_last_sale' => 'Last sale',
+        'summary_total_variants' => 'Variants',
+        'summary_total_stock' => 'Total stock',
+        'summary_low_stock' => 'Variants ≤ :threshold in stock',
+        'summary_no_data' => 'No data yet',
+        'summary_not_available' => 'Not available',
 
         // Buttons
         'add_variant' => 'Add Variant',
@@ -493,6 +568,7 @@ return [
         'choose_images' => 'Choose Images',
         'choose_file' => 'Choose File',
         'remove' => 'Remove',
+        'or_drag_drop' => 'or drag and drop',
 
         // Messages
         'status_updated' => 'product status updated successfully!',
@@ -507,6 +583,8 @@ return [
         'name' => 'Name',
         'type' => 'Type',
         'price_column' => 'Price',
+        'category_column' => 'Category',
+        'stock_column' => 'Stock',
         'status_column' => 'Status',
         'action' => 'Action',
 
@@ -514,6 +592,69 @@ return [
         'confirm_delete' => 'Confirm Delete',
         'delete' => 'Delete',
         'cancel' => 'Cancel',
+
+        // Filters & Labels
+        'search_label' => 'Search',
+        'search_placeholder' => 'Search by product name or SKU',
+        'status_filter_label' => 'Status',
+        'status_filter_all' => 'All statuses',
+        'status_filter_active' => 'Active',
+        'status_filter_inactive' => 'Inactive',
+        'sort_label' => 'Sort by',
+        'sort_latest' => 'Newest first',
+        'sort_oldest' => 'Oldest first',
+        'per_page_label' => 'Items per page',
+        'apply_filters' => 'Apply filters',
+        'reset_filters' => 'Reset',
+
+        // Status labels & buttons
+        'status_active' => 'Active',
+        'status_inactive' => 'Inactive',
+        'activate_button' => 'Set active',
+        'deactivate_button' => 'Set inactive',
+        'edit_button' => 'Edit',
+
+        // Empty & helper texts
+        'no_image' => 'No image',
+        'no_brand_assigned' => 'No brand',
+        'no_vendor_assigned' => 'No vendor',
+        'no_category' => 'No category',
+        'unnamed_product' => 'Unnamed product',
+        'empty_state' => 'No products found for the selected filters.',
+        'total_products' => 'Total products',
+        'active_products' => 'Active products',
+        'inactive_products' => 'Inactive products',
+        'image_upload_hint' => 'PNG, JPG, or GIF up to 10MB',
+        'new_images' => 'New Images',
+        'current_images' => 'Current Images',
+
+        // Error messages
+        'delete_failed' => 'Failed to delete the product.',
+        'delete_error' => 'An error occurred while deleting the product.',
+    ],
+
+    'profile_page' => [
+        'title' => 'My Profile',
+        'subtitle' => 'Manage your administrator details and security preferences.',
+        'account_overview' => 'Account Overview',
+        'full_name' => 'Full name',
+        'email' => 'Email address',
+        'joined_on' => 'Joined',
+        'last_updated' => 'Last updated',
+        'not_provided' => 'Not provided',
+        'security_section' => 'Security',
+        'email_verified' => 'Email verified',
+        'email_verified_hint' => 'Verified contact details help keep your admin console secure.',
+        'two_factor' => 'Two-factor authentication',
+        'two_factor_hint' => 'Enable 2FA to add an extra layer of protection to your account.',
+        'status_enabled' => 'Enabled',
+        'status_disabled' => 'Disabled',
+        'status_verified' => 'Verified',
+        'status_pending' => 'Pending',
+        'quick_actions' => 'Quick actions',
+        'back_to_dashboard' => 'Back to dashboard',
+        'update_profile_placeholder' => 'Update profile (coming soon)',
+        'change_password_placeholder' => 'Change password (coming soon)',
     ],
 
     'brands' => [

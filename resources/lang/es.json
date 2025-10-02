@@ -1,0 +1,136 @@
+{
+    "auth": {
+        "login": "Iniciar Sesión",
+        "email": "Dirección de Correo",
+        "password": "Contraseña",
+        "remember_me": "Recordarme",
+        "forgot_password": "¿Olvidaste tu Contraseña?"
+    },
+    "profile": {
+        "profile": "Perfil",
+        "setting": "Configuración",
+        "logout": "Cerrar Sesión"
+    },
+    "notifications": {
+        "success": "Éxito",
+        "error": "Error",
+        "warning": "Advertencia",
+        "info": "Información",
+        "validation_error": "Error de Validación"
+    },
+    "sidebar": {
+        "search_placeholder": "Buscar...",
+        "dashboard": "Panel de Control",
+        "logo": "Logo",
+        "categories": {
+            "title": "Categorías",
+            "add_new": "Agregar Nueva",
+            "list": "Lista"
+        },
+        "brands": {
+            "title": "Marcas",
+            "add_new": "Agregar Nueva",
+            "list": "Lista"
+        },
+        "products": {
+            "title": "Productos",
+            "add_new": "Agregar Nuevo",
+            "list": "Lista"
+        },
+        "attributes": {
+            "title": "Atributos",
+            "add_new": "Agregar Nuevo",
+            "list": "Lista"
+        },
+        "customers": {
+            "title": "Clientes",
+            "list": "Lista"
+        },
+        "vendors": {
+            "title": "Proveedores",
+            "add_new": "Agregar Nuevo",
+            "list": "Lista"
+        },
+        "orders": {
+            "title": "Pedidos",
+            "all_orders": "Todos los Pedidos",
+            "pending_orders": "Pedidos Pendientes",
+            "completed_orders": "Pedidos Completados"
+        },
+        "site_settings": {
+            "title": "Configuración del Sitio",
+            "manage": "Gestionar Configuración"
+        }
+    },
+    "languages": {
+        "english": "Inglés",
+        "spanish": "Español",
+        "french": "Francés",
+        "arabic": "Árabe",
+        "german": "Alemán",
+        "persian": "Persa (Farsi)",
+        "hindi": "Hindi",
+        "indonesian": "Indonesio",
+        "italian": "Italiano",
+        "japanese": "Japonés",
+        "korean": "Coreano",
+        "dutch": "Holandés",
+        "polish": "Polaco",
+        "portuguese": "Portugués",
+        "russian": "Ruso",
+        "thai": "Tailandés",
+        "turkish": "Turco",
+        "vietnamese": "Vietnamita",
+        "chinese": "Chino",
+        "change_language": "Cambiar Idioma",
+        "confirm_language_change": "¿Estás seguro de que quieres cambiar el idioma?",
+        "cancel": "Cancelar",
+        "yes_change": "Sí, Cambiar"
+    },
+    "products": {
+        "title_create": "Crear Producto",
+        "title_edit": "Editar Producto",
+        "title_manage": "Gestionar Productos",
+        "vendor": "Proveedor",
+        "select_vendor": "Seleccionar Proveedor",
+        "product_name": "Nombre del Producto",
+        "description": "Descripción",
+        "category": "Categoría",
+        "brand": "Marca",
+        "no_brand": "Sin Marca",
+        "status": "Estado",
+        "price": "Precio",
+        "discount_price": "Precio de Descuento",
+        "sku": "SKU",
+        "barcode": "Código de Barras",
+        "stock": "Inventario",
+        "weight": "Peso",
+        "dimension": "Dimensiones",
+        "size": "Talla",
+        "color": "Color",
+        "images": "Imágenes del Producto",
+        "variant_name_en": "Nombre de Variante (EN)",
+        "variants": "Variantes",
+        "add_variant": "Agregar Variante",
+        "remove_variant": "Eliminar Variante",
+        "save_product": "Guardar Producto",
+        "update_product": "Actualizar Producto",
+        "choose_file": "Elegir Archivo",
+        "remove": "Eliminar",
+        "select_size": "Seleccionar Talla",
+        "select_color": "Seleccionar Color",
+        "success_create": "¡Producto creado exitosamente!",
+        "success_update": "¡Producto actualizado exitosamente!",
+        "success_delete": "¡Producto eliminado exitosamente!"
+    },
+    "messages": {
+        "welcome": "¡Bienvenido al Panel de Administración!",
+        "dashboard": "Panel de Control",
+        "settings": "Configuración",
+        "log_out": "Cerrar Sesión",
+        "profile": "Perfil",
+        "menu": "Menú",
+        "home": "Inicio",
+        "view_details": "Ver Detalles"
+    }
+}

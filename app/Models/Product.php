@@ -52,9 +52,19 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderDetail::class);
     }
 
     public function getTranslation($field, $locale = 'en')

@@ -20,18 +20,26 @@ class RefundController extends Controller
             $refunds = Refund::with('payment')->select('refunds.*');
 
             return DataTables::of($refunds)
-                ->addColumn('payment', fn ($row) => $row->payment ? 'Payment #'.$row->payment->id : '—')
+                ->addColumn('payment', fn($row) => $row->payment ? 'Payment #' . $row->payment->id : '—')
                 ->addColumn('action', function ($row) {
                     $showRoute = route('admin.refunds.show', $row->id);
+                    $viewLabel = e(__('cms.messages.view_details'));
+                    $deleteLabel = e(__('cms.refunds.delete'));
 
-                    return '<div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-view-refund" data-url="'.$showRoute.'">
-                                    <i class="bi bi-eye-fill"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-delete-refund" data-id="'.$row->id.'">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </div>';
+                    return <<<HTML
+                        <div class="flex flex-col gap-2">
+                            <button type="button"
+                                    class="btn btn-outline btn-sm w-full btn-view-refund"
+                                    data-url="{$showRoute}" title="{$viewLabel}">
+                                {$viewLabel}
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm w-full btn-delete-refund"
+                                    data-id="{$row->id}" title="{$deleteLabel}">
+                                {$deleteLabel}
+                            </button>
+                        </div>
+                    HTML;
                 })
                 ->make(true);
         }
@@ -39,7 +47,7 @@ class RefundController extends Controller
 
     public function show($id)
     {
-        $refund = Refund::with('payment.user', 'payment.order', 'payment.gateway')->findOrFail($id);
+        $refund = Refund::with('payment.order', 'payment.gateway')->findOrFail($id);
 
         return view('admin.refunds.show', compact('refund'));
     }

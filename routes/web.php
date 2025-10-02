@@ -4,15 +4,14 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\PaymentGatewayConfigController;
 use App\Http\Controllers\Admin\PaymentGatewayController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductReviewController;
@@ -20,30 +19,24 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SocialMediaLinkController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Store\CheckoutController;
 use App\Http\Controllers\SiteSettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
+ * |--------------------------------------------------------------------------
+ * | Web Routes
+ * |--------------------------------------------------------------------------
+ * |
+ * | Here is where you can register web routes for your application. These
+ * | routes are loaded by the RouteServiceProvider and all of them will
+ * | be assigned to the "web" middleware group. Make something great!
+ * |
+ */
 
 /* require base_path('routes/store.php'); */
 
-Route::get('/login', function () {
-    return view('admin.auth.login');
-});
-
-Auth::routes();
-
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
-
+Route::prefix('admin')->name('admin.')->group(function () {
     /* Dashboard */
     Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->name('dashboard');
 
@@ -54,8 +47,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     /* Products */
     Route::resource('products', ProductController::class);
-    Route::post('products/data', [ProductController::class, 'getProducts'])->name('products.data');
-    Route::post('admin/products/updateStatus', [ProductController::class, 'updateStatus'])->name('products.updateStatus');
+    Route::post('products/update-status', [ProductController::class, 'updateStatus'])->name('products.updateStatus');
 
     /* Brands */
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
@@ -69,6 +61,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     /* change Language */
     Route::post('/change-language', [LanguageController::class, 'changeLanguage'])->name('change.language');
+
+    /* Profile */
+    Route::get('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show'])
+        ->middleware('auth')
+        ->name('profile.show');
 
     /* Menus */
     Route::resource('menus', MenuController::class);
@@ -104,6 +101,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     /* Customers */
     Route::resource('customers', CustomerController::class);
     Route::get('admin/customers/data', [CustomerController::class, 'getCustomerData'])->name('customers.data');
+
+    /* Customer Addresses (Admin) */
+    Route::post('customers/{customer}/addresses', [\App\Http\Controllers\Admin\CustomerAddressController::class, 'store'])->name('customers.addresses.store');
+    Route::put('customers/{customer}/addresses/{address}', [\App\Http\Controllers\Admin\CustomerAddressController::class, 'update'])->name('customers.addresses.update');
+    Route::delete('customers/{customer}/addresses/{address}', [\App\Http\Controllers\Admin\CustomerAddressController::class, 'destroy'])->name('customers.addresses.destroy');
+    Route::post('customers/{customer}/addresses/{address}/default', [\App\Http\Controllers\Admin\CustomerAddressController::class, 'setDefault'])->name('customers.addresses.default');
 
     /* Reviews */
     Route::get('/reviews/data', [ProductReviewController::class, 'getData'])->name('reviews.data');
@@ -149,10 +152,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('payment-gateways/{paymentGateway}/edit', [PaymentGatewayController::class, 'edit'])->name('payment-gateways.edit');
     Route::put('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'update'])->name('payment-gateways.update');
     Route::delete('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateways.destroy');
-
-    /* Payment Gateways Configs */
-    Route::get('payment_gateway_configs/getData', [PaymentGatewayConfigController::class, 'getData'])->name('payment_gateway_configs.getData');
-    Route::resource('payment_gateway_configs', PaymentGatewayConfigController::class)->except(['show']);
 });
 
 Route::get('site-settings', [SiteSettingsController::class, 'index'])->name('site-settings.index');
@@ -167,3 +166,18 @@ Route::get('/checkout/paypal/success', [CheckoutController::class, 'paypalSucces
 // PayPal cancel callback
 Route::get('/checkout/paypal/cancel', [CheckoutController::class, 'paypalCancel'])
     ->name('paypal.cancel');
+
+/* Admin Auth at /login */
+Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login'])->name('admin.login.attempt');
+Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('admin.logout');
+
+/* Customer Auth moved under /customer */
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Store\Auth\LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Store\Auth\LoginController::class, 'login'])->name('login.attempt');
+    Route::post('/logout', [\App\Http\Controllers\Store\Auth\LoginController::class, 'logout'])->name('logout');
+
+    Route::get('/register', [\App\Http\Controllers\Store\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Store\Auth\RegisterController::class, 'register'])->name('register.attempt');
+});

@@ -1,4 +1,6 @@
 @use 'variables';
 @use 'admin';
 
-@import url('https://fonts.bunny.net/css?family=Nunito'); // ✅ External CSS import goes after @use
+@import "datatables.net-dt/css/dataTables.dataTables.min.css";
+@import "toastr/build/toastr.min.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";

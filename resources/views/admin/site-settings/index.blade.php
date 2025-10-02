@@ -16,7 +16,8 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <a href="{{ route('admin.site-settings.edit') }}" class="btn btn-primary float-end mb-3">Edit Settings</a>
+                    <button type="button" class="btn btn-primary float-end mb-3"
+                            data-url="{{ route('admin.site-settings.edit') }}">Edit Settings</button>
                 </div>
             </div>
 

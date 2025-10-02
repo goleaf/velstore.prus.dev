@@ -22,7 +22,17 @@ class VendorController extends Controller
 
         return DataTables::of($vendors)
             ->addColumn('action', function ($vendor) {
-                return '<span class="border border-danger dt-trash rounded-3 d-inline-block" onclick="deleteVendor('.$vendor->id.')"><i class="bi bi-trash-fill text-danger"></i></span>';
+                $deleteLabel = e(__('cms.vendors.delete'));
+
+                return <<<HTML
+                    <div class="flex flex-col gap-2">
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm w-full btn-delete-vendor"
+                                data-id="{$vendor->id}" title="{$deleteLabel}">
+                            {$deleteLabel}
+                        </button>
+                    </div>
+                HTML;
             })
             ->rawColumns(['action'])
             ->make(true);

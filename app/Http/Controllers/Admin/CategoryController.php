@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CategoryStatusUpdateRequest;
+use App\Http\Requests\Admin\CategoryStoreRequest;
+use App\Http\Requests\Admin\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Models\Language;
 use App\Services\Admin\CategoryService;
@@ -34,20 +37,8 @@ class CategoryController extends Controller
         return view('admin.categories.create');
     }
 
-    public function store(Request $request)
+    public function store(CategoryStoreRequest $request)
     {
-        $rules = [
-            'translations' => 'required|array',
-        ];
-
-        foreach ($request->input('translations', []) as $lang => $data) {
-            $rules["translations.$lang.name"] = 'required|string|max:255';
-            $rules["translations.$lang.description"] = 'required|string|min:5';
-            $rules["translations.$lang.image"] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048';
-        }
-
-        $request->validate($rules);
-
         $translations = $request->input('translations');
         foreach ($translations as $languageCode => $translation) {
             if ($request->hasFile("translations.$languageCode.image")) {
@@ -78,7 +69,7 @@ class CategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'activeLanguages'));
     }
 
-    public function update(Request $request, $id)
+    public function update(CategoryUpdateRequest $request, $id)
     {
         $translations = $request->all()['translations'];
 
@@ -110,13 +101,8 @@ class CategoryController extends Controller
         }
     }
 
-    public function updateCategoryStatus(Request $request)
+    public function updateCategoryStatus(CategoryStatusUpdateRequest $request)
     {
-        $request->validate([
-            'id' => 'required|exists:categories,id',
-            'status' => 'required|boolean',
-        ]);
-
         $category = Category::find($request->id);
         $category->status = $request->status;
         $category->save();

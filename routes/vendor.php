@@ -7,7 +7,6 @@ use App\Http\Controllers\Vendor\OrderController;
 use App\Http\Controllers\Vendor\ProductController;
 use App\Http\Controllers\Vendor\ProductReviewController;
 use App\Http\Controllers\Vendor\ProfileController;
-use App\Http\Controllers\Vendor\SocialMediaLinkController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('vendor')->group(function () {
@@ -20,8 +19,6 @@ Route::prefix('vendor')->group(function () {
         Route::resource('products', ProductController::class)->names('vendor.products');
         Route::post('products/data', [ProductController::class, 'getProducts'])->name('vendor.products.data');
         Route::post('products/updateStatus', [ProductController::class, 'updateStatus'])->name('vendor.products.updateStatus');
-        Route::resource('social-media-links', SocialMediaLinkController::class)->names('vendor.social-media-links');
-        Route::post('social-media-links/data', [SocialMediaLinkController::class, 'getData'])->name('vendor.social-media-links.data');
 
         Route::get('reviews', [ProductReviewController::class, 'index'])->name('vendor.reviews.index');
         Route::get('reviews/data', [ProductReviewController::class, 'getData'])->name('vendor.reviews.data');

@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             PaymentGatewaySeeder::class,
             PaymentSeeder::class,
             RefundSeeder::class,
+            CustomerSeeder::class,
+            CustomerAddressSeeder::class,
         ]);
     }
 }

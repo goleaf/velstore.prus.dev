@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Language;
 use App\Models\Product;
 use App\Models\ProductAttributeValue;
+use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
@@ -220,7 +221,7 @@ class ProductSeeder extends Seeder
                             'price' => $price,
                             'discount_price' => $discountPrice,
                             'stock' => rand(50, 200),
-                            'SKU' => strtoupper(substr($size->value, 0, 1)).substr($color->value, 0, 2).rand(100, 999),
+                            'SKU' => $this->generateUniqueSku($size->value, $color->value),
                             'barcode' => null,
                             'weight' => '0.5',
                             'dimensions' => '10x10x2 cm',
@@ -252,5 +253,16 @@ class ProductSeeder extends Seeder
                 }
             }
         });
+    }
+
+    protected function generateUniqueSku(string $sizeValue, string $colorValue): string
+    {
+        $prefix = strtoupper(substr($sizeValue, 0, 1)).strtoupper(substr($colorValue, 0, 2));
+
+        do {
+            $candidate = $prefix.'-'.Str::upper(Str::random(5));
+        } while (ProductVariant::where('SKU', $candidate)->exists());
+
+        return $candidate;
     }
 }
