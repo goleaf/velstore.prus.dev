@@ -13,7 +13,14 @@ class VendorController extends Controller
 {
     public function index()
     {
-        return view('admin.vendors.index');
+        $stats = [
+            'total' => Vendor::count(),
+            'active' => Vendor::where('status', 'active')->count(),
+            'inactive' => Vendor::where('status', 'inactive')->count(),
+            'banned' => Vendor::where('status', 'banned')->count(),
+        ];
+
+        return view('admin.vendors.index', compact('stats'));
     }
 
     public function getVendorData()
@@ -21,20 +28,32 @@ class VendorController extends Controller
         $vendors = Vendor::select(['id', 'name', 'email', 'phone', 'status']);
 
         return DataTables::of($vendors)
+            ->editColumn('status', function ($vendor) {
+                $status = strtolower((string) $vendor->status);
+
+                return match ($status) {
+                    'active' => '<span class="badge badge-success">' . e(__('cms.vendors.status_active')) . '</span>',
+                    'inactive' => '<span class="badge badge-warning">' . e(__('cms.vendors.status_inactive')) . '</span>',
+                    'banned' => '<span class="badge badge-danger">' . e(__('cms.vendors.status_banned')) . '</span>',
+                    default => '<span class="badge badge-secondary">' . e(__('cms.vendors.status_unknown')) . '</span>',
+                };
+            })
             ->addColumn('action', function ($vendor) {
-                $deleteLabel = e(__('cms.vendors.delete'));
+                $deleteLabel = e(__('cms.vendors.delete_button'));
 
                 return <<<HTML
                     <div class="flex flex-col gap-2">
                         <button type="button"
-                                class="btn btn-outline-danger btn-sm w-full btn-delete-vendor"
-                                data-id="{$vendor->id}" title="{$deleteLabel}">
+                                class="btn btn-outline-danger btn-sm w-full"
+                                data-action="delete-vendor"
+                                data-vendor-id="{$vendor->id}"
+                                title="{$deleteLabel}">
                             {$deleteLabel}
                         </button>
                     </div>
                 HTML;
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['status', 'action'])
             ->make(true);
     }
 
@@ -70,7 +89,7 @@ class VendorController extends Controller
         ]);
 
         return redirect()->route('admin.vendors.index')
-            ->with('success', 'Vendor registered successfully!');
+            ->with('success', __('cms.vendors.success_create'));
     }
 
     public function destroy($id)

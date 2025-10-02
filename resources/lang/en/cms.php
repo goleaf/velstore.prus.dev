@@ -379,36 +379,70 @@ return [
     ],
 
     'vendors' => [
-        'title_list' => 'Vendor List',
-        'id' => 'Id',
-        'name' => 'Name',
+        // Titles & descriptions
+        'title_manage' => 'Manage Vendors',
+        'index_description' => 'Monitor vendor accounts, statuses, and onboarding progress.',
+        'title_create' => 'Register Vendor',
+        'create_description' => 'Create a vendor account with credentials and status controls.',
+        'table_title' => 'Vendor directory',
+        'back_to_index' => 'Back to vendors',
+
+        // Metrics
+        'total_vendors' => 'Total vendors',
+        'active_vendors' => 'Active vendors',
+        'inactive_vendors' => 'Inactive vendors',
+        'banned_vendors' => 'Banned vendors',
+
+        // Table columns
+        'id' => 'ID',
+        'name' => 'Vendor',
         'email' => 'Email',
         'phone' => 'Phone',
         'status' => 'Status',
         'actions' => 'Actions',
-        'register_new_vendor' => 'Register New Vendor',
-        'vendor_name' => 'Vendor Name',
-        'vendor_email' => 'Vendor Email',
-        'phone_optional' => 'Phone (Optional)',
+        'empty_state' => 'No vendors found yet.',
+
+        // Status labels
+        'status_active' => 'Active',
+        'status_inactive' => 'Inactive',
+        'status_banned' => 'Banned',
+        'status_unknown' => 'Unknown',
+
+        // Form labels
+        'vendor_details_heading' => 'Vendor details',
+        'account_security_heading' => 'Account security',
+        'vendor_name' => 'Vendor name',
+        'vendor_email' => 'Vendor email',
+        'phone_optional' => 'Phone (optional)',
         'password' => 'Password',
-        'confirm_password' => 'Confirm Password',
-        'status' => 'Status',
+        'confirm_password' => 'Confirm password',
+        'status_label' => 'Status',
+        'status_placeholder' => 'Select status',
+
+        // Buttons
+        'add_vendor' => 'Add Vendor',
+        'register_button' => 'Create vendor',
+        'cancel_button' => 'Cancel',
+        'delete_button' => 'Delete vendor',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+
+        // Modal copy
+        'modal_confirm_delete_title' => 'Delete vendor',
+        'modal_confirm_delete_body' => 'Are you sure you want to delete this vendor? This action cannot be undone.',
+        'confirm_delete_button' => 'Delete vendor',
+
+        // Notifications
+        'success_create' => 'Vendor registered successfully!',
+        'success_delete' => 'Vendor deleted successfully!',
+        'error_delete' => 'Error deleting vendor! Please try again.',
+
+        // Legacy keys kept for backwards compatibility
+        'title_list' => 'Vendor List',
+        'register_new_vendor' => 'Register New Vendor',
         'active' => 'Active',
         'inactive' => 'Inactive',
         'banned' => 'Banned',
-        'register_button' => 'Register Vendor',
-        'cancel_button' => 'Cancel',
-
-        'active' => 'Active',
-        'inactive' => 'Inactive',
-
-        'modal_confirm_delete_title' => 'Confirm Delete',
-        'modal_confirm_delete_body' => 'Are you sure you want to delete this vendor?',
-        'delete' => 'Delete',
-        'cancel' => 'Cancel',
-
-        'success' => 'Success',
-        'error_delete' => 'Error deleting vendor! Please try again.',
     ],
 
     'languages' => [
