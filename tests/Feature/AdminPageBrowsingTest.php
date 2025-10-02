@@ -141,6 +141,74 @@ class AdminPageBrowsingTest extends TestCase
         }
     }
 
+    public function test_admin_page_routes_render_expected_views(): void
+    {
+        $routesWithViews = [
+            ['admin.dashboard', 'admin.home'],
+            ['admin.categories.index', 'admin.categories.index'],
+            ['admin.categories.create', 'admin.categories.create'],
+            ['admin.categories.edit', 'admin.categories.edit', ['category' => $this->category->id]],
+            ['admin.products.index', 'admin.products.index'],
+            ['admin.products.create', 'admin.products.create'],
+            ['admin.products.edit', 'admin.products.edit', ['product' => $this->product->id]],
+            ['admin.brands.index', 'admin.brands.index'],
+            ['admin.brands.create', 'admin.brands.create'],
+            ['admin.brands.edit', 'admin.brands.edit', ['brand' => $this->brand->id]],
+            ['admin.profile.show', 'admin.profile.show'],
+            ['admin.menus.index', 'admin.menus.index'],
+            ['admin.menus.create', 'admin.menus.create'],
+            ['admin.menus.edit', 'admin.menus.edit', ['menu' => $this->menu->id]],
+            ['admin.menus.items.index', 'admin.menu_items.index', ['menu' => $this->menu->id]],
+            ['admin.menus.items.create', 'admin.menu_items.create', ['menu' => $this->menu->id]],
+            ['admin.menus.items.edit', 'admin.menu_items.edit', ['item' => $this->menuItem->id]],
+            ['admin.menus.item.index', 'admin.menu_items.index'],
+            ['admin.banners.index', 'admin.banners.index'],
+            ['admin.banners.create', 'admin.banners.create'],
+            ['admin.banners.edit', 'admin.banners.edit', ['banner' => $this->banner->id]],
+            ['admin.social-media-links.index', 'admin.social-media-links.index'],
+            ['admin.social-media-links.create', 'admin.social-media-links.create'],
+            ['admin.social-media-links.edit', 'admin.social-media-links.edit', ['social_media_link' => $this->socialLink->id]],
+            ['admin.orders.index', 'admin.orders.index'],
+            ['admin.orders.show', 'admin.orders.show', ['order' => $this->order->id]],
+            ['admin.coupons.index', 'admin.coupons.index'],
+            ['admin.coupons.create', 'admin.coupons.create'],
+            ['admin.coupons.edit', 'admin.coupons.edit', ['coupon' => $this->coupon->id]],
+            ['admin.product_variants.index', 'admin.product_variants.index'],
+            ['admin.product_variants.create', 'admin.product_variants.create'],
+            ['admin.product_variants.edit', 'admin.product_variants.edit', ['product_variant' => $this->productVariant->id]],
+            ['admin.customers.index', 'admin.customers.index'],
+            ['admin.customers.create', 'admin.customers.create'],
+            ['admin.customers.edit', 'admin.customers.edit', ['customer' => $this->customer->id]],
+            ['admin.customers.show', 'admin.customers.show', ['customer' => $this->customer->id]],
+            ['admin.reviews.index', 'admin.reviews.index'],
+            ['admin.reviews.show', 'admin.reviews.show', ['review' => $this->review->id]],
+            ['admin.reviews.edit', 'admin.reviews.edit', ['review' => $this->review->id]],
+            ['admin.attributes.index', 'admin.attributes.index'],
+            ['admin.attributes.create', 'admin.attributes.create'],
+            ['admin.attributes.edit', 'admin.attributes.edit', ['attribute' => $this->attribute->id]],
+            ['admin.vendors.index', 'admin.vendors.index'],
+            ['admin.vendors.create', 'admin.vendors.create'],
+            ['admin.pages.index', 'admin.pages.index'],
+            ['admin.pages.create', 'admin.pages.create'],
+            ['admin.pages.edit', 'admin.pages.edit', ['page' => $this->page->id]],
+            ['admin.payments.index', 'admin.payments.index'],
+            ['admin.payments.show', 'admin.payments.show', ['payment' => $this->payment->id]],
+            ['admin.refunds.index', 'admin.refunds.index'],
+            ['admin.refunds.show', 'admin.refunds.show', ['refund' => $this->refund->id]],
+            ['admin.payment-gateways.index', 'admin.payment_gateways.index'],
+            ['admin.payment-gateways.edit', 'admin.payment_gateways.edit', ['payment_gateway' => $this->paymentGateway->id]],
+            ['admin.site-settings.index', 'admin.site-settings.index'],
+            ['admin.site-settings.edit', 'admin.site-settings.edit'],
+        ];
+
+        foreach ($routesWithViews as $route) {
+            [$name, $view, $parameters] = $route + [2 => []];
+
+            $response = $this->get(route($name, $parameters));
+            $response->assertOk()->assertViewIs($view);
+        }
+    }
+
     private function seedReferenceData(): void
     {
         Language::create([
