@@ -57,11 +57,13 @@
                         @foreach($activeLanguages as $language)
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $loop->first ? 'active' : '' }}"
-                                        id="{{ $language->name }}-tab"
+                                        id="tab-{{ $language->code }}"
                                         data-bs-toggle="tab"
-                                        data-bs-target="#{{ $language->name }}"
+                                        data-bs-target="#tab-pane-{{ $language->code }}"
                                         type="button"
-                                        role="tab">
+                                        role="tab"
+                                        aria-controls="tab-pane-{{ $language->code }}"
+                                        aria-selected="{{ $loop->first ? 'true' : 'false' }}">
                                     {{ ucwords($language->name) }}
                                 </button>
                             </li>
@@ -72,10 +74,16 @@
                         @foreach($activeLanguages as $language)
                             @php
                                 $translation = $category->translations->firstWhere('language_code', $language->code);
+                                $oldBase64 = old('translations.' . $language->code . '.image_base64');
+                                $defaultPreviewSrc = $translation && $translation->image_url ? asset('storage/' . $translation->image_url) : '';
+                                $initialPreviewSrc = $oldBase64 ?: $defaultPreviewSrc;
+                                $hasPreview = !empty($initialPreviewSrc);
+                                $previewSrc = $hasPreview ? $initialPreviewSrc : '#';
                             @endphp
                             <div class="tab-pane fade show {{ $loop->first ? 'active' : '' }}"
-                                 id="{{ $language->name }}"
-                                 role="tabpanel">
+                                 id="tab-pane-{{ $language->code }}"
+                                 role="tabpanel"
+                                 aria-labelledby="tab-{{ $language->code }}">
 
                                 <label class="form-label">{{ __('cms.categories.name') }} ({{ $language->code }})</label>
                                 <input type="text"
@@ -95,6 +103,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
 
+                
                                 <label class="form-label mt-2">{{ __('cms.categories.image') }} ({{ $language->code }})</label>
                                 <div class="custom-file">
                                     <label class="btn btn-primary" for="image_file_{{ $language->code }}">{{ __('cms.categories.choose_file') }}</label>
@@ -106,9 +115,15 @@
                                            onchange="previewImage(this, '{{ $language->code }}')">
                                 </div>
 
-                                <div id="image_preview_{{ $language->code }}" class="mt-2" style="{{ $translation && $translation->image_url ? 'display: block;' : 'display: none;' }}">
+                                <input type="hidden"
+                                       id="image_base64_{{ $language->code }}"
+                                       name="translations[{{ $language->code }}][image_base64]"
+                                       value="{{ $oldBase64 ?? '' }}">
+
+                                <div id="image_preview_{{ $language->code }}" class="mt-2" style="{{ $hasPreview ? 'display: block;' : 'display: none;' }}">
                                     <img id="image_preview_img_{{ $language->code }}"
-                                         src="{{ $translation && $translation->image_url ? asset('storage/' . $translation->image_url) : '#' }}"
+                                         src="{{ $previewSrc }}"
+                                         data-default-src="{{ $defaultPreviewSrc }}"
                                          alt="{{ __('cms.categories.image_preview') }}"
                                          class="img-thumbnail"
                                          style="max-width: 200px;">
@@ -163,17 +178,61 @@
             const file = input.files[0];
             const previewElement = document.getElementById('image_preview_' + langCode);
             const previewImage = document.getElementById('image_preview_img_' + langCode);
+            const base64Input = document.getElementById('image_base64_' + langCode);
 
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    previewElement.style.display = 'block';
-                    previewImage.src = e.target.result;
+                    if (previewElement && previewImage) {
+                        previewElement.style.display = 'block';
+                        previewImage.src = e.target.result;
+                    }
+
+                    if (base64Input) {
+                        base64Input.value = e.target.result;
+                    }
                 };
                 reader.readAsDataURL(file);
             } else {
-                previewElement.style.display = 'none';
+                if (base64Input) {
+                    base64Input.value = '';
+                }
+
+                if (previewImage) {
+                    const defaultSrc = previewImage.dataset ? previewImage.dataset.defaultSrc : '';
+                    if (defaultSrc) {
+                        previewImage.src = defaultSrc;
+                        if (previewElement) {
+                            previewElement.style.display = 'block';
+                        }
+                    } else {
+                        previewImage.src = '#';
+                        if (previewElement) {
+                            previewElement.style.display = 'none';
+                        }
+                    }
+                } else if (previewElement) {
+                    previewElement.style.display = 'none';
+                }
             }
+        }
+
+        function base64ToFile(dataurl, baseName) {
+            if (!dataurl || dataurl.indexOf(',') === -1) throw new Error('Invalid base64 data');
+            const arr = dataurl.split(',');
+            const mimeMatch = arr[0].match(/data:(.*);base64/);
+            if (!mimeMatch) throw new Error('Invalid mime in base64 data');
+            const mime = mimeMatch[1];
+            let ext = mime.split('/')[1].split('+')[0];
+            if (ext === 'jpeg') ext = 'jpg';
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            const filename = baseName + '.' + ext;
+            return new File([u8arr], filename, { type: mime });
         }
 
         document.getElementById('categoryEditForm').addEventListener('submit', function () {
@@ -184,6 +243,22 @@
                     const textarea = document.getElementById(textareaId);
                     if (textarea) {
                         textarea.value = editor.getData();
+                    }
+                }
+            }
+
+            for (const code of LANG_CODES) {
+                const fileInput = document.getElementById('image_file_' + code);
+                const base64Input = document.getElementById('image_base64_' + code);
+
+                if (fileInput && fileInput.files.length === 0 && base64Input && base64Input.value) {
+                    try {
+                        const file = base64ToFile(base64Input.value, 'image_' + code);
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                    } catch (error) {
+                        console.error('base64 -> File conversion failed for', code, error);
                     }
                 }
             }
