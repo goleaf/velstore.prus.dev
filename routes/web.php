@@ -17,10 +17,10 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\RefundController;
+use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SocialMediaLinkController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Store\CheckoutController;
-use App\Http\Controllers\SiteSettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -152,11 +152,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('payment-gateways/{paymentGateway}/edit', [PaymentGatewayController::class, 'edit'])->name('payment-gateways.edit');
     Route::put('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'update'])->name('payment-gateways.update');
     Route::delete('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateways.destroy');
-});
 
-Route::get('site-settings', [SiteSettingsController::class, 'index'])->name('site-settings.index');
-Route::get('site-settings/edit', [SiteSettingsController::class, 'edit'])->name('admin.site-settings.edit');
-Route::put('site-settings/update', [SiteSettingsController::class, 'update'])->name('admin.site-settings.update');
+    /* Site Settings */
+    Route::prefix('site-settings')->name('site-settings.')->controller(SiteSettingController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/edit', 'edit')->name('edit');
+        Route::put('/', 'update')->name('update');
+    });
+});
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
