@@ -199,12 +199,13 @@ class PageController extends Controller
         ]);
 
         $page = Page::find($request->id);
-        $page->status = $request->status;
+        $page->status = $request->boolean('status');
         $page->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Page status updated.',
-        ]);
+            'message' => 'Page status updated successfully.',
+            'status' => (bool) $page->status,
+        ], 200);
     }
 }
