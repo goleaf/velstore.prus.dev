@@ -39,7 +39,12 @@ class BrandController extends Controller
 
     public function create()
     {
-        return view('admin.brands.create');
+        $activeLanguages = Language::where('active', 1)->get();
+
+        return view('admin.brands.create', [
+            'activeLanguages' => $activeLanguages,
+            'brand' => new Brand(),
+        ]);
     }
 
     public function store(BrandStoreRequest $request)
@@ -57,9 +62,12 @@ class BrandController extends Controller
     {
         $brand = Brand::with('translations')->findOrFail($id);
 
-        $languages = Language::active()->get();
+        $activeLanguages = Language::where('active', 1)->get();
 
-        return view('admin.brands.edit', compact('brand', 'languages'));
+        return view('admin.brands.edit', [
+            'brand' => $brand,
+            'activeLanguages' => $activeLanguages,
+        ]);
     }
 
     public function update(BrandUpdateRequest $request, $id)
