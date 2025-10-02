@@ -113,7 +113,7 @@
                 },
                 columns: [
                     { data: 'id', name: 'id' },
-                    { data: 'slug', name: 'slug' },
+                    { data: 'name', name: 'name', orderable: false },
                     {
                         data: 'logo_url',
                         orderable: false,
@@ -132,10 +132,17 @@
                         data: 'status',
                         name: 'status',
                         render: function (data, type, row) {
-                            const isChecked = data ? 'checked' : '';
+                            const normalizedStatus = typeof data === 'string' ? data.toLowerCase() : '';
+                            const isActive = normalizedStatus === 'active';
                             return `
                                 <label class="switch mb-0">
-                                    <input type="checkbox" class="toggle-status" data-id="${row.id}" ${isChecked}>
+                                    <input
+                                        type="checkbox"
+                                        class="toggle-status"
+                                        data-id="${row.id}"
+                                        data-status="${normalizedStatus || 'inactive'}"
+                                        ${isActive ? 'checked' : ''}
+                                    >
                                     <span class="slider round"></span>
                                 </label>
                             `;
@@ -181,7 +188,8 @@
             $(document).on('change', '.toggle-status', function () {
                 const $toggle = $(this);
                 const brandId = $toggle.data('id');
-                const isActive = $toggle.prop('checked') ? 1 : 0;
+                const previousStatus = ($toggle.data('status') || 'inactive').toString();
+                const newStatus = $toggle.prop('checked') ? 'active' : 'inactive';
 
                 $.ajax({
                     url: '{{ route('admin.brands.updateStatus') }}',
@@ -189,10 +197,13 @@
                     data: {
                         _token: csrfToken,
                         id: brandId,
-                        status: isActive,
+                        status: newStatus,
                     },
                     success: function (response) {
                         if (response.success) {
+                            const updatedStatus = (response.status || newStatus).toString().toLowerCase();
+                            $toggle.data('status', updatedStatus);
+                            $toggle.prop('checked', updatedStatus === 'active');
                             toastr.success(response.message || messages.statusUpdated, 'Updated', {
                                 closeButton: true,
                                 progressBar: true,
@@ -202,7 +213,8 @@
                             return;
                         }
 
-                        $toggle.prop('checked', !isActive);
+                        $toggle.prop('checked', previousStatus === 'active');
+                        $toggle.data('status', previousStatus);
                         toastr.error(response.message || messages.statusFailed, 'Failed', {
                             closeButton: true,
                             progressBar: true,
@@ -211,7 +223,8 @@
                         });
                     },
                     error: function () {
-                        $toggle.prop('checked', !isActive);
+                        $toggle.prop('checked', previousStatus === 'active');
+                        $toggle.data('status', previousStatus);
                         toastr.error(messages.statusError, 'Error', {
                             closeButton: true,
                             progressBar: true,
