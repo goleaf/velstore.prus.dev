@@ -107,6 +107,7 @@
 
     $translationChecklist = [];
     $shouldShowTranslationOverview = $isEdit;
+    $activeLanguageTab = old('active_language_tab');
     if ($languages->count()) {
         $fieldLabels = [
             'name' => __('cms.products.product_name'),
@@ -143,7 +144,15 @@
                 'missing' => $missing,
                 'complete' => empty($missing),
             ];
+
+            if (! $activeLanguageTab && $errors->has("translations.$langCode.*")) {
+                $activeLanguageTab = $langCode;
+            }
         }
+    }
+
+    if (! $activeLanguageTab || ! $languages->firstWhere('code', $activeLanguageTab)) {
+        $activeLanguageTab = $languages->first()->code ?? 'en';
     }
 @endphp
 
@@ -252,7 +261,7 @@
 @endif
 
 <form x-data="productForm({
-        activeTab: '{{ $languages->first()->code ?? 'en' }}',
+        activeTab: '{{ $activeLanguageTab }}',
         variantIndex: {{ count($variantFormData) }},
         existingImages: @json($existingImagesData)
     })"
@@ -264,6 +273,8 @@
     @if ($isEdit)
         @method($formMethod)
     @endif
+
+    <input type="hidden" name="active_language_tab" x-model="activeTab">
 
     @if ($shouldShowTranslationOverview && ! empty($translationChecklist))
         <x-admin.card :title="__('cms.products.translation_overview_title')">
@@ -298,7 +309,15 @@
         </x-admin.card>
     @endif
 
-    <x-admin.card :title="__('cms.products.section_information_title')" :actions="view('admin.products.partials.language-tabs', ['languages' => $languages])">
+    <x-admin.card
+        :title="__('cms.products.section_information_title')"
+        :actions="view('admin.products.partials.language-tabs', [
+            'languages' => $languages,
+            'activeLanguageTab' => $activeLanguageTab,
+            'translationChecklist' => $translationChecklist,
+            'errors' => $errors,
+        ])"
+    >
         <div class="space-y-6">
             @foreach ($languages as $language)
                 @php
