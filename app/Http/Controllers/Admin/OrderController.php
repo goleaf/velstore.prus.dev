@@ -35,16 +35,7 @@ class OrderController extends Controller
                 return ucfirst($order->status);
             })
             ->addColumn('action', function (Order $order) {
-                $viewUrl = route('admin.orders.show', $order);
-
-                return '<div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-primary btn-view-order" data-url="' . $viewUrl . '">
-                                <i class="bi bi-eye-fill"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-order" data-id="' . $order->id . '">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </div>';
+                return view('admin.orders.partials.actions', compact('order'))->render();
             })
             ->rawColumns(['action'])
             ->setRowId('id')
