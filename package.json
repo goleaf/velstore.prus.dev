@@ -1,0 +1,19 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@popperjs/core": "^2.11.8",
+        "axios": "^1.6.4",
+        "laravel-vite-plugin": "^1.3.0",
+        "sass": "^1.93.2",
+        "vite": "^5.4.20"
+    },
+    "dependencies": {
+        "datatables.net": "^2.3.4",
+        "datatables.net-dt": "^2.3.4"
+    }
+}

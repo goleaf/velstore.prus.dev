@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers\Vendor;
+
+use App\Http\Controllers\Controller;
+use App\Models\Order;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
+
+class OrderController extends Controller
+{
+    public function index()
+    {
+        return view('vendor.orders.index');
+    }
+
+    public function getData(Request $request)
+    {
+        $vendorId = Auth::guard('vendor')->id();
+
+        $query = Order::whereHas('items', function ($q) use ($vendorId) {
+            $q->where('vendor_id', $vendorId);
+        })
+            ->with('items')
+            ->latest();
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('order_date', function (Order $order) {
+                return $order->created_at?->format('Y-m-d H:i');
+            })
+            ->addColumn('total_price', function (Order $order) {
+                return number_format((float) $order->total_amount, 2);
+            })
+            ->editColumn('status', function (Order $order) {
+                return ucfirst($order->status);
+            })
+            ->addColumn('action', function (Order $order) {
+                return '
+                    <form action="'.route('vendor.orders.destroy', $order->id).'" method="POST" class="d-inline delete-order-form">
+                        '.csrf_field().'
+                        '.method_field('DELETE').'
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm(\'Are you sure you want to delete this order?\')">
+                            Delete
+                        </button>
+                    </form>
+                ';
+            })
+            ->rawColumns(['action'])
+            ->setRowId('id')
+            ->make(true);
+    }
+
+    public function destroy($id)
+    {
+        $vendorId = Auth::guard('vendor')->id();
+
+        $order = Order::whereHas('items', function ($q) use ($vendorId) {
+            $q->where('vendor_id', $vendorId);
+        })->findOrFail($id);
+
+        $order->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Order deleted successfully.']);
+        }
+
+        return redirect()->route('vendor.orders.index')->with('success', 'Order deleted successfully.');
+    }
+}

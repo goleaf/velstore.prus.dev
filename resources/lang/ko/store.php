@@ -1,0 +1,43 @@
+<?php
+
+return [
+    'header' => [
+        'top_bar_message' => '50달러 이상 주문 시 무료 배송 | 지원 | 매장 찾기',
+        'search_placeholder' => '상품 검색',
+    ],
+
+    'footer' => [
+        'account' => '계정',
+        'my_account' => '내 계정',
+        'wishlist' => '위시리스트',
+        'pages' => '페이지',
+        'privacy_policy' => '개인정보 처리방침',
+        'terms_of_service' => '이용약관',
+        'follow_us' => '팔로우하기',
+        'footer_logo_alt' => 'Velstore 푸터 로고',
+        'copyright' => '© 2025 Velstore Demo. 모든 권리 보유.',
+        'powered_by' => 'Velstore Labs 제공',
+    ],
+
+    'product_detail' => [
+        'home' => '홈',
+        'in_stock' => '재고 있음',
+        'out_of_stock' => '품절',
+        'customer_reviews' => '고객 리뷰',
+        'no_reviews' => '이 상품에 대한 리뷰가 아직 없습니다.',
+        'no_review_text' => '작성된 리뷰가 없습니다.',
+        'average_rating' => '평균 평점',
+        'days_ago' => '{1} :days일 전|[2,*] :days일 전',
+        'description' => '설명',
+        'reviews' => '리뷰',
+        'add_to_cart' => '장바구니에 담기',
+        'increase_quantity' => '수량 늘리기',
+        'decrease_quantity' => '수량 줄이기',
+        'selected_variant_not' => '선택한 옵션은 사용할 수 없습니다.',
+        'fetch_variant_failed' => '옵션 가격을 가져올 수 없습니다.',
+        'ajax_error' => '문제가 발생했습니다. 다시 시도해주세요.',
+        'currency_symbol' => '통화',
+        'cart_success' => '상품이 장바구니에 성공적으로 추가되었습니다.',
+        'cart_update_error' => '장바구니를 업데이트할 수 없습니다. 다시 시도해주세요.',
+    ],
+];
