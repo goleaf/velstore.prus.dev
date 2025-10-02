@@ -17,6 +17,8 @@
         $statusLabel = $customer->status === 'active' ? __('cms.customers.active') : __('cms.customers.inactive');
         $statusClass = $customer->status === 'active' ? 'badge bg-success' : 'badge bg-danger';
         $customerAddresses = $customer->addresses->sortByDesc('is_default');
+        $defaultAddress = $customer->defaultAddress;
+        $primaryAddressLine = $customer->primary_address_line;
     @endphp
 
     <div class="row mt-3 g-3">
@@ -75,7 +77,19 @@
                 </div>
                 <div class="col-md-6">
                     <p class="text-muted small mb-1">{{ __('cms.customers.address') }}</p>
-                    <p class="fw-semibold mb-0">{{ $customer->address ?? __('cms.customers.not_available') }}</p>
+                    @if ($primaryAddressLine)
+                        <p class="fw-semibold mb-0">{{ $primaryAddressLine }}</p>
+                        @if ($defaultAddress)
+                            <p class="text-muted small mb-0">
+                                {{ $defaultAddress->name }}
+                                @if ($defaultAddress->phone)
+                                    <span class="mx-1">&middot;</span>{{ $defaultAddress->phone }}
+                                @endif
+                            </p>
+                        @endif
+                    @else
+                        <p class="fw-semibold mb-0">{{ __('cms.customers.not_available') }}</p>
+                    @endif
                 </div>
                 <div class="col-md-3">
                     <p class="text-muted small mb-1">{{ __('cms.customers.registered_at') }}</p>

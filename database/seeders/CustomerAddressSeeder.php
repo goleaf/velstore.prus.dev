@@ -11,18 +11,20 @@ class CustomerAddressSeeder extends Seeder
     public function run(): void
     {
         Customer::query()->each(function (Customer $customer): void {
-            if ($customer->addresses()->exists()) {
-                return;
+            $existingCount = $customer->addresses()->count();
+            $targetCount = 3;
+
+            if ($existingCount < $targetCount) {
+                $newAddresses = CustomerAddress::factory()
+                    ->count($targetCount - $existingCount)
+                    ->create(['customer_id' => $customer->id]);
+
+                if ($existingCount === 0 && $newAddresses->isNotEmpty()) {
+                    $newAddresses->first()->update(['is_default' => true]);
+                }
             }
 
-            $addresses = CustomerAddress::factory()
-                ->count(3)
-                ->create(['customer_id' => $customer->id]);
-
-            $first = $addresses->first();
-            if ($first) {
-                $first->update(['is_default' => true]);
-            }
+            $customer->ensureDefaultAddress();
         });
     }
 }
