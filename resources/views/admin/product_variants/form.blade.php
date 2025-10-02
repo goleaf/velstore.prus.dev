@@ -14,6 +14,16 @@
         ? route('admin.product_variants.update', $productVariant->id)
         : route('admin.product_variants.store');
     $formMethod = $isEdit ? 'PUT' : 'POST';
+
+    $languageCodes = $languages->pluck('code')->filter()->values();
+    $errorTab = $languageCodes->first(function ($code) use ($errors) {
+        return $errors->has("translations.$code.name") || $errors->has("translations.$code.value");
+    });
+    $initialTab = old('active_tab', $errorTab ?? ($languageCodes->first() ?? null));
+
+    if (! $initialTab) {
+        $initialTab = 'en';
+    }
 @endphp
 
 @section('content')
@@ -215,7 +225,7 @@
                 </div>
             </section>
 
-            <section>
+            <section x-data="{ activeTab: '{{ $initialTab }}' }">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -227,20 +237,25 @@
                     </div>
                 </div>
 
-                <div class="mt-6 grid gap-6 md:grid-cols-2">
-                    @foreach ($languages as $language)
-                        @php
-                            $langCode = $language->code;
-                            $languageName = ucwords($language->name ?? $langCode);
-                            $existingTranslation = $isEdit && $productVariant
-                                ? $productVariant->translations->firstWhere('locale', $langCode)
-                                : null;
-                            $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
-                            $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
-                        @endphp
-                        <div class="rounded-lg border border-gray-200 bg-secondary-50/40 p-4">
-                            <h3 class="text-sm font-semibold text-gray-700">{{ $languageName }}</h3>
-                            <div class="mt-4 space-y-4">
+                @if ($languages->isNotEmpty())
+                    <input type="hidden" name="active_tab" x-model="activeTab">
+
+                    <div class="mt-6">
+                        @include('admin.product_variants.partials.language-tabs', ['languages' => $languages])
+                    </div>
+
+                    <div class="mt-6 space-y-6">
+                        @foreach ($languages as $language)
+                            @php
+                                $langCode = $language->code;
+                                $languageName = ucwords($language->name ?? $langCode);
+                                $existingTranslation = $isEdit && $productVariant
+                                    ? $productVariant->translations->firstWhere('locale', $langCode)
+                                    : null;
+                                $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
+                                $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
+                            @endphp
+                            <div x-show="activeTab === '{{ $langCode }}'" x-cloak class="space-y-4">
                                 <div>
                                     <label for="translations_{{ $langCode }}_name" class="form-label">
                                         {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
@@ -275,9 +290,9 @@
                                     @enderror
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                @endif
             </section>
 
             <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
