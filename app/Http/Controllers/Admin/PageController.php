@@ -9,6 +9,7 @@ use App\Models\PageTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\Facades\DataTables;
 
 class PageController extends Controller
@@ -205,6 +206,9 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Page status updated.',
-        ]);
+            'data' => [
+                'status' => (bool) $page->status,
+            ],
+        ], Response::HTTP_OK);
     }
 }
