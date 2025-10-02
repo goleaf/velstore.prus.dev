@@ -169,6 +169,66 @@ return [
         'not_available' => 'N/A',
     ],
 
+    'product_variants' => [
+
+        // Titles
+        'title_manage' => 'Manage Product Variants',
+        'index_description' => 'Review and manage variant-level pricing, stock, and translations.',
+        'title_create' => 'Create Product Variant',
+        'create_description' => 'Configure pricing, inventory, and localized labels for this variant.',
+        'title_edit' => 'Edit Product Variant',
+        'edit_description' => 'Update variant details, stock, and translations.',
+        'add_new' => 'Add Variant',
+        'back_to_index' => 'Back to variants',
+
+        // Table Columns
+        'table_id' => 'ID',
+        'table_product' => 'Product',
+        'table_name' => 'Variant name',
+        'table_value' => 'Variant value',
+        'table_price' => 'Price',
+        'table_stock' => 'Stock',
+        'table_sku' => 'SKU',
+        'table_actions' => 'Actions',
+
+        // Form Sections
+        'form_section_details' => 'Variant details',
+        'form_section_inventory' => 'Inventory & pricing',
+        'form_section_translations' => 'Translations',
+        'form_section_translations_description' => 'Provide localized labels for each available language.',
+
+        // Form Labels
+        'form_product' => 'Product',
+        'form_select_product' => 'Select a product',
+        'form_variant_slug' => 'Variant slug',
+        'form_internal_name' => 'Internal name',
+        'form_value' => 'Variant value',
+        'form_price' => 'Price',
+        'form_discount_price' => 'Discount price',
+        'form_stock' => 'Stock quantity',
+        'form_sku' => 'SKU',
+        'form_weight' => 'Weight',
+        'form_dimensions' => 'Dimensions',
+        'form_translation_name' => ':language variant name',
+        'form_translation_value' => ':language variant value',
+        'form_translation_placeholder' => 'Enter value',
+        'form_validation_error' => 'Please correct the highlighted errors and try again.',
+
+        // Buttons
+        'create_button' => 'Create variant',
+        'update_button' => 'Update variant',
+
+        // Alerts & messages
+        'success_title' => 'Success',
+        'error_title' => 'Error',
+        'delete_confirm_title' => 'Delete variant',
+        'delete_confirm_message' => 'Are you sure you want to delete this product variant?',
+        'delete_confirm_cancel' => 'Cancel',
+        'delete_confirm_accept' => 'Delete',
+        'delete_success_message' => 'Product variant deleted successfully.',
+        'delete_error_message' => 'Error deleting product variant.',
+    ],
+
     'refunds' => [
 
         // Page Titles
