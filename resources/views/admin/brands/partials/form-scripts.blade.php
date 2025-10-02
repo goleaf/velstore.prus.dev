@@ -12,8 +12,16 @@
         const previewWrapper = document.getElementById('brandLogoPreview');
         const previewImage = document.getElementById('brandLogoPreviewImg');
 
+        const togglePreviewVisibility = (shouldShow) => {
+            if (!previewWrapper) {
+                return;
+            }
+
+            previewWrapper.classList.toggle('hidden', !shouldShow);
+        };
+
         if (previewWrapper && previewImage && previewImage.getAttribute('src')) {
-            previewWrapper.classList.remove('d-none');
+            togglePreviewVisibility(true);
         }
 
         if (logoInput && previewWrapper && previewImage) {
@@ -21,27 +29,82 @@
                 const [file] = event.target.files || [];
 
                 if (!file) {
-                    previewWrapper.classList.add('d-none');
+                    togglePreviewVisibility(false);
                     previewImage.removeAttribute('src');
                     return;
                 }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    previewWrapper.classList.remove('d-none');
                     previewImage.src = e.target?.result || '';
+                    togglePreviewVisibility(true);
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        const firstInvalidElement = brandFormWrapper.querySelector('.is-invalid');
-        if (firstInvalidElement) {
-            const tabPane = firstInvalidElement.closest('.tab-pane');
-            if (tabPane) {
-                const trigger = document.querySelector(`[data-bs-target="#${tabPane.id}"]`);
-                if (trigger) {
-                    bootstrap.Tab.getOrCreateInstance(trigger).show();
+        const tabButtons = Array.from(brandFormWrapper.querySelectorAll('[data-tab-button]'));
+        const tabPanels = Array.from(brandFormWrapper.querySelectorAll('[data-tab-panel]'));
+        const activeTabInput = brandFormWrapper.querySelector('input[name="active_tab"]');
+
+        if (tabButtons.length > 0 && tabPanels.length > 0) {
+            const setActiveTab = (targetId) => {
+                if (!targetId) {
+                    return;
+                }
+
+                tabButtons.forEach((button) => {
+                    const isActive = button.dataset.tabTarget === targetId;
+                    button.classList.toggle('nav-tab-active', isActive);
+                    button.classList.toggle('nav-tab-inactive', !isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                tabPanels.forEach((panel) => {
+                    const isActive = panel.id === targetId;
+                    panel.classList.toggle('hidden', !isActive);
+                    panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+                });
+
+                if (activeTabInput) {
+                    const activeButton = tabButtons.find((button) => button.dataset.tabTarget === targetId);
+                    if (activeButton) {
+                        activeTabInput.value = activeButton.dataset.tabValue || '';
+                    }
+                }
+            };
+
+            const showTabByValue = (value) => {
+                if (!value) {
+                    return false;
+                }
+
+                const matchingButton = tabButtons.find((button) => button.dataset.tabValue === value);
+                if (!matchingButton) {
+                    return false;
+                }
+
+                setActiveTab(matchingButton.dataset.tabTarget);
+                return true;
+            };
+
+            tabButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    setActiveTab(button.dataset.tabTarget);
+                });
+            });
+
+            const initialTabValue = activeTabInput ? activeTabInput.value : undefined;
+
+            if (!showTabByValue(initialTabValue) && tabButtons[0]) {
+                setActiveTab(tabButtons[0].dataset.tabTarget);
+            }
+
+            const firstInvalidElement = brandFormWrapper.querySelector('.is-invalid');
+            if (firstInvalidElement) {
+                const tabPane = firstInvalidElement.closest('[data-tab-panel]');
+                if (tabPane) {
+                    setActiveTab(tabPane.id);
                 }
             }
         }
