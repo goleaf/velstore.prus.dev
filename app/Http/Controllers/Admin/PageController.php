@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Language;
 use App\Models\Page;
 use App\Models\PageTranslation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -191,7 +192,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function updatePageStatus(Request $request)
+    public function updatePageStatus(Request $request): JsonResponse
     {
         $request->validate([
             'id' => 'required|exists:pages,id',
@@ -199,12 +200,13 @@ class PageController extends Controller
         ]);
 
         $page = Page::find($request->id);
-        $page->status = $request->status;
+        $page->status = (bool) $request->boolean('status');
         $page->save();
 
         return response()->json([
             'success' => true,
+            'status' => (bool) $page->status,
             'message' => 'Page status updated.',
-        ]);
+        ], JsonResponse::HTTP_OK);
     }
 }
