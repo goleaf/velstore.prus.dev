@@ -11,6 +11,10 @@ class Page extends Model
 
     protected $fillable = ['slug', 'status'];
 
+    protected $casts = [
+        'status' => 'boolean',
+    ];
+
     public function translations()
     {
         return $this->hasMany(PageTranslation::class);
