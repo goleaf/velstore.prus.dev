@@ -42,6 +42,9 @@
         }
         $statusTotal = array_sum($statusCounts);
     @endphp
+    @php
+        $charts = $cardCharts ?? [];
+    @endphp
     <div class="max-w-7xl mx-auto mt-4 px-4 space-y-6">
         <div>
             <h2 class="text-2xl font-semibold text-gray-900">{{ __('cms.dashboard.title') }}</h2>
@@ -73,6 +76,16 @@
                         <span class="text-gray-500">{{ __('cms.dashboard.yesterday_revenue') }}: {{ number_format($salesYesterday, 2) }}</span>
                     @endif
                 </div>
+                @if(!empty($charts['sales_today']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['sales_today'])'
+                            aria-label="{{ $charts['sales_today']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -99,6 +112,16 @@
                         <span class="text-gray-500">{{ __('cms.dashboard.weekly_revenue_change') }}</span>
                     @endif
                 </div>
+                @if(!empty($charts['weekly_revenue']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['weekly_revenue'])'
+                            aria-label="{{ $charts['weekly_revenue']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -113,6 +136,16 @@
                 </div>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.net_revenue_description') }}</p>
                 <div class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.refunds') }}: {{ number_format($kpi['refunds_total'] ?? 0, 2) }} ({{ number_format($kpi['refund_rate'] ?? 0, 2) }}%)</div>
+                @if(!empty($charts['net_revenue']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['net_revenue'])'
+                            aria-label="{{ $charts['net_revenue']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -126,6 +159,16 @@
                     </span>
                 </div>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.average_order_value_description') }}</p>
+                @if(!empty($charts['aov']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['aov'])'
+                            aria-label="{{ $charts['aov']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -142,6 +185,16 @@
                 </div>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.order_completion_rate_description') }}</p>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.completed_orders') }}: {{ $kpi['orders_completed'] ?? 0 }} / {{ $ordersTotal }}</p>
+                @if(!empty($charts['completion_rate']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['completion_rate'])'
+                            aria-label="{{ $charts['completion_rate']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -156,6 +209,16 @@
                 </div>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.open_orders_description') }}</p>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.pending_orders') }}: {{ $kpi['orders_pending'] ?? 0 }} · {{ __('cms.dashboard.processing_orders') }}: {{ $kpi['orders_processing'] ?? 0 }} · {{ __('cms.dashboard.cancelled_orders') }}: {{ $kpi['orders_cancelled'] ?? 0 }}</p>
+                @if(!empty($charts['open_orders']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['open_orders'])'
+                            aria-label="{{ $charts['open_orders']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -185,6 +248,16 @@
                         @endif
                     </div>
                 </div>
+                @if(!empty($charts['customers']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['customers'])'
+                            aria-label="{{ $charts['customers']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
 
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -198,6 +271,16 @@
                     </span>
                 </div>
                 <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.vendors_description') }}</p>
+                @if(!empty($charts['vendors']['values'] ?? []))
+                    <div class="mt-5 h-16">
+                        <canvas
+                            class="w-full h-full"
+                            data-chart='@json($charts['vendors'])'
+                            aria-label="{{ $charts['vendors']['label'] ?? '' }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -252,21 +335,45 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.top_products') }}</h3>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.top_products') }}</h3>
+                        <p class="text-sm text-gray-500">{{ __('cms.dashboard.top_products_description') }}</p>
+                    </div>
                     <span class="text-sm text-gray-500">{{ __('cms.dashboard.reviews') }}</span>
                 </div>
                 @if(isset($topProducts) && $topProducts->count())
                     <ul class="divide-y divide-gray-100">
                         @foreach ($topProducts as $product)
-                            <li class="py-3 flex items-center justify-between text-sm">
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ optional($product->translation)->name ?? $product->slug }}</p>
-                                    <p class="text-xs text-gray-500">{{ __('cms.dashboard.unit_price') }}: {{ number_format($product->price, 2) }}</p>
+                            <li class="py-4 text-sm">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ optional($product->translation)->name ?? $product->slug }}</p>
+                                        <p class="text-xs text-gray-500">{{ __('cms.dashboard.unit_price') }}: {{ number_format($product->price, 2) }}</p>
+                                        <p class="mt-1 text-xs text-gray-500">{{ __('cms.dashboard.top_products_stock') }}: {{ number_format($product->stock ?? 0) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-gray-900">{{ $product->reviews_count }}</p>
+                                        <p class="text-xs text-gray-500">{{ __('cms.dashboard.reviews') }}</p>
+                                    </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-semibold text-gray-900">{{ $product->reviews_count }}</p>
-                                    <p class="text-xs text-gray-500">{{ __('cms.dashboard.reviews') }}</p>
-                                </div>
+                                <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-gray-600">
+                                    <div class="rounded-lg bg-gray-50 px-3 py-2">
+                                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.top_products_units_sold') }}</dt>
+                                        <dd class="mt-1 text-sm font-semibold text-gray-900">{{ number_format($product->units_sold ?? 0) }}</dd>
+                                    </div>
+                                    <div class="rounded-lg bg-gray-50 px-3 py-2">
+                                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.top_products_revenue') }}</dt>
+                                        <dd class="mt-1 text-sm font-semibold text-gray-900">{{ number_format($product->revenue_generated ?? 0, 2) }}</dd>
+                                    </div>
+                                    <div class="rounded-lg bg-gray-50 px-3 py-2">
+                                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.top_products_rating') }}</dt>
+                                        <dd class="mt-1 text-sm font-semibold text-gray-900">{{ number_format($product->average_rating ?? 0, 1) }}</dd>
+                                    </div>
+                                    <div class="rounded-lg bg-gray-50 px-3 py-2">
+                                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.top_products_conversion') }}</dt>
+                                        <dd class="mt-1 text-sm font-semibold text-gray-900">{{ number_format($product->reviews_count > 0 ? ($product->units_sold ? ($product->reviews_count / max($product->units_sold, 1) * 100) : 0) : 0, 1) }}%</dd>
+                                    </div>
+                                </dl>
                             </li>
                         @endforeach
                     </ul>
@@ -305,8 +412,91 @@
                             <span>{{ __('cms.dashboard.customers_growth') }}</span>
                         @endif
                     </li>
+                    @foreach(($productInsights ?? []) as $insight)
+                        <li class="flex items-start gap-2">
+                            <span class="mt-1 text-rose-500"><i class="fas fa-circle"></i></span>
+                            <span>{{ $insight }}</span>
+                        </li>
+                    @endforeach
                 </ul>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Chart === 'undefined') {
+                return;
+            }
+
+            document.querySelectorAll('canvas[data-chart]').forEach((canvas) => {
+                const dataset = (() => {
+                    try {
+                        return JSON.parse(canvas.dataset.chart || '{}');
+                    } catch (error) {
+                        console.warn('Unable to parse chart data', error);
+                        return null;
+                    }
+                })();
+
+                if (!dataset || !Array.isArray(dataset.values) || dataset.values.length === 0) {
+                    return;
+                }
+
+                const labels = dataset.labels || [];
+                const values = dataset.values || [];
+                const color = dataset.color || '#2563eb';
+                const background = dataset.background || 'rgba(37, 99, 235, 0.12)';
+
+                new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                data: values,
+                                borderColor: color,
+                                backgroundColor: background,
+                                borderWidth: 2,
+                                tension: 0.45,
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 3,
+                            }
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            tooltip: {
+                                padding: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (context) => {
+                                        const suffix = dataset.suffix || '';
+                                        return `${context.formattedValue}${suffix}`;
+                                    },
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                display: false,
+                            },
+                            y: {
+                                display: false,
+                            },
+                        },
+                    },
+                });
+            });
+        });
+    </script>
+@endpush
