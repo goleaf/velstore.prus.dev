@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $deleteTemplate = route('admin.orders.destroy', ['order' => '__ORDER_ID__']);
+        $deleteTemplate = route('admin.orders.destroy', ['id' => '__ORDER_ID__']);
     @endphp
 
     <x-admin.page-header :title="__('cms.orders.title')" />

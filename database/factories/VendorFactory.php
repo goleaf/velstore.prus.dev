@@ -15,12 +15,12 @@ class VendorFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
+            'name' => $this->faker->company(),
             'email' => $this->faker->unique()->safeEmail(),
             'password' => 'password',
             'phone' => $this->faker->phoneNumber(),
-            'status' => $this->faker->randomElement(['active', 'inactive']),
-            'avatar' => $this->faker->imageUrl(),
+            'status' => 'active',
+            'avatar' => null,
         ];
     }
 }
