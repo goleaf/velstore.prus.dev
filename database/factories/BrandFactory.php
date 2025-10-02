@@ -20,7 +20,7 @@ class BrandFactory extends Factory
         return [
             'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
             'logo_url' => $this->faker->imageUrl(),
-            'status' => $this->faker->randomElement(['active', 'inactive', 'discontinued']),
+            'status' => 'active',
         ];
     }
 }

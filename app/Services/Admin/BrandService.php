@@ -2,13 +2,15 @@
 
 namespace App\Services\Admin;
 
+use App\Models\Brand;
 use App\Repositories\Admin\Brand\BrandRepositoryInterface;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BrandService
 {
-    protected $brandRepository;
+    protected BrandRepositoryInterface $brandRepository;
 
     public function __construct(BrandRepositoryInterface $brandRepository)
     {
@@ -20,108 +22,156 @@ class BrandService
         return $this->brandRepository->getAll();
     }
 
-    public function store($data)
+    public function getBrandsForDataTable()
     {
-        if (isset($data['translations'])) {
-            foreach ($data['translations'] as $locale => $translation) {
-                if (empty($data['slug'])) {
-                    $data['slug'] = Str::slug($translation['name']);
-                }
-            }
-        }
-
-        if (isset($data['logo_url']) && $data['logo_url'] instanceof \Illuminate\Http\UploadedFile) {
-            $logoPath = $data['logo_url']->store('brands/logos', 'public');
-        } else {
-            $logoPath = null;
-        }
-
-        $status = $data['status'] ?? 'active';
-
-        $brandData = [
-            'slug' => $data['slug'],
-            'logo_url' => $logoPath,
-            'status' => $status,
-        ];
-
-        $brand = $this->brandRepository->store($brandData);
-
-        if (isset($data['translations'])) {
-            foreach ($data['translations'] as $locale => $translation) {
-                $brand->translations()->create([
-                    'locale' => $locale,
-                    'name' => $translation['name'],
-                    'description' => $translation['description'] ?? null,
-                ]);
-            }
-        }
-
-        return $brand;
+        return Brand::with('translations')->select('brands.*');
     }
 
-    public function updateBrand($id, $data)
+    public function store(array $data)
+    {
+        $translations = $data['translations'] ?? [];
+        $primaryTranslation = $this->getPrimaryTranslation($translations);
+
+        $slugSource = $data['slug'] ?? ($primaryTranslation['name'] ?? Str::random(8));
+        $slug = $this->generateUniqueSlug($slugSource);
+
+        $logoPath = $this->storeLogo($data['logo_url'] ?? null);
+
+        $status = $this->normalizeStatus($data['status'] ?? 'active');
+
+        $brand = $this->brandRepository->store([
+            'slug' => $slug,
+            'logo_url' => $logoPath,
+            'status' => $status,
+        ]);
+
+        $this->syncTranslations($brand, $translations);
+
+        return $brand->load('translations');
+    }
+
+    public function updateBrand(int $id, array $data)
     {
         $brand = $this->brandRepository->find($id);
 
-        if (isset($data['logo_url']) && $data['logo_url'] instanceof \Illuminate\Http\UploadedFile) {
-            if ($brand->logo_url && Storage::exists('public/'.$brand->logo_url)) {
-                Storage::delete('public/'.$brand->logo_url);
-            }
-
-            $logoPath = $data['logo_url']->store('brands/logos', 'public');
-            $brand->logo_url = $logoPath;
+        if (isset($data['logo_url']) && $data['logo_url'] instanceof UploadedFile) {
+            $this->deleteLogoIfExists($brand->logo_url);
+            $brand->logo_url = $this->storeLogo($data['logo_url']);
         }
 
-        if (empty($data['slug'])) {
-            $brand->slug = Str::slug($data['translations']['en']['name'] ?? 'default'); // Default to 'default' if no name provided
+        $translations = $data['translations'] ?? [];
+        $primaryTranslation = $this->getPrimaryTranslation($translations);
+
+        if (! empty($data['slug'])) {
+            $brand->slug = $this->generateUniqueSlug($data['slug'], $brand->id);
+        } elseif ($primaryTranslation && ! empty($primaryTranslation['name'])) {
+            $brand->slug = $this->generateUniqueSlug($primaryTranslation['name'], $brand->id);
         }
 
-        $brand->status = $data['status'] ?? 'active';
+        if (array_key_exists('status', $data)) {
+            $brand->status = $this->normalizeStatus($data['status']);
+        }
 
         $brand->save();
 
-        if (isset($data['translations'])) {
-            foreach ($data['translations'] as $locale => $translation) {
-                $brandTranslation = $brand->translations()->where('locale', $locale)->first();
+        $this->syncTranslations($brand, $translations);
 
-                if ($brandTranslation) {
-                    $brandTranslation->update([
-                        'name' => $translation['name'],
-                        'description' => $translation['description'] ?? null,
-                    ]);
-                } else {
-                    $brand->translations()->create([
-                        'locale' => $locale,
-                        'name' => $translation['name'],
-                        'description' => $translation['description'] ?? null,
-                    ]);
-                }
-            }
-        }
-
-        return $brand;
+        return $brand->load('translations');
     }
 
-    public function deleteBrand($id)
+    public function deleteBrand(int $id)
     {
         $brand = $this->brandRepository->find($id);
 
-        if ($brand->logo_url && Storage::exists('public/'.$brand->logo_url)) {
-            Storage::delete('public/'.$brand->logo_url);
-        }
+        $this->deleteLogoIfExists($brand->logo_url);
 
         $brand->translations()->delete();
 
         return $brand->delete();
     }
 
-    public function getBrandById($id)
+    public function getBrandById(int $id)
     {
-        return $this->brandRepository->find($id);
+        return $this->brandRepository->find($id)->load('translations');
     }
 
-    public function createBrand(array $data)
+    protected function storeLogo($logo): ?string
     {
-        return $this->brandRepository->create($data);
+        if ($logo instanceof UploadedFile) {
+            return $logo->store('brands/logos', 'public');
+        }
+
+        return $logo ?: null;
+    }
+
+    protected function deleteLogoIfExists(?string $path): void
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
+    protected function syncTranslations(Brand $brand, array $translations): void
+    {
+        foreach ($translations as $locale => $translation) {
+            if (! isset($translation['name'])) {
+                continue;
+            }
+
+            $brand->translations()->updateOrCreate(
+                ['locale' => $locale],
+                [
+                    'name' => $translation['name'],
+                    'description' => $translation['description'] ?? null,
+                ]
+            );
+        }
+    }
+
+    protected function getPrimaryTranslation(array $translations): array
+    {
+        $currentLocale = app()->getLocale();
+        if (isset($translations[$currentLocale])) {
+            return $translations[$currentLocale];
+        }
+
+        $fallbackLocale = config('app.fallback_locale');
+        if ($fallbackLocale && isset($translations[$fallbackLocale])) {
+            return $translations[$fallbackLocale];
+        }
+
+        foreach ($translations as $translation) {
+            if (is_array($translation)) {
+                return $translation;
+            }
+        }
+
+        return [];
+    }
+
+    protected function normalizeStatus($status): string
+    {
+        $status = strtolower((string) $status);
+
+        return in_array($status, ['active', 'inactive', 'discontinued'], true)
+            ? $status
+            : 'active';
+    }
+
+    protected function generateUniqueSlug(string $base, ?int $ignoreId = null): string
+    {
+        $slug = Str::slug($base) ?: Str::random(8);
+        $original = $slug;
+        $counter = 1;
+
+        while (
+            Brand::where('slug', $slug)
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $original.'-'.($counter++);
+        }
+
+        return $slug;
     }
 }

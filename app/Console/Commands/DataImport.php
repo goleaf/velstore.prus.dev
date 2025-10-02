@@ -40,6 +40,29 @@ class DataImport extends Command
 
         $this->info('Demo data seeded successfully!');
         $this->info('Data import completed successfully!');
+    }
+
+    protected function createCategoriesAndProducts()
+    {
+        $seller = Vendor::firstOrCreate(
+            ['email' => 'seller@example.com'],
+            [
+                'name' => 'Seller',
+                'email' => 'seller@example.com',
+                'password' => Hash::make('abc123'),
+                'phone' => '+923001234567',
+            ]
+        );
+
+        $shop = Shop::firstOrCreate(
+            ['name' => 'Soft Shoes'],
+            [
+                'vendor_id' => $seller->id,
+                'name' => 'Soft Shoes',
+                'logo' => 'N/A',
+                'description' => 'Luxurious comfort in every step. Crafted with premium materials for a soft, stylish, and effortless walking experience. ',
+            ]
+        );
 
         return Command::SUCCESS;
     }

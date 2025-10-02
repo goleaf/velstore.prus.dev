@@ -15,12 +15,14 @@ class CategoryTranslationFactory extends Factory
 
     public function definition(): array
     {
+        $name = $this->faker->unique()->words(2, true);
+
         return [
             'category_id' => Category::factory(),
-            'language_code' => $this->faker->unique()->lexify('??'),
-            'name' => $this->faker->words(2, true),
+            'language_code' => 'en',
+            'name' => ucfirst($name),
             'description' => $this->faker->sentence(),
-            'image_url' => 'categories/' . $this->faker->unique()->uuid() . '.jpg',
+            'image_url' => 'categories/' . $this->faker->unique()->lexify('image_?????') . '.jpg',
         ];
     }
 }

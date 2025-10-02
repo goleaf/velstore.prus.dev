@@ -294,7 +294,7 @@
                     <ul class="divide-y divide-gray-100">
                         @foreach ($revenueTrend as $point)
                             <li class="py-3 flex items-center justify-between text-sm">
-                                <span class="font-medium text-gray-700">{{ \\Carbon\\Carbon::parse($point['date'])->format('M d, Y') }}</span>
+                                <span class="font-medium text-gray-700">{{ \Carbon\Carbon::parse($point['date'])->format('M d, Y') }}</span>
                                 <span class="text-gray-900 font-semibold">{{ number_format($point['amount'], 2) }}</span>
                             </li>
                         @endforeach

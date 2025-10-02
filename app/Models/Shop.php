@@ -12,6 +12,7 @@ class Shop extends Model
 
     protected $fillable = [
         'vendor_id',
+        'seller_id',
         'name',
         'slug',
         'logo',

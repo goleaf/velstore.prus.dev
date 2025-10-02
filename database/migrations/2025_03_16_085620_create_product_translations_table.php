@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('product_id');
             $table->string('language_code', 5)->default('en');
+            $table->string('locale', 5)->default('en');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('short_description')->nullable();
