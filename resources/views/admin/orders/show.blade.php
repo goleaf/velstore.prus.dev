@@ -1,221 +1,189 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <h6 class="mb-0">{{ __('cms.orders.details_title') }} <span class="text-primary">#{{ $order->id }}</span></h6>
-        <button type="button" class="btn btn-light btn-sm"
-                data-url="{{ route('admin.orders.index') }}">{{ __('cms.orders.back_to_orders') }}</button>
-    </div>
+    <x-admin.page-header :title="__('cms.orders.details_title') . ' #' . $order->id">
+        <x-admin.button-link href="{{ route('admin.orders.index') }}" class="btn-outline btn-sm">
+            {{ __('cms.orders.back_to_orders') }}
+        </x-admin.button-link>
+    </x-admin.page-header>
 
     @php
         $statusClasses = [
-            'pending' => 'badge bg-warning text-dark',
-            'processing' => 'badge bg-info text-dark',
-            'completed' => 'badge bg-success',
-            'canceled' => 'badge bg-danger',
+            'pending' => 'badge-warning',
+            'processing' => 'badge-info',
+            'completed' => 'badge-success',
+            'canceled' => 'badge-danger',
         ];
-        $statusClass = $statusClasses[$order->status] ?? 'badge bg-secondary';
-        $itemsTotal = $order->details->reduce(function ($carry, $detail) {
-            return $carry + $detail->quantity * (float) $detail->price;
-        }, 0);
+        $statusClass = $statusClasses[$order->status] ?? 'badge-gray';
+        $itemsTotal = $order->details->reduce(fn ($carry, $detail) => $carry + ($detail->quantity * (float) $detail->price), 0);
     @endphp
 
-    <div class="card mt-3">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="mb-0">{{ __('cms.orders.summary') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <p class="mb-1 text-muted">{{ __('cms.orders.placed_at') }}</p>
-                    <p class="fw-semibold">
-                        {{ optional($order->created_at)->format('Y-m-d H:i') ?? __('cms.orders.not_available') }}</p>
-                </div>
-                <div class="col-md-3">
-                    <p class="mb-1 text-muted">{{ __('cms.orders.status') }}</p>
+    <x-admin.card class="mt-6" :title="__('cms.orders.summary')">
+        <dl class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.placed_at') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    {{ optional($order->created_at)->format('Y-m-d H:i') ?? __('cms.orders.not_available') }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.status') }}</dt>
+                <dd class="mt-1">
                     <span class="{{ $statusClass }}">{{ ucfirst($order->status) }}</span>
-                </div>
-                <div class="col-md-3">
-                    <p class="mb-1 text-muted">{{ __('cms.orders.total_amount') }}</p>
-                    <p class="fw-semibold">{{ number_format((float) $order->total_amount, 2) }}</p>
-                </div>
-                <div class="col-md-3">
-                    <p class="mb-1 text-muted">{{ __('cms.orders.items_total') }}</p>
-                    <p class="fw-semibold">{{ number_format($itemsTotal, 2) }}</p>
-                </div>
+                </dd>
             </div>
-        </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.total_amount') }}</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900">
+                    {{ number_format((float) $order->total_amount, 2) }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.items_total') }}</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900">
+                    {{ number_format($itemsTotal, 2) }}
+                </dd>
+            </div>
+        </dl>
+    </x-admin.card>
+
+    <div class="grid gap-6 mt-6 lg:grid-cols-2">
+        <x-admin.card noMargin :title="__('cms.orders.customer_info')">
+            <div class="space-y-3 text-sm text-gray-700">
+                @if ($order->customer)
+                    <div>
+                        <p class="font-medium text-gray-900">{{ $order->customer->name }}</p>
+                        <p class="text-gray-500">{{ $order->customer->email }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.customer_phone') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->customer->phone ?? __('cms.orders.not_available') }}</span>
+                    </div>
+                @else
+                    <p class="text-gray-500">{{ __('cms.orders.customer_guest') }}</p>
+                    <p class="font-medium text-gray-900">{{ $order->guest_email ?? __('cms.orders.not_available') }}</p>
+                @endif
+            </div>
+        </x-admin.card>
+
+        <x-admin.card noMargin :title="__('cms.orders.shipping')">
+            <div class="space-y-3 text-sm text-gray-700">
+                @if ($order->shippingAddress)
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.customer_name') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.customer_phone') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->phone }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.address') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->address }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.city') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->city }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.postal_code') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->postal_code }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">{{ __('cms.orders.country') }}:</span>
+                        <span class="ml-1 font-medium text-gray-900">{{ $order->shippingAddress->country }}</span>
+                    </div>
+                @else
+                    <p class="text-gray-500">{{ __('cms.orders.shipping_none') }}</p>
+                @endif
+            </div>
+        </x-admin.card>
     </div>
 
-    <div class="row mt-3 g-3">
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header card-header-bg text-white">
-                    <h6 class="mb-0">{{ __('cms.orders.customer_info') }}</h6>
-                </div>
-                <div class="card-body">
-                    @if ($order->customer)
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_name') }}:</span>
-                            <span class="fw-semibold">{{ $order->customer->name }}</span>
-                        </p>
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_email') }}:</span>
-                            <span class="fw-semibold">{{ $order->customer->email }}</span>
-                        </p>
-                        <p class="mb-0"><span class="text-muted">{{ __('cms.orders.customer_phone') }}:</span>
-                            <span
-                                  class="fw-semibold">{{ $order->customer->phone ?? __('cms.orders.not_available') }}</span>
-                        </p>
-                    @else
-                        <p class="mb-2 text-muted">{{ __('cms.orders.customer_guest') }}</p>
-                        <p class="mb-0"><span class="text-muted">{{ __('cms.orders.guest_email') }}:</span>
-                            <span class="fw-semibold">{{ $order->guest_email ?? __('cms.orders.not_available') }}</span>
-                        </p>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header card-header-bg text-white">
-                    <h6 class="mb-0">{{ __('cms.orders.shipping') }}</h6>
-                </div>
-                <div class="card-body">
-                    @if ($order->shippingAddress)
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_name') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->name }}</span>
-                        </p>
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.customer_phone') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->phone }}</span>
-                        </p>
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.address') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->address }}</span>
-                        </p>
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.city') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->city }}</span>
-                        </p>
-                        <p class="mb-2"><span class="text-muted">{{ __('cms.orders.postal_code') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->postal_code }}</span>
-                        </p>
-                        <p class="mb-0"><span class="text-muted">{{ __('cms.orders.country') }}:</span>
-                            <span class="fw-semibold">{{ $order->shippingAddress->country }}</span>
-                        </p>
-                    @else
-                        <p class="mb-0 text-muted">{{ __('cms.orders.shipping_none') }}</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-admin.card class="mt-6" :title="__('cms.orders.items')">
+        <x-admin.table
+            :columns="[
+                __('cms.orders.product'),
+                __('cms.orders.sku'),
+                __('cms.orders.quantity'),
+                __('cms.orders.unit_price'),
+                __('cms.orders.subtotal'),
+            ]"
+        >
+            @forelse ($order->details as $detail)
+                @php
+                    $product = $detail->product;
+                    $productName = $product?->translation?->name ?? $product?->slug ?? __('cms.orders.product_missing');
+                    $brandName = optional($product?->brand?->translation)->name ?? $product?->brand?->slug;
+                    $unitPrice = (float) $detail->price;
+                    $lineTotal = $unitPrice * $detail->quantity;
+                @endphp
+                <tr class="table-row">
+                    <td class="table-cell align-top">
+                        <p class="font-medium text-gray-900">{{ $productName }}</p>
+                        @if ($brandName)
+                            <p class="text-xs text-gray-500">{{ $brandName }}</p>
+                        @endif
+                    </td>
+                    <td class="table-cell align-top text-sm text-gray-600">{{ $product?->SKU ?? '—' }}</td>
+                    <td class="table-cell align-top text-center text-sm text-gray-700">{{ $detail->quantity }}</td>
+                    <td class="table-cell align-top text-right text-sm text-gray-700">{{ number_format($unitPrice, 2) }}</td>
+                    <td class="table-cell align-top text-right text-sm text-gray-900 font-semibold">{{ number_format($lineTotal, 2) }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="table-cell text-center text-gray-500 py-6">{{ __('cms.orders.items_empty') }}</td>
+                </tr>
+            @endforelse
+        </x-admin.table>
 
-    <div class="card mt-3">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="mb-0">{{ __('cms.orders.items') }}</h6>
+        <div class="mt-4 flex justify-end text-sm font-semibold text-gray-900">
+            <span>{{ __('cms.orders.items_total') }}: {{ number_format($itemsTotal, 2) }}</span>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('cms.orders.product') }}</th>
-                            <th>{{ __('cms.orders.sku') }}</th>
-                            <th class="text-center">{{ __('cms.orders.quantity') }}</th>
-                            <th class="text-end">{{ __('cms.orders.unit_price') }}</th>
-                            <th class="text-end">{{ __('cms.orders.subtotal') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($order->details as $detail)
-                            @php
-                                $product = $detail->product;
-                                $productName = $product
-                                    ? optional($product->translation)->name ?? $product->slug
-                                    : __('cms.orders.product_missing');
-                                $unitPrice = (float) $detail->price;
-                                $lineTotal = $unitPrice * $detail->quantity;
-                            @endphp
-                            <tr>
-                                <td>
-                                    <span class="fw-semibold">{{ $productName }}</span>
-                                    @if ($product && $product->brand)
-                                        <small
-                                               class="d-block text-muted">{{ optional($product->brand->translation)->name ?? $product->brand->slug }}</small>
-                                    @endif
-                                </td>
-                                <td>{{ optional($product)->SKU ?? '—' }}</td>
-                                <td class="text-center">{{ $detail->quantity }}</td>
-                                <td class="text-end">{{ number_format($unitPrice, 2) }}</td>
-                                <td class="text-end">{{ number_format($lineTotal, 2) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">{{ __('cms.orders.items_empty') }}
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="4" class="text-end">{{ __('cms.orders.items_total') }}</th>
-                            <th class="text-end">{{ number_format($itemsTotal, 2) }}</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
+    </x-admin.card>
 
-    <div class="card mt-3">
-        <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">{{ __('cms.orders.payments') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('cms.orders.payment_gateway') }}</th>
-                            <th>{{ __('cms.orders.payment_status') }}</th>
-                            <th>{{ __('cms.orders.payment_amount') }}</th>
-                            <th>{{ __('cms.orders.payment_transaction') }}</th>
-                            <th>{{ __('cms.orders.payment_date') }}</th>
-                            <th>{{ __('cms.orders.refunds') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($order->payments as $payment)
-                            <tr>
-                                <td>{{ $payment->gateway->name ?? __('cms.orders.not_available') }}</td>
-                                <td>{{ ucfirst($payment->status) }}</td>
-                                <td>{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</td>
-                                <td>{{ $payment->transaction_id ?? '—' }}</td>
-                                <td>{{ optional($payment->created_at)->format('Y-m-d H:i') ?? '—' }}</td>
-                                <td>
-                                    @if ($payment->refunds->isNotEmpty())
-                                        <ul class="list-unstyled mb-0">
-                                            @foreach ($payment->refunds as $refund)
-                                                <li>
-                                                    <span
-                                                          class="fw-semibold">{{ number_format((float) $refund->amount, 2) }}
-                                                        {{ $refund->currency }}</span>
-                                                    <small class="text-muted">{{ ucfirst($refund->status) }} •
-                                                        {{ optional($refund->created_at)->format('Y-m-d H:i') }}</small>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <span class="text-muted">{{ __('cms.orders.refunds_none') }}</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">{{ __('cms.orders.payments_none') }}
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <x-admin.card class="mt-6" :title="__('cms.orders.payments')">
+        <x-admin.table
+            :columns="[
+                __('cms.orders.payment_gateway'),
+                __('cms.orders.payment_status'),
+                __('cms.orders.payment_amount'),
+                __('cms.orders.payment_transaction'),
+                __('cms.orders.payment_date'),
+                __('cms.orders.refunds'),
+            ]"
+        >
+            @forelse ($order->payments as $payment)
+                <tr class="table-row">
+                    <td class="table-cell text-sm text-gray-700">{{ $payment->gateway->name ?? __('cms.orders.not_available') }}</td>
+                    <td class="table-cell text-sm text-gray-700">{{ ucfirst($payment->status) }}</td>
+                    <td class="table-cell text-sm text-gray-700">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</td>
+                    <td class="table-cell text-sm text-gray-700">{{ $payment->transaction_id ?? '—' }}</td>
+                    <td class="table-cell text-sm text-gray-700">{{ optional($payment->created_at)->format('Y-m-d H:i') ?? '—' }}</td>
+                    <td class="table-cell text-sm text-gray-700">
+                        @if ($payment->refunds->isNotEmpty())
+                            <ul class="space-y-2">
+                                @foreach ($payment->refunds as $refund)
+                                    <li>
+                                        <p class="font-medium text-gray-900">
+                                            {{ number_format((float) $refund->amount, 2) }} {{ $refund->currency }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            {{ ucfirst($refund->status) }} · {{ optional($refund->created_at)->format('Y-m-d H:i') }}
+                                        </p>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <span class="text-gray-500">{{ __('cms.orders.refunds_none') }}</span>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="table-cell text-center text-gray-500 py-6">{{ __('cms.orders.payments_none') }}</td>
+                </tr>
+            @endforelse
+        </x-admin.table>
+    </x-admin.card>
 @endsection

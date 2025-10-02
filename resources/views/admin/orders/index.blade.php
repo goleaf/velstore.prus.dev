@@ -1,153 +1,58 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="card mt-4">
-        <div class="card-header card-header-bg text-white">
-            <h6>{{ __('cms.orders.title') }}</h6>
-        </div>
-        <div class="card-body">
-            <table id="orders-table" class="table table-bordered mt-4 w-100">
-                <thead>
-                    <tr>
-                        <th>{{ __('cms.orders.id') }}</th>
-                        <th>{{ __('cms.orders.order_date') }}</th>
-                        <th>{{ __('cms.orders.status') }}</th>
-                        <th>{{ __('cms.orders.total_price') }}</th>
-                        <th>{{ __('cms.orders.action') }}</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
+    @php
+        $datatableLang = __('cms.datatables');
+        $deleteTemplate = route('admin.orders.destroy', ['order' => '__ORDER_ID__']);
+    @endphp
 
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ __('cms.orders.delete_confirm_title') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <x-admin.page-header :title="__('cms.orders.title')" />
+
+    <x-admin.card noMargin class="mt-6">
+        <x-admin.table
+            id="orders-table"
+            data-orders-table
+            data-source="{{ route('admin.orders.data') }}"
+            data-language='@json($datatableLang)'
+            data-page-length="10"
+            :columns="[
+                __('cms.orders.id'),
+                __('cms.orders.order_date'),
+                __('cms.orders.status'),
+                __('cms.orders.total_price'),
+                __('cms.orders.action'),
+            ]"
+        ></x-admin.table>
+    </x-admin.card>
+
+    <div
+        data-orders-delete-modal
+        data-delete-url="{{ $deleteTemplate }}"
+        data-success-title="{{ __('cms.notifications.success') }}"
+        data-success-message="{{ __('cms.orders.deleted_success') }}"
+        data-error-title="{{ __('cms.notifications.error') }}"
+        data-error-message="{{ __('cms.orders.deleted_error') }}"
+        class="fixed inset-0 z-50 hidden"
+    >
+        <div class="absolute inset-0 bg-gray-900/50" data-dismiss-modal></div>
+        <div class="relative z-10 flex min-h-full items-center justify-center p-4">
+            <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">{{ __('cms.orders.delete_confirm_title') }}</h2>
                 </div>
-                <div class="modal-body">{{ __('cms.orders.delete_confirm_message') }}</div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('cms.orders.delete_cancel') }}</button>
-                    <button type="button" class="btn btn-danger"
-                            id="confirmDeleteOrder">{{ __('cms.orders.delete_button') }}</button>
+                <div class="px-6 py-5">
+                    <p class="text-sm text-gray-600">{{ __('cms.orders.delete_confirm_message') }}</p>
+                    <p class="mt-2 text-sm font-semibold text-gray-900" data-order-label></p>
+                </div>
+                <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4">
+                    <button type="button" class="btn btn-outline" data-dismiss-modal>
+                        {{ __('cms.orders.delete_cancel') }}
+                    </button>
+                    <button type="button" class="btn btn-danger" data-confirm-delete>
+                        {{ __('cms.orders.delete_button') }}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-@endsection
-
-@section('js')
-    @php
-        $datatableLang = __('cms.datatables');
-    @endphp
-    <script>
-        $(document).ready(function() {
-            const table = $('#orders-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: "{{ route('admin.orders.data') }}",
-                    type: 'POST',
-                    data: function(d) {
-                        d._token = "{{ csrf_token() }}";
-                        const params = new URLSearchParams(window.location.search);
-                        const status = params.get('status');
-                        if (status) {
-                            d.status = status;
-                        }
-                    }
-                },
-                columns: [{
-                        data: 'id',
-                        name: 'id'
-                    },
-                    {
-                        data: 'order_date',
-                        name: 'order_date',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'status',
-                        name: 'status'
-                    },
-                    {
-                        data: 'total_price',
-                        name: 'total_price',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: false
-                    }
-                ],
-                pageLength: 10,
-                language: @json($datatableLang)
-            });
-
-            let orderToDeleteId = null;
-
-            $(document).on('click', '.btn-view-order', function() {
-                const url = $(this).data('url');
-                if (url) {
-                    window.location.href = url;
-                }
-            });
-
-            $(document).on('click', '.btn-delete-order', function() {
-                orderToDeleteId = $(this).data('id');
-                $('#deleteOrderModal').modal('show');
-            });
-
-            $('#confirmDeleteOrder').on('click', function() {
-                if (orderToDeleteId === null) return;
-
-                $.ajax({
-                    url: '{{ route('admin.orders.destroy', ':id') }}'.replace(':id',
-                        orderToDeleteId),
-                    type: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(res) {
-                        if (res.success) {
-                            table.ajax.reload(null, false);
-                            toastr.error(res.message || 'Order deleted successfully',
-                                "Deleted", {
-                                    closeButton: true,
-                                    progressBar: true,
-                                    positionClass: "toast-top-right",
-                                    timeOut: 5000
-                                });
-                            $('#deleteOrderModal').modal('hide');
-                            orderToDeleteId = null;
-                        } else {
-                            toastr.error(res.message || 'Failed to delete order', "Error", {
-                                closeButton: true,
-                                progressBar: true,
-                                positionClass: "toast-top-right",
-                                timeOut: 5000
-                            });
-                        }
-                    },
-                    error: function() {
-                        toastr.error('An error occurred while deleting the order', "Error", {
-                            closeButton: true,
-                            progressBar: true,
-                            positionClass: "toast-top-right",
-                            timeOut: 5000
-                        });
-                        $('#deleteOrderModal').modal('hide');
-                    }
-                });
-            });
-        });
-    </script>
 @endsection
