@@ -52,6 +52,33 @@ class AdminPageManagementTest extends TestCase
             });
     }
 
+    public function test_admin_can_view_edit_page_form(): void
+    {
+        $admin = User::factory()->create();
+        $language = Language::factory()->create([
+            'code' => config('app.locale'),
+            'active' => true,
+        ]);
+        $page = Page::factory()->create();
+        PageTranslation::factory()->for($page)->create([
+            'language_code' => $language->code,
+        ]);
+
+        $this->actingAs($admin);
+
+        $response = $this->get(route('admin.pages.edit', $page));
+
+        $response
+            ->assertOk()
+            ->assertViewIs('admin.pages.edit')
+            ->assertViewHas('page', function ($viewPage) use ($page) {
+                return (int) $viewPage->id === (int) $page->id;
+            })
+            ->assertViewHas('activeLanguages', function ($languages) use ($language) {
+                return $languages->contains('id', $language->id);
+            });
+    }
+
     public function test_admin_can_store_new_page_with_translations(): void
     {
         Storage::fake('public');
@@ -204,9 +231,13 @@ class AdminPageManagementTest extends TestCase
     public function test_pages_datatable_returns_page_data(): void
     {
         $admin = User::factory()->create();
+        $language = Language::factory()->create([
+            'code' => config('app.locale'),
+            'active' => true,
+        ]);
         $page = Page::factory()->create();
         PageTranslation::factory()->for($page)->create([
-            'language_code' => config('app.locale'),
+            'language_code' => $language->code,
             'title' => 'About Us',
         ]);
 
@@ -216,10 +247,17 @@ class AdminPageManagementTest extends TestCase
             'draw' => 1,
         ]);
 
-        $response
-            ->assertOk()
-            ->assertJsonFragment([
-                'translated_title' => 'About Us',
-            ]);
+        $response->assertOk();
+
+        $payload = $response->json();
+
+        $this->assertArrayHasKey('data', $payload);
+        $this->assertNotEmpty($payload['data']);
+
+        $row = collect($payload['data'])->firstWhere('id', $page->id);
+
+        $this->assertNotNull($row);
+        $this->assertSame('About Us', $row['translated_title']);
+        $this->assertStringContainsString(route('admin.pages.edit', $page), $row['action']);
     }
 }
