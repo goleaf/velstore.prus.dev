@@ -80,6 +80,8 @@ class CategoryRepository implements CategoryRepositoryInterface
                 $imagePath = $translation['image']->store('categories', 'public');
             }
 
+            $imagePath = $imagePath ?: $this->getDefaultImagePath();
+
             CategoryTranslation::create([
                 'category_id' => $category->id,
                 'language_code' => $languageCode,
@@ -109,6 +111,8 @@ class CategoryRepository implements CategoryRepositoryInterface
             if (isset($translation['image']) && $translation['image'] instanceof \Illuminate\Http\UploadedFile) {
                 $imagePath = $translation['image']->store('categories', 'public');
             }
+
+            $imagePath = $imagePath ?: $this->getDefaultImagePath();
 
             $category->translations()->updateOrCreate(
                 ['language_code' => $languageCode],
@@ -153,5 +157,10 @@ class CategoryRepository implements CategoryRepositoryInterface
         }
 
         return [];
+    }
+
+    protected function getDefaultImagePath(): string
+    {
+        return 'assets/images/placeholder-promo.svg';
     }
 }
