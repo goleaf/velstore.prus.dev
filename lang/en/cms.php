@@ -1579,6 +1579,51 @@ return [
         'expiry_hint' => 'Leave empty to keep the coupon active indefinitely or set a past date to expire immediately.',
         'no_expiry' => 'No expiry',
 
+        'preview' => [
+            'heading' => 'Live coupon preview',
+            'description' => 'See how the coupon will behave before you publish it.',
+            'placeholder_code' => 'Start typing a code to preview it',
+            'no_discount' => 'Add a discount amount to preview the savings.',
+            'off_label' => 'off',
+            'currency_prefix' => '',
+            'minimum_prefix' => '≥ ',
+            'usage_prefix' => 'Limit: ',
+            'no_minimum_spend' => 'No minimum spend requirement',
+            'unlimited_usage' => 'Unlimited usage',
+            'no_expiry' => 'No expiry set',
+            'expires_prefix' => 'Expires ',
+            'warning_high_percentage' => 'Discounts of 80% or more can significantly impact your margins. Double-check before publishing.',
+        ],
+
+        'templates' => [
+            'heading' => 'Quick start templates',
+            'description' => 'Prefill the form with tried-and-tested coupon ideas.',
+            'apply' => 'Apply',
+            'flash_sale' => [
+                'label' => 'Flash sale (24 hours)',
+                'description' => '30% off orders above $75. Limited to 100 redemptions and expires in 24 hours.',
+            ],
+            'loyalty' => [
+                'label' => 'Loyalty boost',
+                'description' => '15% off for loyal customers spending $200 or more. No usage limit or expiry.',
+            ],
+            'shipping' => [
+                'label' => 'Free shipping weekend',
+                'description' => 'Take $12 off shipping costs on orders over $60. Runs for the next two weeks.',
+            ],
+        ],
+
+        'helper' => [
+            'heading' => 'Planning tips',
+            'description' => 'Keep your promotions sustainable and aligned with your marketing goals.',
+            'items' => [
+                'Pair short-lived flash sales with social media posts to drive urgency.',
+                'Reward returning customers with loyalty-only codes they cannot share widely.',
+                'Review analytics after every campaign to decide whether to extend, pause, or iterate.',
+            ],
+            'footer' => 'Need more inspiration? Revisit previous coupon performance in the analytics dashboard.',
+        ],
+
         'created' => 'Coupon created successfully.',
         'updated' => 'Coupon updated successfully.',
         'deleted' => 'Coupon deleted successfully.',

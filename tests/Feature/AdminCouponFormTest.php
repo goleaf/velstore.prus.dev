@@ -36,6 +36,10 @@ class AdminCouponFormTest extends TestCase
         $response->assertSeeText(__('cms.coupons.expiry_toggle_label'));
         $response->assertSeeText(__('cms.coupons.minimum_spend_hint'));
         $response->assertSeeText(__('cms.coupons.usage_limit_hint'));
+        $response->assertSeeText(__('cms.coupons.preview.heading'));
+        $response->assertSeeText(__('cms.coupons.templates.heading'));
+        $response->assertSeeText(__('cms.coupons.templates.flash_sale.label'));
+        $response->assertSeeText(__('cms.coupons.helper.heading'));
     }
 
     public function test_coupon_edit_form_prefills_expiration_value(): void
