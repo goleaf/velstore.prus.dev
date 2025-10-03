@@ -5,7 +5,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ $siteSettings?->meta_title ?? $siteSettings?->site_name ?? config('app.name', 'Laravel') }}</title>
+    @if (!empty($siteSettings?->meta_description))
+        <meta name="description" content="{{ $siteSettings->meta_description }}">
+    @endif
+    @if (!empty($siteSettings?->meta_keywords))
+        <meta name="keywords" content="{{ $siteSettings->meta_keywords }}">
+    @endif
+    @if (!empty($siteSettings?->favicon_url))
+        <link rel="icon" href="{{ $siteSettings->favicon_url }}">
+    @endif
     @if (!App::environment('testing'))
         @vite(['resources/views/themes/xylo/sass/app.scss'])
     @endif

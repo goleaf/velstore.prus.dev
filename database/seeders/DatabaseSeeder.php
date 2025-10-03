@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             BannerSeeder::class,
             PageSeeder::class,
+            SiteSettingsSeeder::class,
             ProductVariantLocaleSeeder::class,
             CurrencySeeder::class,
             VendorSeeder::class,

@@ -46,6 +46,7 @@ use App\Models\User;
 use App\Models\Wishlist;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -89,7 +90,10 @@ class DemoDataSeeder extends Seeder
                 $shops->push($shop);
             }
 
-            SiteSetting::factory()->count(1)->create();
+            if (SiteSetting::query()->doesntExist()) {
+                SiteSetting::factory()->create();
+                Cache::forget('site_settings');
+            }
             StoreSetting::factory()->count(10)->create();
 
             $socialLinks = SocialMediaLink::factory()->count(4)->create();
