@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CustomerStoreRequest;
 use App\Http\Requests\Admin\CustomerUpdateRequest;
 use App\Models\Customer;
+use App\Models\Shop;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -30,9 +31,14 @@ class CustomerController extends Controller
             'platinum' => __('cms.customers.loyalty_tier_platinum'),
         ];
 
+        $shops = Shop::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+
         return view('admin.customers.create', [
             'statusOptions' => $statusOptions,
             'loyaltyTierOptions' => $loyaltyTierOptions,
+            'shops' => $shops,
         ]);
     }
 
@@ -41,7 +47,7 @@ class CustomerController extends Controller
      */
     public function store(CustomerStoreRequest $request)
     {
-        Customer::create([
+        $customer = Customer::create([
             'name' => $request->string('name'),
             'email' => $request->string('email'),
             'password' => Hash::make($request->input('password')),
@@ -52,6 +58,12 @@ class CustomerController extends Controller
             'loyalty_tier' => $request->string('loyalty_tier'),
             'notes' => $request->input('notes'),
         ]);
+
+        $shopIds = $this->sanitizeShopIds($request->input('shop_ids', []));
+
+        if (! empty($shopIds)) {
+            $customer->shops()->sync($shopIds);
+        }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
     }
@@ -89,6 +101,7 @@ class CustomerController extends Controller
             $status = '';
         }
 
+<<<<<<< HEAD
         if (! array_key_exists($tier, $loyaltyTierOptions)) {
             $tier = '';
         }
@@ -96,16 +109,26 @@ class CustomerController extends Controller
         if (! array_key_exists($marketing, $marketingOptions)) {
             $marketing = '';
         }
+=======
+        $shops = Shop::query()->orderBy('name')->get(['id', 'name']);
+
+        $shopId = (int) $request->query('shop_id', 0);
+        $shopId = $shops->firstWhere('id', $shopId)?->id ?? 0;
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
 
         $filters = [
             'search' => $search,
             'status' => $status,
+<<<<<<< HEAD
             'tier' => $tier,
             'marketing' => $marketing,
+=======
+            'shop_id' => $shopId,
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
         ];
 
         $query = Customer::query()
-            ->with('defaultAddress')
+            ->with(['defaultAddress', 'shops'])
             ->when($filters['search'] !== '', function (Builder $builder) use ($filters): void {
                 $builder->where(function (Builder $nested) use ($filters): void {
                     $term = '%' . $filters['search'] . '%';
@@ -118,6 +141,7 @@ class CustomerController extends Controller
             ->when(in_array($filters['status'], ['active', 'inactive'], true), function (Builder $builder) use ($filters): void {
                 $builder->where('status', $filters['status']);
             })
+<<<<<<< HEAD
             ->when(in_array($filters['tier'], ['bronze', 'silver', 'gold', 'platinum'], true), function (Builder $builder) use ($filters): void {
                 $builder->where('loyalty_tier', $filters['tier']);
             })
@@ -126,6 +150,12 @@ class CustomerController extends Controller
             })
             ->when($filters['marketing'] === 'opted_out', function (Builder $builder): void {
                 $builder->where('marketing_opt_in', false);
+=======
+            ->when($filters['shop_id'] > 0, function (Builder $builder) use ($filters): void {
+                $builder->whereHas('shops', function (Builder $relation) use ($filters): void {
+                    $relation->where('shops.id', $filters['shop_id']);
+                });
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
             })
             ->latest();
 
@@ -176,12 +206,16 @@ class CustomerController extends Controller
                 'active' => (int) ($statusCounts['active'] ?? 0),
                 'inactive' => (int) ($statusCounts['inactive'] ?? 0),
             ],
+<<<<<<< HEAD
             'marketingCounts' => [
                 'opted_in' => (int) ($marketingCounts[true] ?? 0),
                 'opted_out' => (int) ($marketingCounts[false] ?? 0),
             ],
             'tierCounts' => $tierCountsArray,
             'topTier' => $topTier,
+=======
+            'shops' => $shops,
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
         ]);
     }
 
@@ -259,6 +293,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
+<<<<<<< HEAD
         $statusOptions = [
             'active' => __('cms.customers.active'),
             'inactive' => __('cms.customers.inactive'),
@@ -271,6 +306,18 @@ class CustomerController extends Controller
         ];
 
         return view('admin.customers.edit', compact('customer', 'statusOptions', 'loyaltyTierOptions'));
+=======
+        $shops = Shop::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+
+        $customer->load('shops');
+
+        return view('admin.customers.edit', [
+            'customer' => $customer,
+            'shops' => $shops,
+        ]);
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
     }
 
     /**
@@ -295,6 +342,7 @@ class CustomerController extends Controller
             },
             'addresses',
             'defaultAddress',
+            'shops',
         ]);
 
         return view('admin.customers.show', compact('customer'));
@@ -305,15 +353,26 @@ class CustomerController extends Controller
      */
     public function update(CustomerUpdateRequest $request, Customer $customer)
     {
+<<<<<<< HEAD
         $data = $request->only(['name', 'email', 'phone', 'address', 'status', 'loyalty_tier', 'notes']);
 
         $data['marketing_opt_in'] = $request->boolean('marketing_opt_in');
+=======
+        $data = $request->only(['name', 'email', 'phone', 'address', 'status']);
+        $shopIds = $this->sanitizeShopIds($request->input('shop_ids', []));
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->input('password'));
         }
 
         $customer->update($data);
+
+        if (! empty($shopIds)) {
+            $customer->shops()->sync($shopIds);
+        } else {
+            $customer->shops()->detach();
+        }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer updated successfully.');
     }
@@ -330,5 +389,28 @@ class CustomerController extends Controller
             'success' => true,
             'message' => __('cms.customers.delete_success_message'),
         ]);
+}
+
+    private function sanitizeShopIds($shopIds): array
+    {
+        $shopIds = collect($shopIds)
+            ->flatten()
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($shopIds->isEmpty()) {
+            return [];
+        }
+
+        return Shop::query()
+            ->whereIn('id', $shopIds->all())
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

@@ -14,8 +14,14 @@
         <form action="{{ route('admin.customers.store') }}" method="POST" class="grid gap-6">
             @csrf
 
-            <div class="grid gap-6 lg:grid-cols-2">
-                <div class="space-y-4">
+            @php
+                $selectedShopIds = collect(old('shop_ids', []))
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+            @endphp
+
+            <div class="grid gap-6 xl:grid-cols-[2fr,1fr]">
+                <div class="space-y-6">
                     <div>
                         <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                             {{ __('cms.customers.form_section_profile') }}
@@ -79,49 +85,113 @@
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                            {{ __('cms.customers.form_section_account') }}
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-500">
-                            {{ __('cms.customers.form_section_account_hint') }}
-                        </p>
-                    </div>
-
-                    <div class="grid gap-4">
+                <div class="space-y-6">
+                    <div class="space-y-4">
                         <div>
-                            <label for="password" class="form-label">{{ __('cms.customers.password') }}</label>
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                autocomplete="new-password"
-                                minlength="6"
-                                required
-                            >
-                            @error('password')
-                                <p class="text-sm text-danger mt-1">{{ $message }}</p>
-                            @enderror
+                            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                {{ __('cms.customers.form_section_account') }}
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                {{ __('cms.customers.form_section_account_hint') }}
+                            </p>
                         </div>
 
+                        <div class="grid gap-4">
+                            <div>
+                                <label for="password" class="form-label">{{ __('cms.customers.password') }}</label>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    autocomplete="new-password"
+                                    minlength="6"
+                                    required
+                                >
+                                @error('password')
+                                    <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="status" class="form-label">{{ __('cms.customers.status') }}</label>
+                                <select
+                                    id="status"
+                                    name="status"
+                                    class="form-select @error('status') is-invalid @enderror"
+                                    required
+                                >
+                                    @foreach ($statusOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('status', 'active') === $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('status')
+                                    <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="address" class="form-label">{{ __('cms.customers.address') }}</label>
+                                <textarea
+                                    id="address"
+                                    name="address"
+                                    rows="4"
+                                    maxlength="500"
+                                    class="form-textarea @error('address') is-invalid @enderror"
+                                    placeholder="{{ __('cms.customers.address_placeholder') }}"
+                                >{{ old('address') }}</textarea>
+                                @error('address')
+                                    <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
                         <div>
-                            <label for="status" class="form-label">{{ __('cms.customers.status') }}</label>
-                            <select
-                                id="status"
-                                name="status"
-                                class="form-select @error('status') is-invalid @enderror"
-                                required
-                            >
-                                @foreach ($statusOptions as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('status', 'active') === $value)>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('status')
-                                <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                {{ __('cms.customers.form_section_shops') }}
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                {{ __('cms.customers.form_section_shops_hint') }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            @forelse ($shops as $shop)
+                                <label class="flex items-start gap-3 rounded-lg border border-gray-200 p-3 hover:border-gray-300">
+                                    <input
+                                        type="checkbox"
+                                        name="shop_ids[]"
+                                        value="{{ $shop->id }}"
+                                        class="form-check-input mt-1"
+                                        @checked(in_array($shop->id, $selectedShopIds, true))
+                                    >
+                                    <span>
+                                        <span class="flex items-center gap-2 font-medium text-gray-900">
+                                            {{ $shop->name }}
+                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs {{ $shop->status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-700' }}">
+                                                {{ $shop->status === 'active' ? __('cms.customers.shop_status_active') : __('cms.customers.shop_status_inactive') }}
+                                            </span>
+                                        </span>
+                                        <span class="mt-1 block text-sm text-gray-500">
+                                            {{ __('cms.customers.shop_assignment_hint') }}
+                                        </span>
+                                    </span>
+                                </label>
+                            @empty
+                                <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+                                    {{ __('cms.customers.no_shops_available') }}
+                                </div>
+                            @endforelse
+
+                            @error('shop_ids')
+                                <p class="text-sm text-danger">{{ $message }}</p>
+                            @enderror
+                            @error('shop_ids.*')
+                                <p class="text-sm text-danger">{{ $message }}</p>
                             @enderror
                         </div>
 

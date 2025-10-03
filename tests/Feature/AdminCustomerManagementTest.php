@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,6 +23,7 @@ class AdminCustomerManagementTest extends TestCase
     public function test_admin_can_view_customer_index_with_filters(): void
     {
         $admin = User::factory()->create();
+        $shop = Shop::factory()->create();
         $matchingCustomer = Customer::factory()->create([
             'name' => 'Alice Active',
             'email' => 'alice@example.com',
@@ -29,6 +31,7 @@ class AdminCustomerManagementTest extends TestCase
             'marketing_opt_in' => true,
             'loyalty_tier' => 'gold',
         ]);
+        $matchingCustomer->shops()->sync([$shop->id]);
         Customer::factory()->inactive()->create([
             'name' => 'Ivan Idle',
             'email' => 'ivan@example.com',
@@ -43,6 +46,7 @@ class AdminCustomerManagementTest extends TestCase
             'status' => 'active',
             'tier' => 'gold',
             'marketing' => 'opted_in',
+            'shop_id' => $shop->id,
         ]));
 
         $response->assertOk();
@@ -53,6 +57,7 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertSeeText((string) $matchingCustomer->id);
         $response->assertSeeText(__('cms.customers.loyalty_tier_gold'));
         $response->assertSeeText(__('cms.customers.marketing_opted_in'));
+        $response->assertSee($shop->name);
     }
 
     public function test_admin_can_view_create_form(): void
@@ -67,12 +72,15 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertSeeText(__('cms.customers.create_title'));
         $response->assertSeeText(__('cms.customers.form_section_profile'));
         $response->assertSeeText(__('cms.customers.loyalty_tier'));
+        $response->assertSeeText(__('cms.customers.form_section_shops'));
     }
 
     public function test_admin_can_create_customer(): void
     {
         $admin = User::factory()->create();
         $this->actingAs($admin);
+
+        $shop = Shop::factory()->create();
 
         $payload = [
             'name' => 'Test Customer',
@@ -84,6 +92,7 @@ class AdminCustomerManagementTest extends TestCase
             'loyalty_tier' => 'platinum',
             'marketing_opt_in' => '1',
             'notes' => 'Joined from in-store event.',
+            'shop_ids' => [$shop->id],
         ];
 
         $response = $this->post(route('admin.customers.store'), $payload);
@@ -94,6 +103,14 @@ class AdminCustomerManagementTest extends TestCase
             'status' => 'active',
             'loyalty_tier' => 'platinum',
             'marketing_opt_in' => true,
+        ]);
+
+        $createdCustomer = Customer::where('email', 'test.customer@example.com')->first();
+        $this->assertNotNull($createdCustomer);
+
+        $this->assertDatabaseHas('customer_shop', [
+            'customer_id' => $createdCustomer->id,
+            'shop_id' => $shop->id,
         ]);
     }
 

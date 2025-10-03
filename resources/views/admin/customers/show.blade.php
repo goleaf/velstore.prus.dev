@@ -107,6 +107,31 @@
 
     <div class="card mt-3">
         <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">{{ __('cms.customers.shop_affiliations') }}</h6>
+        </div>
+        <div class="card-body">
+            @if ($customer->shops->isEmpty())
+                <p class="text-muted mb-0">{{ __('cms.customers.no_shops_assigned') }}</p>
+            @else
+                <div class="row g-3">
+                    @foreach ($customer->shops as $shop)
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <p class="mb-1 fw-semibold text-dark">{{ $shop->name }}</p>
+                                <p class="text-muted small mb-2">{{ $shop->description ?? __('cms.customers.not_available') }}</p>
+                                <span class="badge {{ $shop->status === 'active' ? 'badge-success' : 'badge-secondary' }}">
+                                    {{ $shop->status === 'active' ? __('cms.customers.shop_status_active') : __('cms.customers.shop_status_inactive') }}
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
             <h6 class="mb-0">{{ __('cms.customers.addresses') }}</h6>
         </div>
         <div class="card-body">

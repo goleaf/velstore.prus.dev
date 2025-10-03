@@ -24,6 +24,8 @@ class CustomerStoreRequest extends FormRequest
             'marketing_opt_in' => ['sometimes', 'boolean'],
             'loyalty_tier' => ['required', Rule::in(['bronze', 'silver', 'gold', 'platinum'])],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'shop_ids' => ['nullable', 'array'],
+            'shop_ids.*' => ['integer', Rule::exists('shops', 'id')],
         ];
     }
 

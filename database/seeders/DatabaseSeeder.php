@@ -37,6 +37,8 @@ class DatabaseSeeder extends Seeder
             RefundSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
+            CustomerShopSeeder::class,
+            ProductVariantDemoSeeder::class,
         ]);
     }
 }

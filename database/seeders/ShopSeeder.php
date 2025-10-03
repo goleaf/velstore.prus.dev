@@ -11,6 +11,7 @@ class ShopSeeder extends Seeder
 {
     public function run(): void
     {
+<<<<<<< HEAD
         $vendor = Vendor::query()->orderBy('id')->first()
             ?? Vendor::factory()->create([
                 'status' => 'active',
@@ -83,6 +84,27 @@ class ShopSeeder extends Seeder
             Shop::factory()->count($minimumShops - $currentCount)->create([
                 'status' => 'active',
             ]);
+=======
+        if (Shop::query()->exists()) {
+            return;
+        }
+
+        $vendors = Vendor::all();
+
+        if ($vendors->isEmpty()) {
+            $vendors = Vendor::factory()->count(3)->create([
+                'status' => 'active',
+            ]);
+        }
+
+        foreach ($vendors as $vendor) {
+            Shop::factory()
+                ->count(2)
+                ->create([
+                    'vendor_id' => $vendor->id,
+                    'status' => 'active',
+                ]);
+>>>>>>> origin/codex/refactor-customer-creation-and-integrate-features
         }
     }
 }
