@@ -16,14 +16,19 @@
     $formMethod = $isEdit ? 'PUT' : 'POST';
 
     $languageCodes = $languages->pluck('code')->filter()->values();
-    $errorTab = $languageCodes->first(function ($code) use ($errors) {
-        return $errors->has("translations.$code.name") || $errors->has("translations.$code.value");
-    });
-    $initialTab = old('active_tab', $errorTab ?? ($languageCodes->first() ?? null));
+    $tabStorageKey = 'admin_product_variants_active_tab';
 
-    if (! $initialTab) {
-        $initialTab = 'en';
-    }
+    $localeResolution = \App\Support\Admin\TranslationLocaleResolver::resolve(
+        $languageCodes,
+        $errors,
+        session()->getOldInput(),
+        app()->getLocale(),
+        config('app.fallback_locale'),
+        'en'
+    );
+
+    $initialTab = $localeResolution->initial();
+    $errorTab = $localeResolution->error();
 @endphp
 
 @section('content')
@@ -225,7 +230,7 @@
                 </div>
             </section>
 
-            <section x-data="{ activeTab: '{{ $initialTab }}' }">
+            <section>
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -244,17 +249,19 @@
                                 $langCode = $language->code;
                                 $languageName = ucwords($language->name ?? $langCode);
                                 $hasTranslationErrors = $errors->has("translations.$langCode.name") || $errors->has("translations.$langCode.value");
+                                $isActiveTab = $langCode === $initialTab;
                             @endphp
                             <li class="nav-item" role="presentation">
                                 <button
-                                    class="nav-link {{ $loop->first ? 'active' : '' }} {{ $hasTranslationErrors ? 'text-danger-600' : '' }}"
+                                    class="nav-link {{ $isActiveTab ? 'active' : '' }} {{ $hasTranslationErrors ? 'text-danger-600' : '' }}"
                                     id="product-variant-{{ $langCode }}-tab"
                                     data-bs-toggle="tab"
                                     data-bs-target="#product-variant-{{ $langCode }}"
+                                    data-language-code="{{ $langCode }}"
                                     type="button"
                                     role="tab"
                                     aria-controls="product-variant-{{ $langCode }}"
-                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}"
+                                    aria-selected="{{ $isActiveTab ? 'true' : 'false' }}"
                                 >
                                     {{ $languageName }}
                                     @if ($hasTranslationErrors)
@@ -275,9 +282,10 @@
                                     : null;
                                 $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
                                 $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
+                                $isActiveTab = $langCode === $initialTab;
                             @endphp
                             <div
-                                class="tab-pane fade show {{ $loop->first ? 'active' : '' }} rounded-lg border border-gray-200 bg-secondary-50/40 p-4"
+                                class="tab-pane fade {{ $isActiveTab ? 'show active' : '' }} rounded-lg border border-gray-200 bg-secondary-50/40 p-4"
                                 id="product-variant-{{ $langCode }}"
                                 role="tabpanel"
                                 aria-labelledby="product-variant-{{ $langCode }}-tab"
@@ -323,6 +331,8 @@
                 </div>
             </section>
 
+            <input type="hidden" name="active_tab" id="active_tab" value="{{ $initialTab }}">
+
             <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
                 <x-admin.button-link href="{{ route('admin.product_variants.index') }}" class="btn-outline">
                     {{ __('cms.product_variants.back_to_index') }}
@@ -339,24 +349,130 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('productVariantForm');
-            if (!form) {
+            if (!form || typeof bootstrap === 'undefined') {
                 return;
             }
 
-            const firstInvalid = form.querySelector('.is-invalid');
-            if (!firstInvalid) {
+            const tabStorageKey = @json($tabStorageKey);
+            const activeTabInput = document.getElementById('active_tab');
+
+            const tabTriggers = Array.from(
+                form.querySelectorAll('#productVariantLanguageTabs button[data-bs-toggle="tab"]')
+            );
+
+            if (!tabTriggers.length) {
                 return;
             }
 
-            const tabPane = firstInvalid.closest('.tab-pane');
-            if (!tabPane || typeof bootstrap === 'undefined') {
+            const availableTabs = tabTriggers
+                .map((trigger) => trigger.dataset.languageCode)
+                .filter((code) => typeof code === 'string' && code.length > 0);
+
+            if (!availableTabs.length) {
                 return;
             }
 
-            const trigger = document.querySelector(`[data-bs-target="#${tabPane.id}"]`);
-            if (trigger) {
+            let pendingFocusElement = null;
+
+            const rememberActiveTab = (code) => {
+                if (activeTabInput) {
+                    activeTabInput.value = code || '';
+                }
+
+                if (!code) {
+                    return;
+                }
+
+                try {
+                    window.localStorage?.setItem(tabStorageKey, code);
+                } catch (error) {
+                    // Ignore storage availability issues (e.g., privacy mode).
+                }
+            };
+
+            const showTab = (code, { focusElement = null } = {}) => {
+                if (!code || !availableTabs.includes(code)) {
+                    return;
+                }
+
+                const trigger = tabTriggers.find((button) => button.dataset.languageCode === code);
+                if (!trigger) {
+                    return;
+                }
+
+                const focusTarget = focusElement instanceof Element && focusElement.closest(`#product-variant-${code}`)
+                    ? focusElement
+                    : null;
+
+                pendingFocusElement = focusTarget;
                 bootstrap.Tab.getOrCreateInstance(trigger).show();
+            };
+
+            tabTriggers.forEach((trigger) => {
+                trigger.addEventListener('shown.bs.tab', (event) => {
+                    const code = event.target?.dataset?.languageCode;
+                    if (!code) {
+                        return;
+                    }
+
+                    rememberActiveTab(code);
+
+                    if (pendingFocusElement && typeof pendingFocusElement.focus === 'function') {
+                        const elementToFocus = pendingFocusElement;
+                        pendingFocusElement = null;
+
+                        window.requestAnimationFrame(() => {
+                            elementToFocus.focus({ preventScroll: true });
+                        });
+                    } else {
+                        pendingFocusElement = null;
+                    }
+                });
+            });
+
+            const findTabForElement = (element) => {
+                if (!element) {
+                    return null;
+                }
+
+                const pane = element.closest('.tab-pane[id^="product-variant-"]');
+                if (!pane) {
+                    return null;
+                }
+
+                return pane.id.replace('product-variant-', '');
+            };
+
+            const getStoredTab = () => {
+                try {
+                    const stored = window.localStorage?.getItem(tabStorageKey);
+                    return stored && availableTabs.includes(stored) ? stored : null;
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            const firstInvalidElement = form.querySelector('.is-invalid');
+            const invalidTab = findTabForElement(firstInvalidElement);
+
+            const presetTab = activeTabInput?.value && availableTabs.includes(activeTabInput.value)
+                ? activeTabInput.value
+                : null;
+
+            let initialTab = invalidTab || presetTab || getStoredTab() || availableTabs[0];
+
+            if (!initialTab) {
+                rememberActiveTab('');
+                return;
             }
+
+            rememberActiveTab(initialTab);
+
+            const focusTarget = invalidTab && firstInvalidElement && findTabForElement(firstInvalidElement) === invalidTab
+                ? firstInvalidElement
+                : null;
+
+            showTab(initialTab, { focusElement: focusTarget });
         });
     </script>
 @endpush
