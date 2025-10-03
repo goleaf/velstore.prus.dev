@@ -352,10 +352,15 @@ class DemoDataSeeder extends Seeder
                     'customer_id' => $customers->random()->id,
                 ]);
 
-                ProductReview::factory()->count(3)->create([
-                    'product_id' => $product->id,
-                    'customer_id' => $customers->random()->id,
-                ]);
+                ProductReview::factory()
+                    ->count(3)
+                    ->state(function () use ($product, $customers) {
+                        return [
+                            'product_id' => $product->id,
+                            'customer_id' => $customers->random()->id,
+                        ];
+                    })
+                    ->create();
             }
 
             $orders = collect();

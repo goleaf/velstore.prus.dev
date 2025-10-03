@@ -296,6 +296,69 @@ return [
         'deleted_title' => '削除済み',
         'delete_success_message' => '顧客が正常に削除されました！',
         'delete_error_message' => '顧客の削除中にエラーが発生しました！',
+
+        // Details view
+        'view_button' => '表示',
+        'back_to_list' => '顧客一覧に戻る',
+        'details_title' => '顧客詳細',
+        'not_available' => '利用不可',
+        'orders_count' => '注文数',
+        'total_spent' => '累計購入額',
+        'wishlist_count' => 'ウィッシュリスト商品数',
+        'reviews_count' => 'レビュー件数',
+        'basic_information' => '基本情報',
+        'registered_at' => '登録日時',
+        'last_updated' => '最終更新',
+
+        // Addresses
+        'addresses' => '住所',
+        'address_name' => '住所名',
+        'city' => '市区町村',
+        'postal_code' => '郵便番号',
+        'country' => '国',
+        'default_address' => '既定の住所',
+        'default_address_hint' => 'ストアフロントと管理画面での主要な配送先として使用されます。',
+        'default' => '既定',
+        'set_default' => '既定に設定',
+        'set_as_default' => '既定として設定',
+        'add_address' => '住所を追加',
+        'delete' => '削除',
+        'delete_confirm' => 'この住所を削除してもよろしいですか？',
+        'no_addresses' => 'この顧客の住所は登録されていません。',
+        'address_created' => '住所を保存しました。',
+        'address_updated' => '住所を更新しました。',
+        'address_deleted' => '住所を削除しました。',
+        'address_set_default' => '既定の住所を更新しました。',
+
+        // Orders
+        'orders' => '注文',
+        'orders_table_id' => '注文',
+        'orders_table_status' => 'ステータス',
+        'orders_table_total' => '合計金額',
+        'orders_table_items' => '商品点数',
+        'orders_table_placed_at' => '注文日時',
+        'orders_table_payment_status' => '最新の支払い',
+        'orders_table_action' => '操作',
+        'view_order' => '注文を表示',
+        'no_orders' => 'この顧客の注文は見つかりませんでした。',
+
+        // Wishlist
+        'wishlist_title' => 'ウィッシュリスト',
+        'wishlist_product' => '商品',
+        'wishlist_added_at' => '追加日時',
+        'no_wishlists' => 'この顧客のウィッシュリストにはアイテムがありません。',
+        'product_missing' => '利用できない商品',
+
+        // Reviews
+        'reviews_title' => '商品レビュー',
+        'reviews_product' => '商品',
+        'reviews_rating' => '評価',
+        'reviews_status' => 'ステータス',
+        'reviews_submitted_at' => '投稿日時',
+        'reviews_content' => 'レビュー内容',
+        'review_status_approved' => '承認済み',
+        'review_status_pending' => '承認待ち',
+        'no_reviews' => 'この顧客が投稿したレビューはありません。',
     ],
 
     'vendors' => [
@@ -799,6 +862,10 @@ return [
 
     'product_reviews' => [
         'title_manage' => '商品レビュー管理',
+        'index_description' => '顧客からのフィードバックを管理し、カタログの信頼性を保ちます。',
+        'show_title' => 'レビュー #:id',
+        'details_title' => 'レビュー詳細',
+        'back_to_list' => 'レビュー一覧へ戻る',
 
         'review_id' => 'レビューID',
         'customer_name' => '顧客名',
@@ -806,16 +873,38 @@ return [
         'rating' => '評価',
         'status' => 'ステータス',
         'actions' => '操作',
+        'review' => 'レビュー内容',
+        'view' => '閲覧',
+        'edit' => '編集',
+
+        'active' => '有効',
+        'inactive' => '無効',
+        'approved' => '承認済み',
+        'pending' => '保留',
+        'missing_customer' => '不明な顧客',
+        'missing_product' => '不明な商品',
+        'no_review_provided' => 'このレビューには内容が入力されていません。',
+
+        'status_filter_label' => 'ステータスで絞り込む',
+        'status_filter_all' => 'すべてのステータス',
+
+        'submitted_at' => '送信日時',
+        'updated_at' => '最終更新',
+
+        'edit_title' => 'レビュー #:id を編集',
+        'edit_form_title' => 'レビューを更新',
+        'edit_description' => 'このレビューの評価や承認ステータスを調整します。',
+        'update_button' => '変更を保存',
 
         'confirm_delete' => '削除の確認',
-        'delete_message' => '本当にこの商品レビューを削除しますか？',
+        'delete_message' => 'この商品レビューを削除してもよろしいですか？',
         'delete' => '削除',
         'cancel' => 'キャンセル',
 
-        'success_create' => '商品レビューが正常に作成されました！',
-        'success_update' => '商品レビューが正常に更新されました！',
-        'success_delete' => '商品レビューが正常に削除されました！',
-        'error_delete' => '商品レビューの削除中にエラーが発生しました！もう一度お試しください。',
+        'success_create' => '商品レビューを作成しました。',
+        'success_update' => '商品レビューを更新しました。',
+        'success_delete' => '商品レビューを削除しました。',
+        'error_delete' => '商品レビューの削除中にエラーが発生しました。もう一度お試しください。',
 
         'success' => '成功',
         'error' => 'エラー',
