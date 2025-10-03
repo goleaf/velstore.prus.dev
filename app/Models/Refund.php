@@ -122,6 +122,66 @@ class Refund extends Model
         return $query;
     }
 
+    public function scopeForShop(Builder $query, $shopId): Builder
+    {
+        if (blank($shopId)) {
+            return $query;
+        }
+
+        return $query->whereHas('payment.order.details.product', function (Builder $builder) use ($shopId) {
+            $builder->where('shop_id', $shopId);
+        });
+    }
+
+    public function scopeForGateway(Builder $query, $gatewayId): Builder
+    {
+        if (blank($gatewayId)) {
+            return $query;
+        }
+
+        return $query->whereHas('payment.gateway', function (Builder $builder) use ($gatewayId) {
+            $builder->when(is_numeric($gatewayId), function (Builder $innerQuery) use ($gatewayId) {
+                $innerQuery->where('id', (int) $gatewayId);
+            }, function (Builder $innerQuery) use ($gatewayId) {
+                $innerQuery->where('code', $gatewayId);
+            });
+        });
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (! is_string($term)) {
+            return $query;
+        }
+
+        $term = trim($term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $builder) use ($term) {
+            $builder
+                ->where('refund_id', 'like', '%' . $term . '%')
+                ->orWhere('reason', 'like', '%' . $term . '%')
+                ->orWhereHas('payment', function (Builder $paymentQuery) use ($term) {
+                    $paymentQuery->where('transaction_id', 'like', '%' . $term . '%');
+                })
+                ->orWhereHas('payment.order', function (Builder $orderQuery) use ($term) {
+                    if (is_numeric($term)) {
+                        $orderQuery->orWhere('id', (int) $term);
+                    }
+
+                    $orderQuery->orWhere('guest_email', 'like', '%' . $term . '%');
+                })
+                ->orWhereHas('payment.order.customer', function (Builder $customerQuery) use ($term) {
+                    $customerQuery
+                        ->where('name', 'like', '%' . $term . '%')
+                        ->orWhere('email', 'like', '%' . $term . '%');
+                });
+        });
+    }
+
     public function payment()
     {
         return $this->belongsTo(Payment::class);

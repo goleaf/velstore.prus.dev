@@ -51,7 +51,13 @@ class RefundSeeder extends Seeder
             ],
         ];
 
-        $payments = Payment::query()->orderBy('id')->get();
+        $payments = Payment::query()
+            ->with([
+                'order.details.product.shop',
+                'gateway',
+            ])
+            ->orderBy('id')
+            ->get();
 
         if ($payments->isEmpty()) {
             return;
@@ -93,6 +99,79 @@ class RefundSeeder extends Seeder
             $refund->created_at = $timestamp;
             $refund->updated_at = $timestamp;
             $refund->save();
+        }
+
+        $shopGroups = $payments
+            ->filter(function ($payment) {
+                return $payment->order && $payment->order->details->isNotEmpty();
+            })
+            ->groupBy(function ($payment) {
+                return optional($payment->order->details->first()?->product?->shop)->id;
+            })
+            ->filter(fn ($group, $shopId) => ! is_null($shopId));
+
+        foreach ($shopGroups as $shopId => $group) {
+            $shop = optional($group->first()?->order?->details->first()?->product?->shop);
+
+            if (! $shop) {
+                continue;
+            }
+
+            $candidatePayment = $group->firstWhere(fn ($payment) => strtolower((string) $payment->status) === 'completed')
+                ?? $group->first();
+
+            if (! $candidatePayment) {
+                continue;
+            }
+
+            if ($showcasePayment && $candidatePayment->is($showcasePayment)) {
+                $candidatePayment = $group->first(function ($payment) use ($showcasePayment) {
+                    return ! $payment->is($showcasePayment);
+                }) ?? $candidatePayment;
+            }
+
+            $baseAmount = round((float) $candidatePayment->amount * 0.35, 2);
+            $baseAmount = max(1, min($baseAmount, (float) $candidatePayment->amount));
+
+            $shopRefundDefinitions = [
+                [
+                    'refund_id' => sprintf('SHOP-%04d-A', $shopId),
+                    'status' => Refund::STATUS_COMPLETED,
+                    'reason' => 'Completed refund processed for ' . $shop->name,
+                    'amount' => $baseAmount,
+                    'days_ago' => 8,
+                ],
+                [
+                    'refund_id' => sprintf('SHOP-%04d-B', $shopId),
+                    'status' => Refund::STATUS_PENDING,
+                    'reason' => 'Awaiting approval from ' . $shop->name,
+                    'amount' => min(round($baseAmount * 0.6, 2), (float) $candidatePayment->amount),
+                    'days_ago' => 2,
+                ],
+            ];
+
+            foreach ($shopRefundDefinitions as $data) {
+                $amount = max(1, min($data['amount'], (float) $candidatePayment->amount));
+                $timestamp = now()->subDays((int) ($data['days_ago'] ?? 0));
+
+                $refund = Refund::updateOrCreate(
+                    [
+                        'payment_id' => $candidatePayment->id,
+                        'refund_id' => $data['refund_id'],
+                    ],
+                    [
+                        'amount' => $amount,
+                        'currency' => $candidatePayment->currency ?? 'USD',
+                        'status' => $data['status'],
+                        'reason' => $data['reason'],
+                        'response' => ['message' => $data['reason']],
+                    ]
+                );
+
+                $refund->created_at = $timestamp;
+                $refund->updated_at = $timestamp->copy()->addMinutes(15);
+                $refund->save();
+            }
         }
 
         if (! $showcasePayment) {
