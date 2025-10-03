@@ -242,6 +242,9 @@ return [
         'status' => 'Status',
         'reason' => 'Reason',
         'action' => 'Action',
+        'reference' => 'Reference',
+        'shop_column' => 'Shop',
+        'customer_column' => 'Customer',
 
         // Status Labels
         'completed' => 'Completed',
@@ -264,11 +267,25 @@ return [
         'date_to_label' => 'To date',
         'apply_filters' => 'Apply filters',
         'reset_filters' => 'Reset filters',
+        'shop_filter_label' => 'Shop',
+        'shop_filter_placeholder' => 'All shops',
+        'gateway_filter_label' => 'Payment gateway',
+        'gateway_filter_placeholder' => 'All gateways',
+        'search_filter_label' => 'Search',
+        'search_filter_placeholder' => 'Search by refund ID, order, payment, or customer',
 
         // Summary Cards
         'summary_total_count' => 'Total refunds',
         'summary_completed_count' => 'Completed refunds',
         'summary_total_amount' => 'Total refunded',
+        'summary_pending_count' => 'Open refunds',
+        'summary_average_amount' => 'Average refund value',
+
+        // Shop Insights
+        'shop_breakdown_title' => 'Refunds by shop',
+        'shop_breakdown_help' => 'Top shops ranked by completed refund amount.',
+        'shop_breakdown_empty' => 'No shops have recorded refunds yet.',
+        'shop_breakdown_count' => '{0} No refunds|{1} :count refund|[2,*] :count refunds',
 
         // Delete Modal
         'delete_confirm' => 'Confirm Delete',
@@ -285,6 +302,18 @@ return [
         'created_at' => 'Created At',
         'updated_at' => 'Updated At',
         'back' => 'Back to Refunds',
+        'payment_summary_title' => 'Payment summary',
+        'gateway_summary_title' => 'Payment gateway',
+        'order_number' => 'Order',
+        'view_order' => 'View order',
+        'customer_summary_title' => 'Customer details',
+        'payment_status_label' => 'Payment status',
+        'items_summary_title' => 'Items in this order',
+        'item_line' => 'Qty :quantity · :price',
+        'timeline_title' => 'Refund timeline',
+        'timeline_created' => 'Requested on',
+        'timeline_updated' => 'Last updated on',
+        'timeline_status' => 'Current status',
 
         // Fallback
         'not_available' => 'N/A',
