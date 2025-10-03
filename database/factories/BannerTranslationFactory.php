@@ -20,6 +20,8 @@ class BannerTranslationFactory extends Factory
             'language_code' => $this->faker->unique()->languageCode(),
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(),
+            'button_text' => $this->faker->optional(0.7)->words(2, true),
+            'button_url' => $this->faker->optional(0.6)->url(),
             'image_url' => $this->faker->imageUrl(),
         ];
     }

@@ -29,18 +29,29 @@ class BannerRepository implements BannerRepositoryInterface
             'type' => $data['type'],
             'status' => $data['status'] ?? 1,
             'title' => $data['title'] ?? null,
+            'display_location' => $data['display_location'] ?? 'home',
+            'priority' => $data['priority'] ?? 0,
+            'starts_at' => $data['starts_at'] ?? null,
+            'ends_at' => $data['ends_at'] ?? null,
         ]);
     }
 
     // Update the banner
     public function updateBanner(Banner $banner, array $data): Banner
     {
-        $banner->type = $data['type'];
+        $banner->fill([
+            'type' => $data['type'],
+            'display_location' => $data['display_location'] ?? $banner->display_location,
+            'priority' => $data['priority'] ?? $banner->priority,
+            'starts_at' => $data['starts_at'] ?? $banner->starts_at,
+            'ends_at' => $data['ends_at'] ?? $banner->ends_at,
+        ]);
+
         if (array_key_exists('status', $data)) {
             $banner->status = $data['status'];
         }
 
-        if (array_key_exists('title', $data) && $data['title']) {
+        if (! empty($data['title'])) {
             $banner->title = $data['title'];
         }
 

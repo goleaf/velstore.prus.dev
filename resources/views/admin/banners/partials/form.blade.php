@@ -7,6 +7,17 @@
     $previews = [];
     $errorTabs = [];
     $languageFields = [];
+    $locationOptions = [
+        'home' => __('cms.banners.location_home'),
+        'shop' => __('cms.banners.location_shop'),
+        'category' => __('cms.banners.location_category'),
+        'product' => __('cms.banners.location_product'),
+        'global' => __('cms.banners.location_global'),
+    ];
+    $displayLocation = old('display_location', $banner?->display_location ?? 'home');
+    $priorityValue = old('priority', $banner?->priority ?? 0);
+    $startsAtValue = old('starts_at', optional($banner?->starts_at)->format('Y-m-d\TH:i'));
+    $endsAtValue = old('ends_at', optional($banner?->ends_at)->format('Y-m-d\TH:i'));
 
     $resolveImageUrl = static function (?string $path) {
         if (! $path) {
@@ -44,7 +55,13 @@
         $existingImageUrl = $translation?->image_url ? $resolveImageUrl($translation->image_url) : null;
         $previewUrl = $base64Value ?: $existingImageUrl;
 
-        if ($errors->has("$oldPrefix.title") || $errors->has("$oldPrefix.description") || $errors->has("$oldPrefix.image")) {
+        if (
+            $errors->has("$oldPrefix.title") ||
+            $errors->has("$oldPrefix.description") ||
+            $errors->has("$oldPrefix.image") ||
+            $errors->has("$oldPrefix.button_text") ||
+            $errors->has("$oldPrefix.button_url")
+        ) {
             $errorTabs[] = $code;
         }
 
@@ -60,6 +77,8 @@
             'title' => $titleValue,
             'description' => $descriptionValue,
             'base64' => $base64Value,
+            'button_text' => old("$oldPrefix.button_text", $translation->button_text ?? ''),
+            'button_url' => old("$oldPrefix.button_url", $translation->button_url ?? ''),
         ];
     }
 
@@ -98,41 +117,124 @@
 
     <x-admin.card :title="__('cms.banners.form_title')">
         <div class="grid gap-6 md:grid-cols-2">
-            <div class="md:col-span-1">
-                <label class="form-label" for="banner_type">{{ __('cms.banners.banner_type') }}</label>
-                <select
-                    id="banner_type"
-                    name="type"
+            <div class="md:col-span-1 space-y-6">
+                <div>
+                    <label class="form-label" for="banner_type">{{ __('cms.banners.banner_type') }}</label>
+                    <select
+                        id="banner_type"
+                        name="type"
+                        @class([
+                            'form-select',
+                            'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('type'),
+                        ])
+                    >
+                        <option value="promotion" @selected(old('type', $banner?->type ?? 'promotion') === 'promotion')>{{ __('cms.banners.promotion') }}</option>
+                        <option value="sale" @selected(old('type', $banner?->type ?? '') === 'sale')>{{ __('cms.banners.sale') }}</option>
+                        <option value="seasonal" @selected(old('type', $banner?->type ?? '') === 'seasonal')>{{ __('cms.banners.seasonal') }}</option>
+                        <option value="featured" @selected(old('type', $banner?->type ?? '') === 'featured')>{{ __('cms.banners.featured') }}</option>
+                        <option value="announcement" @selected(old('type', $banner?->type ?? '') === 'announcement')>{{ __('cms.banners.announcement') }}</option>
+                    </select>
+                    @error('type')
+                        <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="form-label" for="banner_location">{{ __('cms.banners.display_location') }}</label>
+                    <select
+                        id="banner_location"
+                        name="display_location"
+                        @class([
+                            'form-select',
+                            'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('display_location'),
+                        ])
+                    >
+                        @foreach ($locationOptions as $value => $label)
+                            <option value="{{ $value }}" @selected($displayLocation === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.display_location_help') }}</p>
+                    @error('display_location')
+                        <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="md:col-span-1 space-y-6">
+                <div>
+                    <label class="form-label" for="banner_status">{{ __('cms.banners.status') }}</label>
+                    <select
+                        id="banner_status"
+                        name="status"
+                        @class([
+                            'form-select',
+                            'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('status'),
+                        ])
+                    >
+                        <option value="1" @selected(old('status', $banner?->status ?? 1) == 1)>{{ __('cms.banners.active') }}</option>
+                        <option value="0" @selected(old('status', $banner?->status ?? 1) == 0)>{{ __('cms.banners.inactive') }}</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.status_help') }}</p>
+                    @error('status')
+                        <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="form-label" for="banner_priority">{{ __('cms.banners.priority') }}</label>
+                    <input
+                        type="number"
+                        id="banner_priority"
+                        name="priority"
+                        min="0"
+                        step="1"
+                        value="{{ $priorityValue }}"
+                        @class([
+                            'form-control',
+                            'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('priority'),
+                        ])
+                    >
+                    <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.priority_help') }}</p>
+                    @error('priority')
+                        <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-6 md:grid-cols-2 mt-6">
+            <div>
+                <label class="form-label" for="banner_starts_at">{{ __('cms.banners.starts_at') }}</label>
+                <input
+                    type="datetime-local"
+                    id="banner_starts_at"
+                    name="starts_at"
+                    value="{{ $startsAtValue }}"
                     @class([
-                        'form-select',
-                        'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('type'),
+                        'form-control',
+                        'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('starts_at'),
                     ])
                 >
-                    <option value="promotion" @selected(old('type', $banner?->type ?? 'promotion') === 'promotion')>{{ __('cms.banners.promotion') }}</option>
-                    <option value="sale" @selected(old('type', $banner?->type ?? '') === 'sale')>{{ __('cms.banners.sale') }}</option>
-                    <option value="seasonal" @selected(old('type', $banner?->type ?? '') === 'seasonal')>{{ __('cms.banners.seasonal') }}</option>
-                    <option value="featured" @selected(old('type', $banner?->type ?? '') === 'featured')>{{ __('cms.banners.featured') }}</option>
-                    <option value="announcement" @selected(old('type', $banner?->type ?? '') === 'announcement')>{{ __('cms.banners.announcement') }}</option>
-                </select>
-                @error('type')
+                <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.starts_at_help') }}</p>
+                @error('starts_at')
                     <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
-            <div class="md:col-span-1">
-                <label class="form-label" for="banner_status">{{ __('cms.banners.status') }}</label>
-                <select
-                    id="banner_status"
-                    name="status"
+
+            <div>
+                <label class="form-label" for="banner_ends_at">{{ __('cms.banners.ends_at') }}</label>
+                <input
+                    type="datetime-local"
+                    id="banner_ends_at"
+                    name="ends_at"
+                    value="{{ $endsAtValue }}"
                     @class([
-                        'form-select',
-                        'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('status'),
+                        'form-control',
+                        'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('ends_at'),
                     ])
                 >
-                    <option value="1" @selected(old('status', $banner?->status ?? 1) == 1)>{{ __('cms.banners.active') }}</option>
-                    <option value="0" @selected(old('status', $banner?->status ?? 1) == 0)>{{ __('cms.banners.inactive') }}</option>
-                </select>
-                <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.status_help') }}</p>
-                @error('status')
+                <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.ends_at_help') }}</p>
+                @error('ends_at')
                     <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -181,6 +283,41 @@
                         @error($oldPrefix . '.description')
                             <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div>
+                            <label class="form-label" for="button_text_{{ $code }}">{{ __('cms.banners.button_text') }} ({{ strtoupper($code) }})</label>
+                            <input
+                                id="button_text_{{ $code }}"
+                                type="text"
+                                name="{{ $inputPrefix }}[button_text]"
+                                value="{{ $field['button_text'] }}"
+                                class="form-control"
+                            >
+                            @error($oldPrefix . '.button_text')
+                                <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="form-label" for="button_url_{{ $code }}">{{ __('cms.banners.button_url') }} ({{ strtoupper($code) }})</label>
+                            <input
+                                id="button_url_{{ $code }}"
+                                type="text"
+                                name="{{ $inputPrefix }}[button_url]"
+                                value="{{ $field['button_url'] }}"
+                                @class([
+                                    'form-control',
+                                    'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has($oldPrefix . '.button_url'),
+                                ])
+                                placeholder="https://example.com or /collections"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.button_url_help') }}</p>
+                            @error($oldPrefix . '.button_url')
+                                <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="space-y-3">

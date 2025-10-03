@@ -17,6 +17,9 @@
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.id') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.title') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.banner_type') }}</th>
+                        <th scope="col" class="table-header-cell">{{ __('cms.banners.location') }}</th>
+                        <th scope="col" class="table-header-cell">{{ __('cms.banners.priority') }}</th>
+                        <th scope="col" class="table-header-cell">{{ __('cms.banners.active_period') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.image') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.status') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.actions') }}</th>
@@ -49,6 +52,7 @@
                 imageLabel: @json(__('cms.banners.image')),
                 edit: @json(__('cms.banners.edit')),
                 delete: @json(__('cms.banners.delete')),
+                scheduleNotSet: @json(__('cms.banners.schedule_not_set')),
             };
 
             const toggleButtonClasses = {
@@ -83,6 +87,26 @@
                         searchable: false,
                         render: function (data) {
                             return data || '';
+                        },
+                    },
+                    {
+                        data: 'location_label',
+                        name: 'display_location',
+                        orderable: false,
+                        searchable: false,
+                    },
+                    {
+                        data: 'priority',
+                        name: 'priority',
+                        searchable: false,
+                    },
+                    {
+                        data: 'schedule_label',
+                        name: 'starts_at',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data) {
+                            return data || `<span class="text-sm text-gray-500">${messages.scheduleNotSet}</span>`;
                         },
                     },
                     {

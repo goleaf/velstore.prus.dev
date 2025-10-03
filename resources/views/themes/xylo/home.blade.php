@@ -5,24 +5,37 @@
     <section class="banner-area py-5 animate__animated animate__fadeIn">
         <div class="container h-100 banner-slider">
             @foreach ($banners as $banner)
+                @php
+                    $translation = $banner->resolveTranslation();
+                    $imageUrl = $translation?->resolvedImageUrl() ?? asset('assets/images/placeholder-banner.svg');
+                    $buttonText = $translation?->button_text;
+                    $buttonUrl = $translation?->resolvedButtonUrl();
+                    $description = $translation?->description;
+                    $title = $translation?->title ?? $banner->title;
+                @endphp
                 <div>
                     <div class="row h-100 align-items-center">
                         <div class="col-md-6">
                             <h1 class="mt-5">
-                                <span>{{ $banner->translation ? $banner->translation->title : $banner->title }}</span>
+                                <span>{{ $title }}</span>
                             </h1>
-                            <p class="mt-3 mb-4">Explore the biggest variety of sneakers, shoes, and streetwear trends.</p>
-                            <button class="btn btn-primary">Shop Now</button>
+                            @if ($description)
+                                <p class="mt-3 mb-4">{{ $description }}</p>
+                            @endif
+
+                            @if ($buttonText)
+                                <a class="btn btn-primary" href="{{ $buttonUrl ?? '#' }}">{{ $buttonText }}</a>
+                            @endif
 
                             <div class="mt-5">
-                                <img src="/assets/images/placeholder-promo.svg" alt="Promo" style="width: 200px;">
+                                <img src="{{ $imageUrl }}" alt="{{ $title }}" style="width: 200px;">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="rightimg-banner rightimg-banner1">
-                                <img src="{{ Storage::url(optional($banner->translation)->image_url ?? 'default.jpg') }}"
+                                <img src="{{ $imageUrl }}"
                                      class="img-fluid shoes-img"
-                                     alt="{{ $banner->translation ? $banner->translation->title : $banner->title }}">
+                                     alt="{{ $title }}">
                             </div>
                         </div>
                     </div>
@@ -31,6 +44,43 @@
         </div>
     </section>
     {{-- Banner Section End --}}
+    @if (isset($shopBanners) && $shopBanners->isNotEmpty())
+        <section class="py-5 animate-on-scroll">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <h2 class="sec-heading mb-0">{{ __('cms.banners.shop_highlights') }}</h2>
+                </div>
+                <div class="row g-4">
+                    @foreach ($shopBanners->take(3) as $banner)
+                        @php
+                            $translation = $banner->resolveTranslation();
+                            $imageUrl = $translation?->resolvedImageUrl();
+                            $title = $translation?->title ?? $banner->title;
+                            $description = $translation?->description;
+                        @endphp
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                @if ($imageUrl)
+                                    <img src="{{ $imageUrl }}" class="card-img-top" alt="{{ $title }}">
+                                @endif
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">{{ $title }}</h5>
+                                    @if ($description)
+                                        <p class="card-text text-muted">{{ $description }}</p>
+                                    @endif
+                                    @if ($translation?->button_text)
+                                        <a href="{{ $translation->resolvedButtonUrl() ?? '#' }}" class="btn btn-outline-primary mt-auto">
+                                            {{ $translation->button_text }}
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
     <section class="cat-slider animate-on-scroll">
         <div class="container">
             <h2 class="text-start pb-5 sec-heading">Explore Popular Categories</h2>
