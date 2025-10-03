@@ -28,32 +28,74 @@ class CouponSeederTest extends TestCase
 
         $coupons = Coupon::orderBy('code')->get()->keyBy('code');
 
-        $this->assertCount(4, $coupons);
+        $this->assertCount(6, $coupons);
 
-        $this->assertSame('percentage', $coupons['FLASH50']->type);
-        $this->assertSame(50.0, (float) $coupons['FLASH50']->discount);
-        $this->assertSame(150.0, (float) $coupons['FLASH50']->minimum_spend);
-        $this->assertSame(100, $coupons['FLASH50']->usage_limit);
-        $this->assertSame(0, $coupons['FLASH50']->usage_count);
-        $this->assertTrue($coupons['FLASH50']->expires_at->lt($now));
+        $expected = [
+            'BULK15' => [
+                'type' => 'fixed',
+                'discount' => 15.0,
+                'minimum_spend' => 250.0,
+                'usage_limit' => null,
+                'usage_count' => 0,
+                'expires_at' => null,
+            ],
+            'FLASH50' => [
+                'type' => 'percentage',
+                'discount' => 50.0,
+                'minimum_spend' => 150.0,
+                'usage_limit' => 100,
+                'usage_count' => 0,
+                'expires_at' => $now->copy()->subDay(),
+            ],
+            'FREESHIP' => [
+                'type' => 'fixed',
+                'discount' => 15.0,
+                'minimum_spend' => null,
+                'usage_limit' => null,
+                'usage_count' => 0,
+                'expires_at' => null,
+            ],
+            'LASTCALL' => [
+                'type' => 'percentage',
+                'discount' => 20.0,
+                'minimum_spend' => 80.0,
+                'usage_limit' => 75,
+                'usage_count' => 10,
+                'expires_at' => $now->copy()->addDays(5),
+            ],
+            'SUMMER25' => [
+                'type' => 'fixed',
+                'discount' => 25.0,
+                'minimum_spend' => 100.0,
+                'usage_limit' => 200,
+                'usage_count' => 25,
+                'expires_at' => $now->copy()->addMonths(3),
+            ],
+            'WELCOME10' => [
+                'type' => 'percentage',
+                'discount' => 10.0,
+                'minimum_spend' => 50.0,
+                'usage_limit' => 500,
+                'usage_count' => 0,
+                'expires_at' => $now->copy()->addMonths(6),
+            ],
+        ];
 
-        $this->assertSame('fixed', $coupons['FREESHIP']->type);
-        $this->assertSame(15.0, (float) $coupons['FREESHIP']->discount);
-        $this->assertNull($coupons['FREESHIP']->minimum_spend);
-        $this->assertNull($coupons['FREESHIP']->usage_limit);
-        $this->assertNull($coupons['FREESHIP']->expires_at);
+        foreach ($expected as $code => $data) {
+            $coupon = $coupons[$code];
 
-        $this->assertTrue(
-            $coupons['SUMMER25']->expires_at->eq($now->copy()->addMonths(3))
-        );
-        $this->assertSame(100.0, (float) $coupons['SUMMER25']->minimum_spend);
-        $this->assertSame(200, $coupons['SUMMER25']->usage_limit);
+            $this->assertSame($data['type'], $coupon->type, $code.' type mismatch');
+            $this->assertSame($data['discount'], (float) $coupon->discount, $code.' discount mismatch');
+            $this->assertSame($data['minimum_spend'], $coupon->minimum_spend !== null ? (float) $coupon->minimum_spend : null, $code.' minimum spend mismatch');
+            $this->assertSame($data['usage_limit'], $coupon->usage_limit, $code.' usage limit mismatch');
+            $this->assertSame($data['usage_count'], $coupon->usage_count, $code.' usage count mismatch');
 
-        $this->assertTrue(
-            $coupons['WELCOME10']->expires_at->eq($now->copy()->addMonths(6))
-        );
-        $this->assertSame(50.0, (float) $coupons['WELCOME10']->minimum_spend);
-        $this->assertSame(500, $coupons['WELCOME10']->usage_limit);
+            if ($data['expires_at'] === null) {
+                $this->assertNull($coupon->expires_at, $code.' should not have expiry');
+            } else {
+                $this->assertTrue($coupon->expires_at->eq($data['expires_at']), $code.' expiry mismatch');
+            }
+        }
     }
 
     public function test_coupon_seeder_is_idempotent(): void
@@ -63,6 +105,6 @@ class CouponSeederTest extends TestCase
         $this->seed(CouponSeeder::class);
         $this->seed(CouponSeeder::class);
 
-        $this->assertSame(4, Coupon::count());
+        $this->assertSame(6, Coupon::count());
     }
 }
