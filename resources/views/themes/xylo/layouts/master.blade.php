@@ -46,6 +46,9 @@
     @if (!App::environment('testing'))
         @vite(['resources/views/themes/xylo/js/main.js'])
     @endif
+    @if (!App::environment('testing'))
+        @vite(['resources/views/themes/xylo/js/product-variant-picker.js'])
+    @endif
     @yield('js')
     <script>
         $(document).ready(function() {

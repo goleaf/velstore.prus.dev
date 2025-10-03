@@ -60,52 +60,11 @@
 
 
 
-                <div id="product-attributes" class="product-options">
-                    @php
-                        $groupedAttributes = $product->attributeValues->groupBy(fn($item) => $item->attribute->id);
-                    @endphp
-
-                    @foreach ($groupedAttributes as $attributeId => $values)
-                        <div class="attribute-options mt-3">
-                            <h3>{{ $values->first()->attribute->name }}</h3>
-                            <div class="{{ strtolower($values->first()->attribute->name) }}-wrapper">
-                                @foreach ($values as $index => $value)
-                                    @php
-                                        $inputId = strtolower($values->first()->attribute->name) . '-' . $index;
-                                    @endphp
-                                    <input 
-                                        type="radio" 
-                                        name="attribute_{{ $attributeId }}" 
-                                        id="{{ $inputId }}"
-                                        value="{{ $value->id }}"
-                                        {{ $index === 0 ? 'checked' : '' }}
-                                    >
-                                    <label 
-                                        for="{{ $inputId }}" 
-                                        class="{{ strtolower($values->first()->attribute->name) === 'color' ? 'color-circle ' . strtolower($value->translated_value) : 'size-box' }}"
-                                    >
-                                    @if(strtolower($values->first()->attribute->name) === 'size')
-                                        {{ $value->translated_value }}
-                                    @endif
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-
-
-
-                <!-- Quantity Selector and Cart Button -->
-                <div class="cart-actions mt-3 d-flex">
-                    <div class="quantity me-4">
-                        <button onclick="changeQty(-1)">-</button>
-                        <input type="text" id="qty" value="1">
-                        <button onclick="changeQty(1)">+</button>
-                    </div>
-                    <button class="add-to-cart read-more" onclick="addToCart({{ $product->id }}, '{{ $product->product_type }}')">{{ __('store.product_detail.add_to_cart') }}</button>
-                </div>
+                <x-themes.xylo.product-variant-picker
+                    :product="$product"
+                    :variant-map="$variantMap"
+                    :in-stock="$inStock"
+                />
 
             </div>
         </div>
@@ -206,7 +165,7 @@
 @endsection
 
 @section('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.product-slider').slick({
@@ -219,129 +178,5 @@
                 nextArrow: '<button type="button" class="slick-next">→</button>',
             });
         });
-    </script>
-
- 
-    <script>
-        const variantMap = @json($variantMap);
-    </script>
-    <script>    
-
-    $(document).ready(function () {
-        const productId = {{ $product->id }};
-
-        function getSelectedAttributeValueIds() {
-            let selected = [];
-            $('#product-attributes input[type="radio"]:checked').each(function () {
-                selected.push(parseInt($(this).val()));
-            });
-            return selected.sort((a, b) => a - b);
-        }
-
-        function findMatchingVariantId(selectedAttrIds) {
-            for (const variant of variantMap) {
-                const variantAttrIds = variant.attributes.slice().sort((a, b) => a - b);
-                if (JSON.stringify(variantAttrIds) === JSON.stringify(selectedAttrIds)) {
-                    return variant.id;
-                }
-            }
-            return null;
-        }
-
-        $('input[type="radio"]').on('change', function () {
-            const selectedAttrIds = getSelectedAttributeValueIds();
-            const variantId = findMatchingVariantId(selectedAttrIds);
-
-            if (!variantId) {
-                alert('Selected variant not available.');
-                return;
-            }
-
-            $.ajax({
-                url: '/get-variant-price',
-                type: 'GET',
-                data: {
-                    variant_id: variantId,
-                    product_id: productId
-                },
-                success: function (response) {
-                    if (response.success) {
-                        $('#variant-price').text(response.price);
-                        $('#product-stock').text(response.stock);
-                        $('#currency-symbol').text(response.currency_symbol);
-
-                        if (response.is_out_of_stock) {
-                            $('#product-stock').addClass('text-danger');
-                        } else {
-                            $('#product-stock').removeClass('text-danger');
-                        }
-                    } else {
-                        console.log('Unable to fetch variant price.');
-                    }
-                },
-                error: function () {
-                    alert('Something went wrong. Please try again.');
-                }
-            });
-        });
-
-        // Trigger change on load to set default variant
-        $('input[type="radio"]:checked').trigger('change');
-    });
-
-    </script>
-
-    <script>
-        function changeQty(amount) {
-            let qtyInput = document.getElementById("qty");
-            let currentQty = parseInt(qtyInput.value);
-            let newQty = currentQty + amount;
-
-            if (newQty < 1) newQty = 1;
-            qtyInput.value = newQty;
-        }
-
-        function addToCart(productId, product_type) {
-            const quantity = parseInt(document.getElementById("qty").value);
-            const attributeInputs = document.querySelectorAll('#product-attributes input[type="radio"]:checked');
-
-            let selectedAttributes = [];
-            attributeInputs.forEach(input => {
-                selectedAttributes.push(parseInt(input.value));
-            });
-
-            fetch("{{ route('cart.add') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    product_id: productId,
-                    quantity: quantity,
-                    attribute_value_ids: selectedAttributes,
-                    product_type: product_type
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                toastr.success(data.message);
-                updateCartCount(data.cart);
-            })
-            .catch(error => console.error("Error:", error));
-        }
-
-
-        function getSelectedVariantId(attributes) {
-            // Custom logic to determine the variant ID based on selected attributes (size, color)
-            // This is a simplified version. In practice, you'd likely query the backend to determine the exact variant ID
-            // based on these attributes.
-            return null; // For now, assuming no variant is selected directly
-        }
-
-        function updateCartCount(cart) {
-            let totalCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById("cart-count").textContent = totalCount;
-        }
     </script>
 @endsection
