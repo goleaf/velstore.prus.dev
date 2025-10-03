@@ -176,8 +176,8 @@ trait CreatesAdminTestData
 
         $this->banner = Banner::create([
             'title' => 'Homepage Banner',
-            'status' => true,
-            'type' => 'hero',
+            'status' => 1,
+            'type' => 'promotion',
         ]);
 
         BannerTranslation::create([
@@ -186,7 +186,6 @@ trait CreatesAdminTestData
             'title' => 'Homepage Banner',
             'description' => 'Banner description',
             'image_url' => 'banners/homepage-banner.jpg',
-            'type' => 'hero',
         ]);
 
         $this->socialLink = SocialMediaLink::create([

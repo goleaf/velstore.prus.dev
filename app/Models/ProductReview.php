@@ -19,6 +19,62 @@ class ProductReview extends Model
     ];
 
     /**
+     * Determine the status label that should be used for this review.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->is_approved ? 'approved' : 'pending';
+    }
+
+    /**
+     * Return the badge class that should be used for the current status.
+     */
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->is_approved ? 'badge badge-success' : 'badge badge-warning';
+    }
+
+    /**
+     * Resolve the display name for the customer associated with the review.
+     */
+    public function getCustomerDisplayNameAttribute(): string
+    {
+        $customer = $this->customer;
+
+        if (! $customer) {
+            return __('cms.product_reviews.missing_customer');
+        }
+
+        return $customer->name ?: ($customer->email ?? __('cms.product_reviews.missing_customer'));
+    }
+
+    /**
+     * Resolve the display name for the product associated with the review.
+     */
+    public function getProductDisplayNameAttribute(): string
+    {
+        $product = $this->product;
+
+        if (! $product) {
+            return __('cms.product_reviews.missing_product');
+        }
+
+        if ($product->relationLoaded('translation') && $product->translation) {
+            return $product->translation->name ?? __('cms.product_reviews.missing_product');
+        }
+
+        $translation = $product->translation()->first();
+
+        if ($translation && $translation->name) {
+            return $translation->name;
+        }
+
+        $fallback = $product->translations()->first();
+
+        return $fallback?->name ?? __('cms.product_reviews.missing_product');
+    }
+
+    /**
      * Get the customer that owns the review.
      */
     public function customer(): BelongsTo

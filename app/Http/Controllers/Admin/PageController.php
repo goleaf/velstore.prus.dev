@@ -7,6 +7,7 @@ use App\Models\Language;
 use App\Models\Page;
 use App\Models\PageTranslation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
@@ -17,7 +18,16 @@ class PageController extends Controller
     {
         $pages = Page::with(['translations'])->get();
 
-        return view('admin.pages.index', compact('pages'));
+        $latestUpdatedAt = $pages->max('updated_at');
+
+        $stats = [
+            'total' => $pages->count(),
+            'active' => $pages->where('status', true)->count(),
+            'inactive' => $pages->where('status', false)->count(),
+            'last_updated' => $latestUpdatedAt ? Carbon::parse($latestUpdatedAt) : null,
+        ];
+
+        return view('admin.pages.index', compact('pages', 'stats'));
     }
 
     public function data(Request $request)
@@ -25,8 +35,40 @@ class PageController extends Controller
         $pages = Page::with('translations')->select('pages.*');
 
         return DataTables::of($pages)
-            ->addColumn('translated_title', function ($page) {
-                return optional($page->translations->first())->title ?? '';
+            ->addColumn('title', function (Page $page) {
+                $defaultLocale = config('app.locale');
+                $primaryTranslation = $page->translations
+                    ->firstWhere('language_code', $defaultLocale)
+                    ?? $page->translations->first();
+
+                $title = e(optional($primaryTranslation)->title ?? __('cms.pages.untitled'));
+                $meta = $page->updated_at
+                    ? __('cms.pages.last_updated_on', ['date' => $page->updated_at->format('M j, Y')])
+                    : __('cms.pages.last_updated_on', ['date' => '—']);
+
+                return '<div class="d-flex flex-column">'
+                    .'<span class="fw-semibold">'.$title.'</span>'
+                    .'<span class="text-muted small">'.$meta.'</span>'
+                    .'</div>';
+            })
+            ->editColumn('slug', function (Page $page) {
+                return '<code>'.e($page->slug).'</code>';
+            })
+            ->addColumn('languages', function (Page $page) {
+                if ($page->translations->isEmpty()) {
+                    return '<span class="text-muted">'.__('cms.pages.no_translations').'</span>';
+                }
+
+                return $page->translations
+                    ->sortBy('language_code')
+                    ->map(function (PageTranslation $translation) {
+                        $code = strtoupper($translation->language_code);
+
+                        return '<span class="badge rounded-pill bg-light text-secondary border border-secondary-subtle me-1">'
+                            .$code
+                            .'</span>';
+                    })
+                    ->implode('');
             })
             ->addColumn('action', function ($page) {
                 $editRoute = route('admin.pages.edit', $page->id);
@@ -40,12 +82,28 @@ class PageController extends Controller
                             </button>
                         </div>';
             })
-            ->editColumn('status', function ($page) {
-                return $page->status
-                    ? '<span class="badge bg-success">Active</span>'
-                    : '<span class="badge bg-secondary">Inactive</span>';
+            ->editColumn('status', function (Page $page) {
+                $toggleId = 'page-status-'.$page->id;
+                $checked = $page->status ? 'checked' : '';
+                $label = $page->status
+                    ? __('cms.pages.status_active')
+                    : __('cms.pages.status_inactive');
+
+                return '<div class="form-check form-switch mb-0">'
+                    .'<input class="form-check-input js-page-status-toggle" type="checkbox" role="switch"'
+                    .' id="'.$toggleId.'" data-id="'.$page->id.'" '.$checked.'>'
+                    .'<label class="form-check-label small" for="'.$toggleId.'">'.$label.'</label>'
+                    .'</div>';
             })
-            ->rawColumns(['action', 'status'])
+            ->editColumn('updated_at', function (Page $page) {
+                return $page->updated_at ? $page->updated_at->format('M j, Y H:i') : '—';
+            })
+            ->filterColumn('title', function ($query, $keyword) {
+                $query->whereHas('translations', function ($translationQuery) use ($keyword) {
+                    $translationQuery->where('title', 'like', "%{$keyword}%");
+                });
+            })
+            ->rawColumns(['title', 'slug', 'languages', 'status', 'action'])
             ->make(true);
     }
 

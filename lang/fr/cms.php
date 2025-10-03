@@ -168,6 +168,28 @@ return [
         'completed' => 'Terminé',
         'pending' => 'En attente',
         'failed' => 'Échoué',
+        'status_labels' => [
+            'requested' => 'Demandé',
+            'approved' => 'Approuvé',
+            'rejected' => 'Refusé',
+            'pending' => 'En attente',
+            'completed' => 'Terminé',
+            'failed' => 'Échoué',
+        ],
+
+        // Filters
+        'filters_title' => 'Filtrer les remboursements',
+        'status_filter_label' => 'Statut',
+        'status_filter_help' => 'Sélectionnez un ou plusieurs statuts pour restreindre cette liste.',
+        'date_from_label' => 'Date de début',
+        'date_to_label' => 'Date de fin',
+        'apply_filters' => 'Appliquer les filtres',
+        'reset_filters' => 'Réinitialiser les filtres',
+
+        // Summary Cards
+        'summary_total_count' => 'Nombre total de remboursements',
+        'summary_completed_count' => 'Remboursements terminés',
+        'summary_total_amount' => 'Montant total remboursé',
 
         // Delete Modal
         'delete_confirm' => 'Confirmer la suppression',
