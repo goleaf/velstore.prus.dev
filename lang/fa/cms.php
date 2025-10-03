@@ -296,6 +296,69 @@ return [
         'deleted_title' => 'حذف شد',
         'delete_success_message' => 'مشتری با موفقیت حذف شد!',
         'delete_error_message' => 'خطا در حذف مشتری!',
+
+        // Details view
+        'view_button' => 'مشاهده',
+        'back_to_list' => 'بازگشت به مشتریان',
+        'details_title' => 'جزئیات مشتری',
+        'not_available' => 'در دسترس نیست',
+        'orders_count' => 'سفارش‌ها',
+        'total_spent' => 'مجموع هزینه',
+        'wishlist_count' => 'اقلام لیست علاقه‌مندی',
+        'reviews_count' => 'تعداد نظرات',
+        'basic_information' => 'اطلاعات پایه',
+        'registered_at' => 'تاریخ ثبت‌نام',
+        'last_updated' => 'آخرین بروزرسانی',
+
+        // Addresses
+        'addresses' => 'آدرس‌ها',
+        'address_name' => 'عنوان آدرس',
+        'city' => 'شهر',
+        'postal_code' => 'کد پستی',
+        'country' => 'کشور',
+        'default_address' => 'آدرس پیش‌فرض',
+        'default_address_hint' => 'به عنوان مقصد اصلی ارسال در فروشگاه و بخش مدیریت استفاده می‌شود.',
+        'default' => 'پیش‌فرض',
+        'set_default' => 'تنظیم پیش‌فرض',
+        'set_as_default' => 'تنظیم به عنوان پیش‌فرض',
+        'add_address' => 'افزودن آدرس',
+        'delete' => 'حذف',
+        'delete_confirm' => 'آیا مطمئن هستید که می‌خواهید این آدرس را حذف کنید؟',
+        'no_addresses' => 'هیچ آدرسی برای این مشتری ثبت نشده است.',
+        'address_created' => 'آدرس با موفقیت ذخیره شد.',
+        'address_updated' => 'آدرس با موفقیت بروزرسانی شد.',
+        'address_deleted' => 'آدرس با موفقیت حذف شد.',
+        'address_set_default' => 'آدرس پیش‌فرض بروزرسانی شد.',
+
+        // Orders
+        'orders' => 'سفارش‌ها',
+        'orders_table_id' => 'سفارش',
+        'orders_table_status' => 'وضعیت',
+        'orders_table_total' => 'مبلغ کل',
+        'orders_table_items' => 'اقلام',
+        'orders_table_placed_at' => 'تاریخ ثبت',
+        'orders_table_payment_status' => 'آخرین پرداخت',
+        'orders_table_action' => 'اقدام',
+        'view_order' => 'مشاهده سفارش',
+        'no_orders' => 'هیچ سفارشی برای این مشتری یافت نشد.',
+
+        // Wishlist
+        'wishlist_title' => 'لیست علاقه‌مندی',
+        'wishlist_product' => 'محصول',
+        'wishlist_added_at' => 'تاریخ افزودن',
+        'no_wishlists' => 'هیچ آیتمی در لیست علاقه‌مندی این مشتری وجود ندارد.',
+        'product_missing' => 'محصول ناموجود',
+
+        // Reviews
+        'reviews_title' => 'نظرات محصول',
+        'reviews_product' => 'محصول',
+        'reviews_rating' => 'امتیاز',
+        'reviews_status' => 'وضعیت',
+        'reviews_submitted_at' => 'تاریخ ثبت',
+        'reviews_content' => 'متن نظر',
+        'review_status_approved' => 'تأیید شده',
+        'review_status_pending' => 'در انتظار تأیید',
+        'no_reviews' => 'هیچ نظری توسط این مشتری ثبت نشده است.',
     ],
 
     'vendors' => [
@@ -800,6 +863,10 @@ return [
 
     'product_reviews' => [
         'title_manage' => 'مدیریت نظرات محصولات',
+        'index_description' => 'بازخورد مشتریان را مدیریت کنید و اعتماد به کاتالوگ را حفظ نمایید.',
+        'show_title' => 'نظر شماره :id',
+        'details_title' => 'جزئیات نظر',
+        'back_to_list' => 'بازگشت به فهرست نظرات',
 
         'review_id' => 'شناسه نظر',
         'customer_name' => 'نام مشتری',
@@ -807,9 +874,31 @@ return [
         'rating' => 'امتیاز',
         'status' => 'وضعیت',
         'actions' => 'عملیات',
+        'review' => 'متن نظر',
+        'view' => 'مشاهده',
+        'edit' => 'ویرایش',
+
+        'active' => 'فعال',
+        'inactive' => 'غیرفعال',
+        'approved' => 'تأیید شده',
+        'pending' => 'در انتظار',
+        'missing_customer' => 'مشتری نامشخص',
+        'missing_product' => 'محصول نامشخص',
+        'no_review_provided' => 'برای این نظر متنی ثبت نشده است.',
+
+        'status_filter_label' => 'فیلتر بر اساس وضعیت',
+        'status_filter_all' => 'همه وضعیت‌ها',
+
+        'submitted_at' => 'تاریخ ثبت',
+        'updated_at' => 'آخرین به‌روزرسانی',
+
+        'edit_title' => 'ویرایش نظر شماره :id',
+        'edit_form_title' => 'به‌روزرسانی نظر',
+        'edit_description' => 'امتیاز یا وضعیت تأیید این نظر را تنظیم کنید.',
+        'update_button' => 'ذخیره تغییرات',
 
         'confirm_delete' => 'تأیید حذف',
-        'delete_message' => 'آیا مطمئن هستید که می‌خواهید این نظر محصول را حذف کنید؟',
+        'delete_message' => 'آیا مطمئن هستید که می‌خواهید این نظر را حذف کنید؟',
         'delete' => 'حذف',
         'cancel' => 'لغو',
 

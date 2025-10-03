@@ -1236,6 +1236,8 @@ return [
         'status' => 'Status',
         'actions' => 'Actions',
         'review' => 'Review',
+        'view' => 'View',
+        'edit' => 'Edit',
 
         'active' => 'Active',
         'inactive' => 'Inactive',
@@ -1244,6 +1246,17 @@ return [
         'missing_customer' => 'Unknown customer',
         'missing_product' => 'Unknown product',
         'no_review_provided' => 'No review was provided for this submission.',
+
+        'status_filter_label' => 'Filter by status',
+        'status_filter_all' => 'All statuses',
+
+        'submitted_at' => 'Submitted at',
+        'updated_at' => 'Last updated',
+
+        'edit_title' => 'Edit review #:id',
+        'edit_form_title' => 'Update review',
+        'edit_description' => 'Adjust the rating or approval status for this review.',
+        'update_button' => 'Save changes',
 
         'confirm_delete' => 'Confirm Delete',
         'delete_message' => 'Are you sure you want to delete this product review?',

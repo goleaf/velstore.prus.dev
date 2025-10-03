@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             CurrencySeeder::class,
             ProductSeeder::class,
+            ProductReviewSeeder::class,
             CouponSeeder::class,
             OrderSeeder::class,
             PaymentGatewaySeeder::class,
