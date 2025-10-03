@@ -33,8 +33,8 @@
 </x-admin.card>
 
 <x-admin.card class="mt-6">
-    <form method="GET" class="grid gap-4 md:grid-cols-4">
-        <div>
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col flex-1 min-w-[220px]">
             <label class="form-label" for="search">{{ __('cms.products.search_label') }}</label>
             <input
                 id="search"
@@ -45,7 +45,7 @@
                 class="form-control"
             >
         </div>
-        <div>
+        <div class="flex flex-col w-48 min-w-[180px]">
             <label class="form-label" for="status">{{ __('cms.products.status_filter_label') }}</label>
             <select id="status" name="status" class="form-select">
                 <option value="">{{ __('cms.products.status_filter_all') }}</option>
@@ -53,14 +53,14 @@
                 <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('cms.products.status_filter_inactive') }}</option>
             </select>
         </div>
-        <div>
+        <div class="flex flex-col w-48 min-w-[180px]">
             <label class="form-label" for="sort">{{ __('cms.products.sort_label') }}</label>
             <select id="sort" name="sort" class="form-select">
                 <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('cms.products.sort_latest') }}</option>
                 <option value="oldest" @selected($filters['sort'] === 'oldest')>{{ __('cms.products.sort_oldest') }}</option>
             </select>
         </div>
-        <div>
+        <div class="flex flex-col w-32 min-w-[140px]">
             <label class="form-label" for="per_page">{{ __('cms.products.per_page_label') }}</label>
             <select id="per_page" name="per_page" class="form-select">
                 @foreach ([10, 15, 25, 50] as $size)
@@ -68,7 +68,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="md:col-span-4 flex flex-wrap gap-3">
+        <div class="flex items-center gap-3">
             <button type="submit" class="btn btn-primary">
                 {{ __('cms.products.apply_filters') }}
             </button>
