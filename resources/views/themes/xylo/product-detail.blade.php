@@ -136,7 +136,7 @@
           <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
             <div class="product-detail-customer-review">
                 @if($product->reviews->isEmpty())
-                    <p>No reviews for this product yet.</p>
+                    <p>{{ __('store.product_detail.no_reviews') }}</p>
                 @else
                     <ul>
                         @foreach($product->reviews as $review)
@@ -158,7 +158,7 @@
                                                 $created_at = \Carbon\Carbon::parse($review->created_at);
                                                 $diffInDays = $created_at->diffInDays(\Carbon\Carbon::now());
                                             @endphp
-                                            ({{ $diffInDays }} {{ $diffInDays == 1 ? 'day' : 'days' }} ago)
+                                            ({{ trans_choice('store.product_detail.days_ago', $diffInDays, ['days' => $diffInDays]) }})
                                         </span>
                                     </div>
 
@@ -166,7 +166,7 @@
                                     @if($review->review)
                                         <p>{{ $review->review }}</p>
                                     @else
-                                        <p>No review written.</p>
+                                        <p>{{ __('store.product_detail.no_review_text') }}</p>
                                     @endif
                                 </li>
                             @endif
@@ -188,7 +188,7 @@
                                     @endif
                                 @endfor
 
-                                {{ number_format($product->reviews_avg_rating, 1) }} <span> Average Rating</span> 
+                                {{ number_format($product->reviews_avg_rating, 1) }} <span> {{ __('store.product_detail.average_rating') }}</span>
                             </div>
                         </div>
                 @endif

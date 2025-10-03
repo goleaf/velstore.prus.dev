@@ -108,6 +108,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Reviews */
     Route::get('/reviews/data', [ProductReviewController::class, 'getData'])->name('reviews.data');
+    Route::patch('/reviews/{review}/approval', [ProductReviewController::class, 'updateApproval'])->name('reviews.approval');
     Route::resource('reviews', ProductReviewController::class)->except(['create', 'store']);
 
     /* Attributes */

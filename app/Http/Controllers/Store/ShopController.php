@@ -40,7 +40,14 @@ class ShopController extends Controller
             'size' => array_filter((array) $request->input('size', [])),
         ];
 
-        $products = Product::with(['translation', 'variants.attributeValues'])
+        $products = Product::with([
+                'translation',
+                'variants.attributeValues',
+                'thumbnail',
+                'primaryVariant',
+            ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->approved()])
+            ->withAvg(['reviews as reviews_avg_rating' => fn ($query) => $query->approved()], 'rating')
             ->when(! empty($filters['category']), function ($query) use ($filters) {
                 $query->whereIn('category_id', $filters['category']);
             })
@@ -73,7 +80,13 @@ class ShopController extends Controller
                     });
             })
             ->paginate(12)
-            ->appends($request->query());
+            ->through(function ($product) {
+                $product->reviews_avg_rating = round((float) ($product->reviews_avg_rating ?? 0), 1);
+
+                return $product;
+            });
+
+        $products->appends($request->query());
 
         $brands = Brand::with('translation')->withCount('products')->get();
         $categories = Category::with('translation')->withCount('products')->get();
