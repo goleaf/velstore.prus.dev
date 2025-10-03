@@ -7,15 +7,63 @@
         </div>
 
         <div class="card-body">
+            <div class="border rounded-3 p-3 p-lg-4 bg-light-subtle mb-4">
+                <h6 class="mb-3 text-muted">{{ __('cms.payments.filters_heading') }}</h6>
+                <form id="payment-filters" class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label for="filterStatus" class="form-label">{{ __('cms.payments.status') }}</label>
+                        <select id="filterStatus" class="form-select">
+                            <option value="">{{ __('cms.payments.filters_all_statuses') }}</option>
+                            @foreach ($statusOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label for="filterGateway" class="form-label">{{ __('cms.payment_gateways.title') }}</label>
+                        <select id="filterGateway" class="form-select">
+                            <option value="">{{ __('cms.payments.filters_all_gateways') }}</option>
+                            @foreach ($gateways as $gateway)
+                                <option value="{{ $gateway->id }}">{{ $gateway->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label for="filterShop" class="form-label">{{ __('cms.payments.shops') }}</label>
+                        <select id="filterShop" class="form-select">
+                            <option value="">{{ __('cms.payments.filters_all_shops') }}</option>
+                            @foreach ($shops as $shop)
+                                <option value="{{ $shop->id }}">{{ $shop->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label for="filterDateFrom" class="form-label">{{ __('cms.payments.filters_date_from') }}</label>
+                        <input type="date" id="filterDateFrom" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label for="filterDateTo" class="form-label">{{ __('cms.payments.filters_date_to') }}</label>
+                        <input type="date" id="filterDateTo" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">{{ __('cms.payments.filters_apply') }}</button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">{{ __('cms.payments.filters_reset') }}</button>
+                    </div>
+                </form>
+            </div>
+
             <div class="table-responsive">
-                <table id="payments-table" class="table table-bordered table-striped align-middle mt-4 w-100">
+                <table id="payments-table" class="table table-bordered table-striped align-middle w-100">
                     <thead>
                         <tr>
                             <th>{{ __('cms.payments.id') }}</th>
                             <th>{{ __('cms.payments.order') }}</th>
+                            <th>{{ __('cms.payments.user') }}</th>
+                            <th>{{ __('cms.payments.shops') }}</th>
                             <th>{{ __('cms.payments.gateway') }}</th>
                             <th>{{ __('cms.payments.amount') }}</th>
                             <th>{{ __('cms.payments.status') }}</th>
+                            <th>{{ __('cms.payments.created_at') }}</th>
                             <th>{{ __('cms.payments.transaction') }}</th>
                             <th>{{ __('cms.payments.action') }}</th>
                         </tr>
@@ -70,18 +118,42 @@
             const table = $paymentsTable.DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('admin.payments.getData') }}",
+                ajax: {
+                    url: "{{ route('admin.payments.getData') }}",
+                    data: function (data) {
+                        data.status = $('#filterStatus').val();
+                        data.gateway_id = $('#filterGateway').val();
+                        data.shop_id = $('#filterShop').val();
+                        data.date_from = $('#filterDateFrom').val();
+                        data.date_to = $('#filterDateTo').val();
+                    }
+                },
                 language: @json($datatableLang),
                 columns: [
-                    { data: 'id', name: 'id' },
-                    { data: 'order', name: 'order_id' },
+                    { data: 'id', name: 'payments.id' },
+                    { data: 'order', name: 'order_id', orderable: false, searchable: false },
+                    { data: 'customer', name: 'customer', orderable: false, searchable: false },
+                    { data: 'shops', name: 'shops', orderable: false, searchable: false },
                     { data: 'gateway', name: 'gateway_id' },
                     { data: 'amount', name: 'amount' },
-                    { data: 'status', name: 'status' },
+                    { data: 'status_badge', name: 'status', orderable: false, searchable: false },
+                    { data: 'created_at', name: 'created_at' },
                     { data: 'transaction_id', name: 'transaction_id' },
                     { data: 'action', orderable: false, searchable: false }
                 ],
+                order: [[7, 'desc']],
                 pageLength: 10
+            });
+
+            $('#payment-filters').on('submit', function (event) {
+                event.preventDefault();
+                table.ajax.reload();
+            });
+
+            $('#resetFilters').on('click', function () {
+                const form = document.getElementById('payment-filters');
+                form.reset();
+                table.ajax.reload();
             });
 
             $(document).on('click', '.btn-view-payment', function() {

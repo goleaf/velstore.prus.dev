@@ -227,6 +227,17 @@ return [
         'transaction' => 'Giao dịch',
         'action' => 'Hành động',
 
+        'shops' => 'Shops',
+
+        'filters_heading' => 'Filter payments',
+        'filters_all_statuses' => 'All statuses',
+        'filters_all_gateways' => 'All gateways',
+        'filters_all_shops' => 'All shops',
+        'filters_date_from' => 'Start date',
+        'filters_date_to' => 'End date',
+        'filters_apply' => 'Apply filters',
+        'filters_reset' => 'Reset filters',
+
         // Status Labels
         'completed' => 'Hoàn tất',
         'pending' => 'Đang chờ',
