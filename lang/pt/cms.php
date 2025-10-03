@@ -167,6 +167,28 @@ return [
         'completed' => 'Concluído',
         'pending' => 'Pendente',
         'failed' => 'Falhou',
+        'status_labels' => [
+            'requested' => 'Solicitado',
+            'approved' => 'Aprovado',
+            'rejected' => 'Rejeitado',
+            'pending' => 'Pendente',
+            'completed' => 'Concluído',
+            'failed' => 'Falhou',
+        ],
+
+        // Filters
+        'filters_title' => 'Filtrar reembolsos',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Selecione um ou mais status para restringir esta lista.',
+        'date_from_label' => 'Data inicial',
+        'date_to_label' => 'Data final',
+        'apply_filters' => 'Aplicar filtros',
+        'reset_filters' => 'Redefinir filtros',
+
+        // Summary Cards
+        'summary_total_count' => 'Total de reembolsos',
+        'summary_completed_count' => 'Reembolsos concluídos',
+        'summary_total_amount' => 'Total reembolsado',
 
         // Delete Modal
         'delete_confirm' => 'Confirmar Exclusão',

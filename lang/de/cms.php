@@ -168,6 +168,28 @@ return [
         'completed' => 'Abgeschlossen',
         'pending' => 'Ausstehend',
         'failed' => 'Fehlgeschlagen',
+        'status_labels' => [
+            'requested' => 'Angefordert',
+            'approved' => 'Genehmigt',
+            'rejected' => 'Abgelehnt',
+            'pending' => 'Ausstehend',
+            'completed' => 'Abgeschlossen',
+            'failed' => 'Fehlgeschlagen',
+        ],
+
+        // Filters
+        'filters_title' => 'Rückerstattungen filtern',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Wählen Sie einen oder mehrere Status aus, um diese Liste einzugrenzen.',
+        'date_from_label' => 'Von Datum',
+        'date_to_label' => 'Bis Datum',
+        'apply_filters' => 'Filter anwenden',
+        'reset_filters' => 'Filter zurücksetzen',
+
+        // Summary Cards
+        'summary_total_count' => 'Gesamtanzahl Rückerstattungen',
+        'summary_completed_count' => 'Abgeschlossene Rückerstattungen',
+        'summary_total_amount' => 'Insgesamt erstattet',
 
         // Delete Modal
         'delete_confirm' => 'Löschung bestätigen',

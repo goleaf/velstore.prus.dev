@@ -247,6 +247,28 @@ return [
         'completed' => 'Completed',
         'pending' => 'Pending',
         'failed' => 'Failed',
+        'status_labels' => [
+            'requested' => 'Requested',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'failed' => 'Failed',
+        ],
+
+        // Filters
+        'filters_title' => 'Filter refunds',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Select one or more statuses to narrow this list.',
+        'date_from_label' => 'From date',
+        'date_to_label' => 'To date',
+        'apply_filters' => 'Apply filters',
+        'reset_filters' => 'Reset filters',
+
+        // Summary Cards
+        'summary_total_count' => 'Total refunds',
+        'summary_completed_count' => 'Completed refunds',
+        'summary_total_amount' => 'Total refunded',
 
         // Delete Modal
         'delete_confirm' => 'Confirm Delete',
