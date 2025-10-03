@@ -27,7 +27,9 @@ class PaymentSeederTest extends TestCase
         ]);
 
         $this->assertTrue($order->payments()->exists());
-        $this->assertSame(1, Payment::count());
+        $this->assertSame(1, $order->payments()->count());
+
+        $this->assertSame(3, Payment::count());
     }
 
     public function test_payment_seeder_is_idempotent(): void
@@ -38,7 +40,7 @@ class PaymentSeederTest extends TestCase
         $order = Order::where('guest_email', 'guest@example.com')->first();
         $this->assertNotNull($order);
 
-        $this->assertSame(1, ShippingAddress::count());
-        $this->assertSame(1, Payment::count());
+        $this->assertSame(2, ShippingAddress::count());
+        $this->assertSame(3, Payment::count());
     }
 }

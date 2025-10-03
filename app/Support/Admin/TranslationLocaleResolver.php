@@ -4,6 +4,7 @@ namespace App\Support\Admin;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 final class TranslationLocaleResolver
 {
@@ -12,13 +13,17 @@ final class TranslationLocaleResolver
      */
     public static function resolve(
         iterable $languageCodes,
-        MessageBag $errors,
+        MessageBag|ViewErrorBag $errors,
         array $oldInput,
         ?string $appLocale,
         ?string $fallbackLocale,
         string $default = 'en'
     ): TranslationLocaleResolution {
         $codes = self::normalizeCodes($languageCodes);
+
+        if ($errors instanceof ViewErrorBag) {
+            $errors = $errors->getBag('default');
+        }
 
         $errorTab = $codes->first(
             static fn (string $code): bool => $errors->has("translations.$code.name") || $errors->has("translations.$code.value")
@@ -55,4 +60,3 @@ final class TranslationLocaleResolver
             ->values();
     }
 }
-

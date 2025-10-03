@@ -32,7 +32,7 @@ class RefundSeeder extends Seeder
                 'days_ago' => 7,
             ],
             [
-                'status' => Refund::STATUS_PENDING,
+                'status' => Refund::STATUS_REQUESTED,
                 'reason' => 'Awaiting gateway confirmation.',
                 'ratio' => 0.2,
                 'days_ago' => 1,
@@ -57,10 +57,17 @@ class RefundSeeder extends Seeder
             return;
         }
 
+        $showcasePayment = $payments->firstWhere('order_id', 3)
+            ?? $payments->first();
+
         $paymentsPool = $payments->values();
 
         foreach ($definitions as $index => $definition) {
             $payment = $paymentsPool[$index % $paymentsPool->count()];
+
+            if ($showcasePayment && $payment->is($showcasePayment)) {
+                continue;
+            }
 
             $amount = round((float) $payment->amount * ($definition['ratio'] ?? 0.3), 2);
             $amount = $amount > 0
@@ -87,11 +94,6 @@ class RefundSeeder extends Seeder
             $refund->updated_at = $timestamp;
             $refund->save();
         }
-
-        $showcasePayment = Payment::where('order_id', 3)
-            ->where('status', 'completed')
-            ->first()
-            ?? Payment::first();
 
         if (! $showcasePayment) {
             return;
