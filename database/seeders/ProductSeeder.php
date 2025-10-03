@@ -117,24 +117,50 @@ class ProductSeeder extends Seeder
                     'slug' => 'cool-tshirt',
                     'image' => 'assets/images/placeholder-promo.svg',
                     'description' => 'Trendy T-Shirt available in multiple sizes and colors.',
+                    'base_price' => 24.99,
+                    'size_increment' => 4.50,
+                    'color_increment' => 3.25,
+                    'discount_offset' => 5.00,
                 ],
                 [
                     'name' => 'Sport Shoes',
                     'slug' => 'sport-shoes',
                     'image' => 'assets/images/placeholder-promo.svg',
                     'description' => 'Comfortable sport shoes for daily use.',
+                    'base_price' => 54.99,
+                    'size_increment' => 6.75,
+                    'color_increment' => 4.10,
+                    'discount_offset' => 8.00,
                 ],
                 [
                     'name' => 'Wireless Headphones',
                     'slug' => 'wireless-headphones',
                     'image' => 'assets/images/placeholder-promo.svg',
                     'description' => 'Noise-cancelling wireless headphones with long battery life.',
+                    'base_price' => 89.99,
+                    'size_increment' => 2.25,
+                    'color_increment' => 1.75,
+                    'discount_offset' => 10.00,
                 ],
                 [
                     'name' => 'Travel Backpack',
                     'slug' => 'travel-backpack',
                     'image' => 'assets/images/placeholder-promo.svg',
                     'description' => 'Durable backpack for travel and outdoor activities.',
+                    'base_price' => 44.99,
+                    'size_increment' => 5.00,
+                    'color_increment' => 2.80,
+                    'discount_offset' => 6.00,
+                ],
+                [
+                    'name' => 'Atsuktuvų rinkinys Kiilde',
+                    'slug' => 'atsuktuvu-rinkinys-kiilde',
+                    'image' => 'assets/images/placeholder-promo.svg',
+                    'description' => 'Precision screwdriver set tailored for electronics and household repairs.',
+                    'base_price' => 34.50,
+                    'size_increment' => 3.40,
+                    'color_increment' => 2.60,
+                    'discount_offset' => 4.50,
                 ],
             ];
 
@@ -153,8 +179,8 @@ class ProductSeeder extends Seeder
                     'brand_id' => $brand->id,
                     'product_type' => 'variable',
                     'status' => 1,
-                    'price' => 99.99,
-                    'discount_price' => null,
+                    'price' => $item['base_price'],
+                    'discount_price' => max($item['base_price'] - ($item['discount_offset'] ?? 0), 1),
                     'stock' => 50,
                     'currency' => 'USD',
                     'SKU' => Str::upper(Str::random(10)),
@@ -170,6 +196,7 @@ class ProductSeeder extends Seeder
                             'Sport Shoes' => 'Zapatillas deportivas',
                             'Wireless Headphones' => 'Auriculares inalámbricos',
                             'Travel Backpack' => 'Mochila de viaje',
+                            'Atsuktuvų rinkinys Kiilde' => 'Juego de destornilladores Kiilde',
                             default => $item['name'],
                         },
                         'de' => match ($item['name']) {
@@ -177,6 +204,7 @@ class ProductSeeder extends Seeder
                             'Sport Shoes' => 'Sportschuhe',
                             'Wireless Headphones' => 'Kabellose Kopfhörer',
                             'Travel Backpack' => 'Reiserucksack',
+                            'Atsuktuvų rinkinys Kiilde' => 'Schraubendreher-Set Kiilde',
                             default => $item['name'],
                         },
                         default => $item['name'],
@@ -188,6 +216,7 @@ class ProductSeeder extends Seeder
                             'Sport Shoes' => 'Zapatillas deportivas cómodas para uso diario.',
                             'Wireless Headphones' => 'Auriculares inalámbricos con cancelación de ruido y batería de larga duración.',
                             'Travel Backpack' => 'Mochila duradera para viajes y actividades al aire libre.',
+                            'Atsuktuvų rinkinys Kiilde' => 'Juego de destornilladores de precisión para electrónica y reparaciones domésticas.',
                             default => $item['description'],
                         },
                         'de' => match ($item['name']) {
@@ -195,6 +224,7 @@ class ProductSeeder extends Seeder
                             'Sport Shoes' => 'Bequeme Sportschuhe für den täglichen Gebrauch.',
                             'Wireless Headphones' => 'Kabellose Kopfhörer mit Geräuschunterdrückung und langer Akkulaufzeit.',
                             'Travel Backpack' => 'Robuster Rucksack für Reisen und Outdoor-Aktivitäten.',
+                            'Atsuktuvų rinkinys Kiilde' => 'Präzisions-Schraubendreher-Set für Elektronik und Haushaltsreparaturen.',
                             default => $item['description'],
                         },
                         default => $item['description'],
@@ -220,16 +250,19 @@ class ProductSeeder extends Seeder
                 $sizesAttrValues = AttributeValue::where('attribute_id', $sizeAttr->id)->get();
                 $colorsAttrValues = AttributeValue::where('attribute_id', $colorAttr->id)->get();
 
-                foreach ($sizesAttrValues as $size) {
-                    foreach ($colorsAttrValues as $color) {
-                        $price = rand(20, 60);
-                        $discountPrice = rand(10, $price);
+                foreach ($sizesAttrValues as $sizeIndex => $size) {
+                    foreach ($colorsAttrValues as $colorIndex => $color) {
+                        $priceBase = $item['base_price'];
+                        $sizeIncrement = $item['size_increment'] ?? 0;
+                        $colorIncrement = $item['color_increment'] ?? 0;
+                        $price = round($priceBase + ($sizeIndex * $sizeIncrement) + ($colorIndex * $colorIncrement), 2);
+                        $discountPrice = round(max($price - ($item['discount_offset'] ?? 0), 1), 2);
 
                         $variant = $product->variants()->create([
                             'variant_slug' => Str::slug("{$item['name']} {$size->value}-{$color->value}").'-'.uniqid(),
                             'price' => $price,
                             'discount_price' => $discountPrice,
-                            'stock' => rand(50, 200),
+                            'stock' => 75 + ($sizeIndex * 10) + ($colorIndex * 5),
                             'SKU' => $this->generateUniqueSku($size->value, $color->value),
                             'barcode' => null,
                             'weight' => '0.5',
