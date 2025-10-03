@@ -54,8 +54,26 @@
                             </td>
                         </tr>
                         <tr>
+                            <th>{{ __('cms.payments.user') }}</th>
+                            <td>{{ $payment->customer_display_name ?? $payment->order?->guest_email ?? $notAvailable }}</td>
+                        </tr>
+                        <tr>
                             <th>{{ __('cms.payments.gateway') }}</th>
                             <td>{{ $payment->gateway->name ?? $notAvailable }}</td>
+                        </tr>
+                        <tr>
+                            <th>{{ __('cms.payments.shops') }}</th>
+                            <td>
+                                @if (!empty($payment->shop_names))
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($payment->shop_names as $shopName)
+                                            <li>{{ $shopName }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    {{ $notAvailable }}
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <th>{{ __('cms.payments.amount') }}</th>
