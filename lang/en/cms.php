@@ -388,7 +388,10 @@ return [
 
         // Page Titles
         'title' => 'Payments',
-        'details_title' => 'Payment Details',
+        'index_description' => 'Monitor incoming transactions, filter by gateway, and keep tabs on the latest activity.',
+        'details_title' => 'Payment details',
+        'details_heading' => 'Payment #:id',
+        'details_description' => 'Review the transaction metadata, associated order, and payout destinations.',
 
         // Table Headings
         'id' => 'ID',
@@ -401,6 +404,7 @@ return [
         'action' => 'Action',
         'shops' => 'Shops',
 
+        // Filters
         'filters_heading' => 'Filter payments',
         'filters_all_statuses' => 'All statuses',
         'filters_all_gateways' => 'All gateways',
@@ -414,22 +418,37 @@ return [
         'completed' => 'Completed',
         'pending' => 'Pending',
         'failed' => 'Failed',
+        'processing' => 'Processing',
+        'refunded' => 'Refunded',
+
+        // Metrics & Empty State
+        'empty_state' => 'No payments match your filters yet.',
+        'metric_total' => 'Payments',
+        'metric_total_hint' => 'Total transactions that match your filters.',
+        'metric_completed' => 'Completed',
+        'metric_completed_hint' => 'Successful payments in the current view.',
+        'metric_failed' => 'Failed',
+        'metric_failed_hint' => 'Payments that may require follow-up.',
+
+        // Actions
+        'view_details' => 'View details',
 
         // Delete Modal
-        'delete_confirm' => 'Confirm Delete',
-        'delete_message' => 'Are you sure you want to delete this payment?',
+        'delete_confirm_title' => 'Confirm deletion',
+        'delete_confirm_message' => 'Are you sure you want to delete this payment?',
         'cancel' => 'Cancel',
         'delete' => 'Delete',
 
         // Alerts / Notifications
         'success' => 'Success',
-        'deleted' => 'Deleted',
+        'deleted' => 'Payment deleted successfully.',
         'delete_error' => 'Error deleting payment!',
 
         // Payment Details Page
         'transaction_id' => 'Transaction ID',
-        'created_at' => 'Created At',
-        'back' => 'Back to Payments',
+        'created_at' => 'Created at',
+        'back' => 'Back to payments',
+        'status_hint' => 'Status reflects the latest update received from the payment gateway.',
 
         // Fallback
         'not_available' => 'N/A',

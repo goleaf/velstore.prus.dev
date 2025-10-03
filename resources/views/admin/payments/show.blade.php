@@ -1,106 +1,98 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <h6 class="mb-0">
-            {{ __('cms.payments.details_title') }}
-            <span class="text-primary">#{{ $payment->id }}</span>
-        </h6>
-        <a href="{{ route('admin.payments.index') }}" class="btn btn-light btn-sm">
-            <i class="bi bi-arrow-left"></i> {{ __('cms.payments.back') }}
-        </a>
-    </div>
+    <x-admin.page-header
+        :title="__('cms.payments.details_heading', ['id' => $payment->id])"
+        :description="__('cms.payments.details_description')"
+    >
+        <x-admin.button-link href="{{ route('admin.payments.index') }}" class="btn-outline">
+            {{ __('cms.payments.back') }}
+        </x-admin.button-link>
+    </x-admin.page-header>
 
-    @php
-        $statusVariants = [
-            'completed' => 'success',
-            'pending' => 'warning text-dark',
-            'failed' => 'danger',
-            'refunded' => 'info text-dark',
-        ];
-        $statusVariant = $statusVariants[$payment->status] ?? 'secondary';
-
-        $statusTranslationKey = 'cms.payments.' . $payment->status;
-        $statusLabel = __($statusTranslationKey);
-        if ($statusLabel === $statusTranslationKey) {
-            $statusLabel = ucfirst($payment->status);
-        }
-
-        $notAvailable = __('cms.payments.not_available');
-    @endphp
-
-    <div class="card mt-3">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="mb-0">{{ __('cms.payments.details_title') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped mb-0">
-                    <tbody>
-                        <tr>
-                            <th class="w-25">{{ __('cms.payments.id') }}</th>
-                            <td>#{{ $payment->id }}</td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.order') }}</th>
-                            <td>
-                                @if ($payment->order)
-                                    <a href="{{ route('admin.orders.show', $payment->order->id) }}" class="text-decoration-none">
-                                        #{{ $payment->order->id }}
-                                    </a>
-                                @else
-                                    {{ $notAvailable }}
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.user') }}</th>
-                            <td>{{ $payment->customer_display_name ?? $payment->order?->guest_email ?? $notAvailable }}</td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.gateway') }}</th>
-                            <td>{{ $payment->gateway->name ?? $notAvailable }}</td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.shops') }}</th>
-                            <td>
-                                @if (!empty($payment->shop_names))
-                                    <ul class="mb-0 ps-3">
-                                        @foreach ($payment->shop_names as $shopName)
-                                            <li>{{ $shopName }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    {{ $notAvailable }}
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.amount') }}</th>
-                            <td>
-                                {{ number_format((float) $payment->amount, 2) }}
-                                @if ($payment->currency)
-                                    <span class="text-muted">{{ $payment->currency }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.status') }}</th>
-                            <td>
-                                <span class="badge bg-{{ $statusVariant }}">{{ $statusLabel }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.transaction_id') }}</th>
-                            <td>{{ $payment->transaction_id ?? $notAvailable }}</td>
-                        </tr>
-                        <tr>
-                            <th>{{ __('cms.payments.created_at') }}</th>
-                            <td>{{ optional($payment->created_at)->format('d M Y, h:i A') ?? $notAvailable }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <x-admin.card class="mt-6" :title="__('cms.payments.details_title')">
+        <div class="grid gap-6">
+            <div class="rounded-xl border border-gray-200 bg-white p-4">
+                <p class="text-sm font-medium text-gray-500">{{ __('cms.payments.status') }}</p>
+                <div class="mt-2 flex items-center gap-2">
+                    <span class="text-xl font-semibold text-gray-900">{{ $statusLabel }}</span>
+                    <span class="{{ $statusBadge }}">{{ $statusLabel }}</span>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">{{ __('cms.payments.status_hint') }}</p>
             </div>
+
+            <dl class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.id') }}</dt>
+                    <dd class="mt-1 text-base font-semibold text-gray-900">#{{ $payment->id }}</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.created_at') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        {{ optional($payment->created_at)->format('d M Y, h:i A') ?? __('cms.payments.not_available') }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.order') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        @if ($payment->order)
+                            <a href="{{ route('admin.orders.show', $payment->order) }}" class="text-primary-600 hover:text-primary-700">
+                                #{{ $payment->order->id }}
+                            </a>
+                        @else
+                            {{ __('cms.payments.not_available') }}
+                        @endif
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.user') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        {{ $payment->customer_display_name ?? $payment->order?->guest_email ?? __('cms.payments.not_available') }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.gateway') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        {{ $payment->gateway->name ?? __('cms.payments.not_available') }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.transaction_id') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        {{ $payment->transaction_id ?? __('cms.payments.not_available') }}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.amount') }}</dt>
+                    <dd class="mt-1 text-base font-semibold text-gray-900">
+                        {{ number_format((float) $payment->amount, 2) }}
+                        @if ($payment->currency)
+                            <span class="text-sm font-normal text-gray-500">{{ $payment->currency }}</span>
+                        @endif
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">{{ __('cms.payments.shops') }}</dt>
+                    <dd class="mt-1 text-base text-gray-900">
+                        @if (!empty($payment->shop_names))
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($payment->shop_names as $shopName)
+                                    <span class="badge badge-gray">{{ $shopName }}</span>
+                                @endforeach
+                            </div>
+                        @else
+                            {{ __('cms.payments.not_available') }}
+                        @endif
+                    </dd>
+                </div>
+            </dl>
         </div>
-    </div>
+    </x-admin.card>
 @endsection

@@ -1,220 +1,230 @@
 @extends('admin.layouts.admin')
 
+@php
+    $deleteTemplate = route('admin.payments.destroy', ['payment' => '__PAYMENT_ID__']);
+@endphp
+
 @section('content')
-    <div class="card mt-4">
-        <div class="card-header card-header-bg text-white">
-            <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.payments.title') }}</h6>
-        </div>
+    <x-admin.page-header
+        :title="__('cms.payments.title')"
+        :description="__('cms.payments.index_description')"
+    />
 
-        <div class="card-body">
-            <div class="border rounded-3 p-3 p-lg-4 bg-light-subtle mb-4">
-                <h6 class="mb-3 text-muted">{{ __('cms.payments.filters_heading') }}</h6>
-                <form id="payment-filters" class="row g-3">
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <label for="filterStatus" class="form-label">{{ __('cms.payments.status') }}</label>
-                        <select id="filterStatus" class="form-select">
-                            <option value="">{{ __('cms.payments.filters_all_statuses') }}</option>
-                            @foreach ($statusOptions as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <label for="filterGateway" class="form-label">{{ __('cms.payment_gateways.title') }}</label>
-                        <select id="filterGateway" class="form-select">
-                            <option value="">{{ __('cms.payments.filters_all_gateways') }}</option>
-                            @foreach ($gateways as $gateway)
-                                <option value="{{ $gateway->id }}">{{ $gateway->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <label for="filterShop" class="form-label">{{ __('cms.payments.shops') }}</label>
-                        <select id="filterShop" class="form-select">
-                            <option value="">{{ __('cms.payments.filters_all_shops') }}</option>
-                            @foreach ($shops as $shop)
-                                <option value="{{ $shop->id }}">{{ $shop->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <label for="filterDateFrom" class="form-label">{{ __('cms.payments.filters_date_from') }}</label>
-                        <input type="date" id="filterDateFrom" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3">
-                        <label for="filterDateTo" class="form-label">{{ __('cms.payments.filters_date_to') }}</label>
-                        <input type="date" id="filterDateTo" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-6 col-xl-3 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary flex-grow-1">{{ __('cms.payments.filters_apply') }}</button>
-                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">{{ __('cms.payments.filters_reset') }}</button>
-                    </div>
-                </form>
+    <x-admin.card class="mt-6">
+        <div class="grid gap-6">
+            <form method="GET" action="{{ route('admin.payments.index') }}" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div>
+                    <label for="filter-status" class="form-label">{{ __('cms.payments.status') }}</label>
+                    <select id="filter-status" name="status" class="form-select">
+                        <option value="">{{ __('cms.payments.filters_all_statuses') }}</option>
+                        @foreach ($statusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected($filters['status'] === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="filter-gateway" class="form-label">{{ __('cms.payment_gateways.title') }}</label>
+                    <select id="filter-gateway" name="gateway_id" class="form-select">
+                        <option value="">{{ __('cms.payments.filters_all_gateways') }}</option>
+                        @foreach ($gateways as $gateway)
+                            <option value="{{ $gateway->id }}" @selected($filters['gateway_id'] === (string) $gateway->id)>
+                                {{ $gateway->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="filter-shop" class="form-label">{{ __('cms.payments.shops') }}</label>
+                    <select id="filter-shop" name="shop_id" class="form-select">
+                        <option value="">{{ __('cms.payments.filters_all_shops') }}</option>
+                        @foreach ($shops as $shop)
+                            <option value="{{ $shop->id }}" @selected($filters['shop_id'] === (string) $shop->id)>
+                                {{ $shop->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="filter-date-from" class="form-label">{{ __('cms.payments.filters_date_from') }}</label>
+                    <input
+                        id="filter-date-from"
+                        type="date"
+                        name="date_from"
+                        value="{{ $filters['date_from'] }}"
+                        class="form-control"
+                    >
+                </div>
+
+                <div>
+                    <label for="filter-date-to" class="form-label">{{ __('cms.payments.filters_date_to') }}</label>
+                    <input
+                        id="filter-date-to"
+                        type="date"
+                        name="date_to"
+                        value="{{ $filters['date_to'] }}"
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="flex items-end gap-3">
+                    <button type="submit" class="btn btn-primary w-full md:w-auto">
+                        {{ __('cms.payments.filters_apply') }}
+                    </button>
+                    <a href="{{ route('admin.payments.index') }}" class="btn btn-outline w-full md:w-auto">
+                        {{ __('cms.payments.filters_reset') }}
+                    </a>
+                </div>
+            </form>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <p class="text-sm font-medium text-gray-500">{{ __('cms.payments.metric_total') }}</p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($metrics['total']) }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('cms.payments.metric_total_hint') }}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <p class="text-sm font-medium text-gray-500">{{ __('cms.payments.metric_completed') }}</p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($metrics['completed']) }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('cms.payments.metric_completed_hint') }}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <p class="text-sm font-medium text-gray-500">{{ __('cms.payments.metric_failed') }}</p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($metrics['failed']) }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('cms.payments.metric_failed_hint') }}</p>
+                </div>
             </div>
 
-            <div class="table-responsive">
-                <table id="payments-table" class="table table-bordered table-striped align-middle w-100">
-                    <thead>
-                        <tr>
-                            <th>{{ __('cms.payments.id') }}</th>
-                            <th>{{ __('cms.payments.order') }}</th>
-                            <th>{{ __('cms.payments.user') }}</th>
-                            <th>{{ __('cms.payments.shops') }}</th>
-                            <th>{{ __('cms.payments.gateway') }}</th>
-                            <th>{{ __('cms.payments.amount') }}</th>
-                            <th>{{ __('cms.payments.status') }}</th>
-                            <th>{{ __('cms.payments.created_at') }}</th>
-                            <th>{{ __('cms.payments.transaction') }}</th>
-                            <th>{{ __('cms.payments.action') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- DataTables will populate the body -->
-                    </tbody>
-                </table>
+            <x-admin.table
+                data-payments-table
+                data-column-count="10"
+                data-empty-message="{{ __('cms.payments.empty_state') }}"
+                :columns="[
+                    __('cms.payments.id'),
+                    __('cms.payments.order'),
+                    __('cms.payments.user'),
+                    __('cms.payments.shops'),
+                    __('cms.payments.gateway'),
+                    __('cms.payments.amount'),
+                    __('cms.payments.status'),
+                    __('cms.payments.transaction'),
+                    __('cms.payments.created_at'),
+                    __('cms.payments.action'),
+                ]"
+            >
+                @forelse ($payments as $payment)
+                    <tr class="table-row" data-payment-row="{{ $payment->id }}">
+                        <td class="table-cell font-semibold">#{{ $payment->id }}</td>
+                        <td class="table-cell">
+                            @if ($payment->order)
+                                <a href="{{ route('admin.orders.show', $payment->order) }}" class="text-primary-600 hover:text-primary-700">
+                                    #{{ $payment->order->id }}
+                                </a>
+                            @else
+                                <span class="text-gray-500">{{ __('cms.payments.not_available') }}</span>
+                            @endif
+                        </td>
+                        <td class="table-cell">
+                            {{ $payment->customer_display_name ?? __('cms.payments.not_available') }}
+                        </td>
+                        <td class="table-cell">
+                            @if (!empty($payment->shop_names))
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach ($payment->shop_names as $shopName)
+                                        <span class="badge badge-gray">{{ $shopName }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="text-gray-500">{{ __('cms.payments.not_available') }}</span>
+                            @endif
+                        </td>
+                        <td class="table-cell">{{ $payment->gateway->name ?? __('cms.payments.not_available') }}</td>
+                        <td class="table-cell font-semibold text-gray-900">
+                            {{ number_format((float) $payment->amount, 2) }}
+                            @if ($payment->currency)
+                                <span class="text-xs text-gray-500">{{ $payment->currency }}</span>
+                            @endif
+                        </td>
+                        <td class="table-cell">
+                            @php
+                                $statusKey = $payment->status ?? 'unknown';
+                                $badgeClass = $statusBadges[$statusKey] ?? 'badge badge-gray';
+                                $translationKey = 'cms.payments.' . $statusKey;
+                                $statusLabel = __($translationKey);
+
+                                if ($statusLabel === $translationKey) {
+                                    $statusLabel = ucfirst(str_replace('_', ' ', (string) $statusKey));
+                                }
+                            @endphp
+                            <span class="{{ $badgeClass }}">{{ $statusLabel }}</span>
+                        </td>
+                        <td class="table-cell">{{ $payment->transaction_id ?? __('cms.payments.not_available') }}</td>
+                        <td class="table-cell">{{ optional($payment->created_at)->format('d M Y, h:i A') ?? __('cms.payments.not_available') }}</td>
+                        <td class="table-cell">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{{ route('admin.payments.show', $payment) }}" class="btn btn-sm btn-outline">
+                                    {{ __('cms.payments.view_details') }}
+                                </a>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-payment-delete="{{ $payment->id }}"
+                                    data-payment-label="#{{ $payment->id }}"
+                                >
+                                    {{ __('cms.payments.delete') }}
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr data-payments-empty-row>
+                        <td colspan="10" class="table-cell py-6 text-center text-sm text-gray-500">
+                            {{ __('cms.payments.empty_state') }}
+                        </td>
+                    </tr>
+                @endforelse
+            </x-admin.table>
+
+            @if ($payments->hasPages())
+                <div>
+                    {{ $payments->links() }}
+                </div>
+            @endif
+        </div>
+    </x-admin.card>
+
+    <div
+        data-payment-delete-modal
+        data-delete-url="{{ $deleteTemplate }}"
+        data-success-title="{{ __('cms.notifications.success') }}"
+        data-success-message="{{ __('cms.payments.deleted') }}"
+        data-error-title="{{ __('cms.notifications.error') }}"
+        data-error-message="{{ __('cms.payments.delete_error') }}"
+        class="fixed inset-0 z-50 hidden"
+    >
+        <div class="absolute inset-0 bg-gray-900/50" data-dismiss-modal></div>
+        <div class="relative z-10 flex min-h-full items-center justify-center p-4">
+            <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h2 class="text-base font-semibold text-gray-900">{{ __('cms.payments.delete_confirm_title') }}</h2>
+                </div>
+                <div class="px-6 py-5">
+                    <p class="text-sm text-gray-600">{{ __('cms.payments.delete_confirm_message') }}</p>
+                    <p class="mt-2 text-sm font-semibold text-gray-900" data-payment-label></p>
+                </div>
+                <div class="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4">
+                    <button type="button" class="btn btn-outline" data-dismiss-modal>
+                        {{ __('cms.payments.cancel') }}
+                    </button>
+                    <button type="button" class="btn btn-danger" data-confirm-delete>
+                        {{ __('cms.payments.delete') }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Delete Modal -->
-    <div class="modal fade" id="deletePaymentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ __('cms.payments.delete_confirm') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">{{ __('cms.payments.delete_message') }}</div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('cms.payments.cancel') }}</button>
-                    <button type="button" class="btn btn-danger"
-                            id="confirmDeletePayment">{{ __('cms.payments.delete') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
-
-@section('js')
-    @php
-        $datatableLang = __('cms.datatables');
-    @endphp
-
-    <script>
-        $(document).ready(function() {
-            const $paymentsTable = $('#payments-table');
-            const $deletePaymentModal = $('#deletePaymentModal');
-            const $confirmDeletePayment = $('#confirmDeletePayment');
-            let paymentToDeleteId = null;
-
-            const toastrOptions = {
-                closeButton: true,
-                progressBar: true,
-                positionClass: 'toast-top-right',
-                timeOut: 5000
-            };
-
-            const table = $paymentsTable.DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: "{{ route('admin.payments.getData') }}",
-                    data: function (data) {
-                        data.status = $('#filterStatus').val();
-                        data.gateway_id = $('#filterGateway').val();
-                        data.shop_id = $('#filterShop').val();
-                        data.date_from = $('#filterDateFrom').val();
-                        data.date_to = $('#filterDateTo').val();
-                    }
-                },
-                language: @json($datatableLang),
-                columns: [
-                    { data: 'id', name: 'payments.id' },
-                    { data: 'order', name: 'order_id', orderable: false, searchable: false },
-                    { data: 'customer', name: 'customer', orderable: false, searchable: false },
-                    { data: 'shops', name: 'shops', orderable: false, searchable: false },
-                    { data: 'gateway', name: 'gateway_id' },
-                    { data: 'amount', name: 'amount' },
-                    { data: 'status_badge', name: 'status', orderable: false, searchable: false },
-                    { data: 'created_at', name: 'created_at' },
-                    { data: 'transaction_id', name: 'transaction_id' },
-                    { data: 'action', orderable: false, searchable: false }
-                ],
-                order: [[7, 'desc']],
-                pageLength: 10
-            });
-
-            $('#payment-filters').on('submit', function (event) {
-                event.preventDefault();
-                table.ajax.reload();
-            });
-
-            $('#resetFilters').on('click', function () {
-                const form = document.getElementById('payment-filters');
-                form.reset();
-                table.ajax.reload();
-            });
-
-            $(document).on('click', '.btn-view-payment', function() {
-                const url = $(this).data('url');
-                if (url) {
-                    window.location.href = url;
-                }
-            });
-
-            $(document).on('click', '.btn-delete-payment', function() {
-                paymentToDeleteId = $(this).data('id');
-                $deletePaymentModal.modal('show');
-            });
-
-            $deletePaymentModal.on('hidden.bs.modal', function() {
-                paymentToDeleteId = null;
-            });
-
-            $confirmDeletePayment.on('click', function() {
-                if (paymentToDeleteId === null) {
-                    return;
-                }
-
-                $confirmDeletePayment.prop('disabled', true);
-
-                $.ajax({
-                    url: '{{ route('admin.payments.destroy', ':id') }}'.replace(':id', paymentToDeleteId),
-                    type: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    }
-                })
-                    .done(function(response) {
-                        if (response.success) {
-                            table.ajax.reload(null, false);
-                            toastr.success(
-                                response.message || '{{ __('cms.payments.deleted') }}',
-                                '{{ __('cms.payments.success') }}',
-                                toastrOptions
-                            );
-                            $deletePaymentModal.modal('hide');
-                            paymentToDeleteId = null;
-                        } else {
-                            toastr.error(
-                                response.message || '{{ __('cms.payments.delete_error') }}',
-                                '{{ __('cms.payments.delete_error') }}',
-                                toastrOptions
-                            );
-                        }
-                    })
-                    .fail(function() {
-                        toastr.error(
-                            '{{ __('cms.payments.delete_error') }}',
-                            '{{ __('cms.payments.delete_error') }}',
-                            toastrOptions
-                        );
-                    })
-                    .always(function() {
-                        $confirmDeletePayment.prop('disabled', false);
-                    });
-            });
-        });
-    </script>
 @endsection
