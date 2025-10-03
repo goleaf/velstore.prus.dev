@@ -127,7 +127,23 @@ return [
 
         // Page Titles
         'title' => 'Payment Gateways',
-        'edit_title' => 'Edit Payment Gateway',
+        'index_description' => 'Monitor integrations, manage credentials, and control availability for each gateway.',
+        'create_title' => 'Create Payment Gateway',
+        'create_description' => 'Register a new provider, add sandbox and production credentials, and configure encryption.',
+        'edit_title' => 'Edit Payment Gateway: :name',
+        'edit_description' => 'Update credentials, toggle environments, and control availability.',
+        'back_to_index' => 'Back to payment gateways',
+
+        // Buttons
+        'create_button' => 'Create gateway',
+        'update_button' => 'Save gateway',
+        'save_changes' => 'Save changes',
+        'edit_button' => 'Edit gateway',
+        'activate_button' => 'Activate',
+        'deactivate_button' => 'Deactivate',
+        'add_configuration' => 'Add configuration',
+        'remove_configuration' => 'Remove',
+        'reset_filters' => 'Reset filters',
 
         // Table Headings
         'id' => 'ID',
@@ -135,38 +151,69 @@ return [
         'code' => 'Code',
         'status' => 'Status',
         'action' => 'Action',
+        'config_count' => 'Configurations',
+        'last_updated' => 'Last updated',
+
+        // Stats
+        'quick_stats_title' => 'Gateway overview',
+        'total_gateways' => 'Total gateways',
+        'active_gateways' => 'Active gateways',
+        'inactive_gateways' => 'Inactive gateways',
+
+        // Filters
+        'filters_title' => 'Filter gateways',
+        'search_label' => 'Search',
+        'search_placeholder' => 'Search by name or code…',
+        'status_filter_label' => 'Status',
+        'status_filter_all' => 'All statuses',
+        'status_filter_active' => 'Only active',
+        'status_filter_inactive' => 'Only inactive',
 
         // Status Labels
         'active' => 'Active',
         'inactive' => 'Inactive',
 
         // Delete Modal
-        'delete_confirm' => 'Confirm Delete',
+        'delete_confirm' => 'Confirm delete',
         'delete_message' => 'Are you sure you want to delete this payment gateway?',
         'cancel' => 'Cancel',
         'delete' => 'Delete',
 
         // Alerts / Notifications
         'success' => 'Success',
-        'deleted' => 'Deleted',
+        'error' => 'Error',
+        'created' => 'Payment gateway created successfully.',
+        'updated' => 'Payment gateway updated successfully.',
+        'deleted_message' => 'Payment gateway deleted successfully.',
         'delete_error' => 'Error deleting payment gateway!',
+        'activated_message' => 'Payment gateway activated.',
+        'deactivated_message' => 'Payment gateway deactivated.',
+        'toggle_error' => 'Unable to toggle gateway status.',
 
         // Form Labels
-        'gateway_name' => 'Gateway Name',
+        'gateway_name' => 'Gateway name',
+        'name_placeholder' => 'e.g. Stripe, PayPal, Razorpay',
         'description' => 'Description',
+        'description_placeholder' => 'Describe how this gateway is used by your store.',
+        'code_placeholder' => 'Unique identifier (e.g. stripe)',
+        'code_help' => 'Codes must be unique and are used internally.',
         'active_label' => 'Active',
-        'configurations' => 'Gateway Configurations',
-        'key_name' => 'Key Name',
-        'key_value' => 'Key Value',
+        'configurations' => 'Gateway configurations',
+        'key_name' => 'Key name',
+        'key_name_placeholder' => 'client_id, secret_key…',
+        'key_value' => 'Key value',
+        'key_value_placeholder' => 'Enter the credential value',
+        'key_value_hint' => 'Mark as encrypted to store the value securely.',
         'environment' => 'Environment',
+        'environment_placeholder' => 'Select environment',
         'sandbox' => 'Sandbox',
         'production' => 'Production',
         'encrypted' => 'Encrypted',
         'unique' => 'unique',
-        'update_button' => 'Update',
 
         // Fallback
         'not_available' => 'N/A',
+        'no_configurations' => 'No configurations defined yet. Add at least one credential set.',
     ],
 
     'product_variants' => [
@@ -1216,6 +1263,7 @@ return [
         'csrf_token_invalid' => 'Invalid CSRF token. Please refresh the page and try again.',
         'not_found' => 'The requested item could not be found.',
         'unauthorized' => 'You are not authorized to perform this action.',
+        'whoops' => 'Whoops! Something went wrong.',
     ],
 
     'messages' => [
