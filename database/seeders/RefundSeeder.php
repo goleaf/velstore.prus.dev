@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class RefundSeeder extends Seeder
 {

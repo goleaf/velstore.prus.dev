@@ -5,23 +5,64 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Refund;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class RefundController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.refunds.index');
+        $statusFilter = Arr::wrap($request->input('status', []));
+        $statusFilter = array_values(array_filter($statusFilter, function ($status) {
+            if (! is_string($status)) {
+                return false;
+            }
+
+            return in_array(strtolower($status), Refund::STATUSES, true);
+        }));
+
+        $filters = [
+            'status' => $statusFilter,
+            'date_from' => $request->input('date_from'),
+            'date_to' => $request->input('date_to'),
+        ];
+
+        $stats = [
+            'total' => Refund::count(),
+            'completed' => Refund::where('status', Refund::STATUS_COMPLETED)->count(),
+            'refunded_amount' => Refund::where('status', Refund::STATUS_COMPLETED)->sum('amount'),
+        ];
+
+        $statusOptions = Refund::statusOptions();
+
+        return view('admin.refunds.index', compact('filters', 'stats', 'statusOptions'));
     }
 
     public function getData(Request $request)
     {
         if ($request->ajax()) {
-            $refunds = Refund::with(['payment.gateway'])->select('refunds.*');
+            $statusFilter = Arr::wrap($request->input('status', []));
+            $statusFilter = array_values(array_filter($statusFilter, function ($status) {
+                if (! is_string($status)) {
+                    return false;
+                }
+
+                return in_array(strtolower($status), Refund::STATUSES, true);
+            }));
+
+            $refunds = Refund::with(['payment.gateway'])
+                ->select('refunds.*')
+                ->withStatuses($statusFilter)
+                ->createdBetween($request->input('date_from'), $request->input('date_to'));
 
             return DataTables::of($refunds)
-                ->editColumn('amount', fn($row) => number_format((float) $row->amount, 2))
+                ->editColumn('amount', function ($row) {
+                    $amount = number_format((float) $row->amount, 2);
+                    $currency = $row->currency ? strtoupper($row->currency) : '';
+
+                    return trim($amount . ' ' . $currency);
+                })
                 ->editColumn('reason', function ($row) {
                     if (! $row->reason) {
                         return __('cms.refunds.not_available');
@@ -68,20 +109,8 @@ class RefundController extends Controller
                     HTML;
                 })
                 ->editColumn('status', function ($row) {
-                    $statusKey = strtolower((string) $row->status);
-                    $statusLabels = [
-                        'completed' => __('cms.refunds.completed'),
-                        'pending' => __('cms.refunds.pending'),
-                        'failed' => __('cms.refunds.failed'),
-                    ];
-                    $statusClassMap = [
-                        'completed' => 'bg-emerald-50 text-emerald-700 ring-emerald-500/20',
-                        'pending' => 'bg-amber-50 text-amber-700 ring-amber-500/20',
-                        'failed' => 'bg-rose-50 text-rose-700 ring-rose-500/20',
-                    ];
-
-                    $label = $statusLabels[$statusKey] ?? ucfirst($statusKey);
-                    $statusClass = $statusClassMap[$statusKey] ?? 'bg-gray-100 text-gray-700 ring-gray-500/10';
+                    $statusClass = Refund::badgeClassForStatus($row->status);
+                    $label = Refund::labelForStatus($row->status);
 
                     return '<span class="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ' . $statusClass . '"><span class="h-1.5 w-1.5 rounded-full bg-current"></span>' . e($label) . '</span>';
                 })

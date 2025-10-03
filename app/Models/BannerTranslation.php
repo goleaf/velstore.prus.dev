@@ -10,7 +10,7 @@ class BannerTranslation extends Model
     use HasFactory;
 
     // Define the fillable attributes
-    protected $fillable = ['banner_id', 'language_code', 'title', 'description', 'image_url', 'type'];
+    protected $fillable = ['banner_id', 'language_code', 'title', 'description', 'image_url'];
 
     // Relationship with Banner
     public function banner()

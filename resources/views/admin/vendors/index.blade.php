@@ -42,11 +42,25 @@
 </x-admin.card>
 
 <x-admin.card class="mt-6" :title="__('cms.vendors.table_title')">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+        <div class="max-w-xs w-full">
+            <label for="statusFilter" class="form-label text-xs uppercase tracking-wide text-slate-600">
+                {{ __('cms.vendors.filter_status_label') }}
+            </label>
+            <select id="statusFilter" class="form-select">
+                <option value="">{{ __('cms.vendors.filter_status_all') }}</option>
+                @foreach ($statusOptions ?? [] as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
     <x-admin.table id="vendors-table" :columns="[
         __('cms.vendors.id'),
         __('cms.vendors.name'),
         __('cms.vendors.email'),
         __('cms.vendors.phone'),
+        __('cms.vendors.registered_at'),
         __('cms.vendors.status'),
         __('cms.vendors.actions'),
     ]">
@@ -80,24 +94,38 @@
                 destroy: '{{ route('admin.vendors.destroy', ['id' => '__ID__']) }}',
             };
 
+            const statusFilter = document.getElementById('statusFilter');
+            const datatableLanguage = {
+                ...@json($datatableLang),
+                emptyTable: '{{ __('cms.vendors.empty_state') }}',
+            };
+
             const table = $('#vendors-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
                     url: routes.data,
                     type: 'GET',
+                    data: function (d) {
+                        d.status = statusFilter?.value ?? '';
+                    },
                 },
                 columns: [
                     { data: 'id', name: 'id' },
                     { data: 'name', name: 'name' },
                     { data: 'email', name: 'email' },
                     { data: 'phone', name: 'phone', defaultContent: '—' },
+                    { data: 'registered_at', name: 'registered_at', orderable: false, searchable: false, defaultContent: '—' },
                     { data: 'status', name: 'status', orderable: false, searchable: false },
                     { data: 'action', orderable: false, searchable: false },
                 ],
                 pageLength: 10,
                 order: [[0, 'desc']],
-                language: @json($datatableLang),
+                language: datatableLanguage,
+            });
+
+            statusFilter?.addEventListener('change', () => {
+                table.ajax.reload();
             });
 
             const deleteModalElement = document.getElementById('deleteVendorModal');

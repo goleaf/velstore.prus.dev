@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\BannerTranslation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BannerRepository implements BannerRepositoryInterface
 {
@@ -26,6 +27,8 @@ class BannerRepository implements BannerRepositoryInterface
     {
         return Banner::create([
             'type' => $data['type'],
+            'status' => $data['status'] ?? 1,
+            'title' => $data['title'] ?? null,
         ]);
     }
 
@@ -33,6 +36,14 @@ class BannerRepository implements BannerRepositoryInterface
     public function updateBanner(Banner $banner, array $data): Banner
     {
         $banner->type = $data['type'];
+        if (array_key_exists('status', $data)) {
+            $banner->status = $data['status'];
+        }
+
+        if (array_key_exists('title', $data) && $data['title']) {
+            $banner->title = $data['title'];
+        }
+
         $banner->save();
 
         return $banner;
@@ -44,9 +55,7 @@ class BannerRepository implements BannerRepositoryInterface
         // Delete associated images if they exist
         $translations = BannerTranslation::where('banner_id', $banner->id)->get();
         foreach ($translations as $translation) {
-            if ($translation->image_url && Storage::exists($translation->image_url)) {
-                Storage::delete($translation->image_url);
-            }
+            $this->deleteImage($translation->image_url);
         }
 
         // Delete translations
@@ -54,5 +63,24 @@ class BannerRepository implements BannerRepositoryInterface
 
         // Delete the banner
         return $banner->delete();
+    }
+
+    protected function deleteImage(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $normalized = Str::startsWith($path, 'public/') ? Str::after($path, 'public/') : $path;
+
+        if (Storage::disk('public')->exists($normalized)) {
+            Storage::disk('public')->delete($normalized);
+
+            return;
+        }
+
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+        }
     }
 }

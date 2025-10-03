@@ -3,66 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCouponRequest;
+use App\Http\Requests\Admin\UpdateCouponRequest;
 use App\Models\Coupon;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
-use Yajra\DataTables\Facades\DataTables;
 
 class CouponController extends Controller
 {
-    public function index()
-    {
-        return view('admin.coupons.index');
-    }
+    protected array $statusFilters = ['active', 'expired'];
 
-    public function getData(Request $request)
+    public function index(Request $request)
     {
-        if (! $request->ajax()) {
-            abort(404);
+        $status = $request->query('status');
+        $now = Carbon::now();
+
+        $couponsQuery = Coupon::query()->latest();
+
+        if (is_string($status) && in_array($status, $this->statusFilters, true)) {
+            if ($status === 'active') {
+                $couponsQuery->where(function ($query) use ($now) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>=', $now);
+                });
+            }
+
+            if ($status === 'expired') {
+                $couponsQuery->whereNotNull('expires_at')
+                    ->where('expires_at', '<', $now);
+            }
+        } else {
+            $status = '';
         }
 
-        $coupons = Coupon::query();
+        $coupons = $couponsQuery->paginate(10)->withQueryString();
 
-        return DataTables::of($coupons)
-            ->editColumn('discount', function (Coupon $coupon) {
-                $value = rtrim(rtrim(number_format($coupon->discount, 2), '0'), '.');
+        $stats = $this->getCouponStats($now);
 
-                return $coupon->type === 'percentage'
-                    ? $value.'%'
-                    : $value;
-            })
-            ->editColumn('type', function (Coupon $coupon) {
-                return __('cms.coupons.type_labels.'.$coupon->type);
-            })
-            ->editColumn('expires_at', function (Coupon $coupon) {
-                return $coupon->expires_at
-                    ? $coupon->expires_at->format('Y-m-d H:i')
-                    : __('cms.coupons.no_expiry');
-            })
-            ->addColumn('action', function (Coupon $coupon) {
-                $editUrl = route('admin.coupons.edit', $coupon->id);
-                $editLabel = e(__('cms.coupons.edit_title'));
-                $deleteLabel = e(__('cms.coupons.delete_button'));
+        $statusFilterLabels = [
+            '' => __('cms.coupons.filters.all'),
+            'active' => __('cms.coupons.filters.active'),
+            'expired' => __('cms.coupons.filters.expired'),
+        ];
 
-                return <<<HTML
-                    <div class="flex flex-col gap-2">
-                        <button type="button"
-                                class="btn btn-outline btn-sm w-full justify-center btn-edit-coupon"
-                                data-url="{$editUrl}" title="{$editLabel}">
-                            {$editLabel}
-                        </button>
-                        <button type="button"
-                                class="btn btn-outline-danger btn-sm w-full justify-center btn-delete-coupon"
-                                data-id="{$coupon->id}" title="{$deleteLabel}">
-                            {$deleteLabel}
-                        </button>
-                    </div>
-                HTML;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+        return view('admin.coupons.index', [
+            'coupons' => $coupons,
+            'stats' => $stats,
+            'statusFilters' => $statusFilterLabels,
+            'currentStatus' => $status,
+        ]);
     }
 
     public function create()
@@ -70,24 +60,9 @@ class CouponController extends Controller
         return view('admin.coupons.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCouponRequest $request)
     {
-        $validated = $request->validate([
-            'code' => ['required', 'string', 'max:255', Rule::unique('coupons', 'code')],
-            'discount' => ['required', 'numeric', 'min:0'],
-            'type' => ['required', Rule::in(['percentage', 'fixed'])],
-            'expires_at' => ['nullable', 'date'],
-        ]);
-
-        if ($validated['type'] === 'percentage' && $validated['discount'] > 100) {
-            return back()->withErrors([
-                'discount' => __('cms.coupons.errors.percentage_limit'),
-            ])->withInput();
-        }
-
-        $validated['expires_at'] = $this->parseExpiry($request->input('expires_at'));
-
-        Coupon::create($validated);
+        Coupon::create($request->validatedData());
 
         return redirect()
             ->route('admin.coupons.index')
@@ -99,24 +74,9 @@ class CouponController extends Controller
         return view('admin.coupons.edit', compact('coupon'));
     }
 
-    public function update(Request $request, Coupon $coupon)
+    public function update(UpdateCouponRequest $request, Coupon $coupon)
     {
-        $validated = $request->validate([
-            'code' => ['required', 'string', 'max:255', Rule::unique('coupons', 'code')->ignore($coupon->id)],
-            'discount' => ['required', 'numeric', 'min:0'],
-            'type' => ['required', Rule::in(['percentage', 'fixed'])],
-            'expires_at' => ['nullable', 'date'],
-        ]);
-
-        if ($validated['type'] === 'percentage' && $validated['discount'] > 100) {
-            return back()->withErrors([
-                'discount' => __('cms.coupons.errors.percentage_limit'),
-            ])->withInput();
-        }
-
-        $validated['expires_at'] = $this->parseExpiry($request->input('expires_at'));
-
-        $coupon->update($validated);
+        $coupon->update($request->validatedData());
 
         return redirect()
             ->route('admin.coupons.index')
@@ -131,6 +91,7 @@ class CouponController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('cms.coupons.deleted'),
+                'stats' => $this->getCouponStats(),
             ]);
         } catch (\Throwable $throwable) {
             Log::error('Failed to delete coupon', [
@@ -145,21 +106,26 @@ class CouponController extends Controller
         }
     }
 
-    private function parseExpiry(?string $expiresAt): ?Carbon
+    private function getCouponStats(?Carbon $reference = null): array
     {
-        if (! $expiresAt) {
-            return null;
-        }
+        $now = $reference ?? Carbon::now();
 
-        try {
-            return Carbon::parse($expiresAt);
-        } catch (\Throwable $throwable) {
-            Log::warning('Invalid coupon expiry provided', [
-                'value' => $expiresAt,
-                'error' => $throwable->getMessage(),
-            ]);
+        $activeCount = Coupon::query()
+            ->where(function ($query) use ($now) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', $now);
+            })
+            ->count();
 
-            return null;
-        }
+        $expiredCount = Coupon::query()
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', $now)
+            ->count();
+
+        return [
+            'total' => Coupon::count(),
+            'active' => $activeCount,
+            'expired' => $expiredCount,
+        ];
     }
 }

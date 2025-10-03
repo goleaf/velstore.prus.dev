@@ -1,6 +1,7 @@
 import './bootstrap';
 import './admin/sidebar';
 import './admin/orders/index';
+import './admin/coupons/index';
 
 document.addEventListener('click', function (event) {
     const target = event.target;

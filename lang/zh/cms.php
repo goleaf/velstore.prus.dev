@@ -168,6 +168,28 @@ return [
         'completed' => '已完成',
         'pending' => '待处理',
         'failed' => '失败',
+        'status_labels' => [
+            'requested' => '已申请',
+            'approved' => '已批准',
+            'rejected' => '已拒绝',
+            'pending' => '待处理',
+            'completed' => '已完成',
+            'failed' => '失败',
+        ],
+
+        // Filters
+        'filters_title' => '筛选退款',
+        'status_filter_label' => '状态',
+        'status_filter_help' => '选择一个或多个状态以缩小此列表。',
+        'date_from_label' => '起始日期',
+        'date_to_label' => '结束日期',
+        'apply_filters' => '应用筛选',
+        'reset_filters' => '重置筛选',
+
+        // Summary Cards
+        'summary_total_count' => '退款总数',
+        'summary_completed_count' => '已完成退款',
+        'summary_total_amount' => '退款总额',
 
         // Delete Modal
         'delete_confirm' => '确认删除',
@@ -296,6 +318,69 @@ return [
         'deleted_title' => '已删除',
         'delete_success_message' => '客户已成功删除！',
         'delete_error_message' => '删除客户时出错！',
+
+        // Details view
+        'view_button' => '查看',
+        'back_to_list' => '返回客户列表',
+        'details_title' => '客户详情',
+        'not_available' => '暂无',
+        'orders_count' => '订单数量',
+        'total_spent' => '累计消费',
+        'wishlist_count' => '心愿单商品',
+        'reviews_count' => '评价数量',
+        'basic_information' => '基本信息',
+        'registered_at' => '注册时间',
+        'last_updated' => '最后更新',
+
+        // Addresses
+        'addresses' => '地址',
+        'address_name' => '地址名称',
+        'city' => '城市',
+        'postal_code' => '邮政编码',
+        'country' => '国家',
+        'default_address' => '默认地址',
+        'default_address_hint' => '作为店铺前台和后台的主要配送地址。',
+        'default' => '默认',
+        'set_default' => '设为默认',
+        'set_as_default' => '设为默认地址',
+        'add_address' => '添加地址',
+        'delete' => '删除',
+        'delete_confirm' => '确定要删除此地址吗？',
+        'no_addresses' => '该客户尚未添加任何地址。',
+        'address_created' => '地址保存成功。',
+        'address_updated' => '地址更新成功。',
+        'address_deleted' => '地址删除成功。',
+        'address_set_default' => '默认地址已更新。',
+
+        // Orders
+        'orders' => '订单',
+        'orders_table_id' => '订单',
+        'orders_table_status' => '状态',
+        'orders_table_total' => '总金额',
+        'orders_table_items' => '商品数量',
+        'orders_table_placed_at' => '下单时间',
+        'orders_table_payment_status' => '最新付款',
+        'orders_table_action' => '操作',
+        'view_order' => '查看订单',
+        'no_orders' => '未找到该客户的订单。',
+
+        // Wishlist
+        'wishlist_title' => '心愿单',
+        'wishlist_product' => '商品',
+        'wishlist_added_at' => '添加时间',
+        'no_wishlists' => '该客户的心愿单中没有商品。',
+        'product_missing' => '商品不可用',
+
+        // Reviews
+        'reviews_title' => '商品评价',
+        'reviews_product' => '商品',
+        'reviews_rating' => '评分',
+        'reviews_status' => '状态',
+        'reviews_submitted_at' => '提交时间',
+        'reviews_content' => '评价内容',
+        'review_status_approved' => '已批准',
+        'review_status_pending' => '待审批',
+        'no_reviews' => '该客户尚未提交任何评价。',
     ],
 
     'vendors' => [
@@ -800,24 +885,50 @@ return [
     ],
 
     'product_reviews' => [
-        'title_manage' => '产品评论管理',
+        'title_manage' => '产品评价管理',
+        'index_description' => '管理客户反馈，保持产品目录的可信度。',
+        'show_title' => '评价 #:id',
+        'details_title' => '评价详情',
+        'back_to_list' => '返回评价列表',
 
-        'review_id' => '评论ID',
-        'customer_name' => '客户名称',
+        'review_id' => '评价编号',
+        'customer_name' => '客户姓名',
         'product_name' => '产品名称',
         'rating' => '评分',
         'status' => '状态',
         'actions' => '操作',
+        'review' => '评价内容',
+        'view' => '查看',
+        'edit' => '编辑',
+
+        'active' => '启用',
+        'inactive' => '停用',
+        'approved' => '已批准',
+        'pending' => '待审核',
+        'missing_customer' => '未知客户',
+        'missing_product' => '未知产品',
+        'no_review_provided' => '此评价未提供任何内容。',
+
+        'status_filter_label' => '按状态筛选',
+        'status_filter_all' => '所有状态',
+
+        'submitted_at' => '提交时间',
+        'updated_at' => '最后更新',
+
+        'edit_title' => '编辑评价 #:id',
+        'edit_form_title' => '更新评价',
+        'edit_description' => '调整此评价的评分或审核状态。',
+        'update_button' => '保存更改',
 
         'confirm_delete' => '确认删除',
-        'delete_message' => '您确定要删除此产品评论吗？',
+        'delete_message' => '确定要删除此产品评价吗？',
         'delete' => '删除',
         'cancel' => '取消',
 
-        'success_create' => '产品评论创建成功！',
-        'success_update' => '产品评论更新成功！',
-        'success_delete' => '产品评论删除成功！',
-        'error_delete' => '删除产品评论时发生错误！请重试。',
+        'success_create' => '产品评价创建成功！',
+        'success_update' => '产品评价更新成功！',
+        'success_delete' => '产品评价删除成功！',
+        'error_delete' => '删除产品评价时发生错误，请重试。',
 
         'success' => '成功',
         'error' => '错误',

@@ -21,7 +21,6 @@ class BannerTranslationFactory extends Factory
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(),
             'image_url' => $this->faker->imageUrl(),
-            'type' => $this->faker->randomElement(['homepage', 'category', 'product']),
         ];
     }
 }

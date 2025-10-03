@@ -168,6 +168,28 @@ return [
         'completed' => '완료',
         'pending' => '대기 중',
         'failed' => '실패',
+        'status_labels' => [
+            'requested' => '요청됨',
+            'approved' => '승인됨',
+            'rejected' => '거부됨',
+            'pending' => '대기 중',
+            'completed' => '완료',
+            'failed' => '실패',
+        ],
+
+        // Filters
+        'filters_title' => '환불 필터',
+        'status_filter_label' => '상태',
+        'status_filter_help' => '이 목록을 좁히려면 하나 이상의 상태를 선택하세요.',
+        'date_from_label' => '시작 날짜',
+        'date_to_label' => '종료 날짜',
+        'apply_filters' => '필터 적용',
+        'reset_filters' => '필터 초기화',
+
+        // Summary Cards
+        'summary_total_count' => '총 환불 건수',
+        'summary_completed_count' => '완료된 환불',
+        'summary_total_amount' => '환불 총액',
 
         // Delete Modal
         'delete_confirm' => '삭제 확인',

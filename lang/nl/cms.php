@@ -167,6 +167,28 @@ return [
         'completed' => 'Voltooid',
         'pending' => 'In afwachting',
         'failed' => 'Mislukt',
+        'status_labels' => [
+            'requested' => 'Aangevraagd',
+            'approved' => 'Goedgekeurd',
+            'rejected' => 'Afgewezen',
+            'pending' => 'In afwachting',
+            'completed' => 'Voltooid',
+            'failed' => 'Mislukt',
+        ],
+
+        // Filters
+        'filters_title' => 'Restituties filteren',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Selecteer één of meer statussen om deze lijst te verfijnen.',
+        'date_from_label' => 'Vanaf datum',
+        'date_to_label' => 'Tot datum',
+        'apply_filters' => 'Filters toepassen',
+        'reset_filters' => 'Filters opnieuw instellen',
+
+        // Summary Cards
+        'summary_total_count' => 'Totaal restituties',
+        'summary_completed_count' => 'Voltooide restituties',
+        'summary_total_amount' => 'Totaal terugbetaald',
 
         // Delete Modal
         'delete_confirm' => 'Bevestig verwijderen',

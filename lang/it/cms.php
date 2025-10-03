@@ -168,6 +168,28 @@ return [
         'completed' => 'Completato',
         'pending' => 'In attesa',
         'failed' => 'Fallito',
+        'status_labels' => [
+            'requested' => 'Richiesto',
+            'approved' => 'Approvato',
+            'rejected' => 'Respinto',
+            'pending' => 'In attesa',
+            'completed' => 'Completato',
+            'failed' => 'Fallito',
+        ],
+
+        // Filters
+        'filters_title' => 'Filtra rimborsi',
+        'status_filter_label' => 'Stato',
+        'status_filter_help' => 'Seleziona uno o più stati per restringere questo elenco.',
+        'date_from_label' => 'Data iniziale',
+        'date_to_label' => 'Data finale',
+        'apply_filters' => 'Applica filtri',
+        'reset_filters' => 'Reimposta filtri',
+
+        // Summary Cards
+        'summary_total_count' => 'Rimborsi totali',
+        'summary_completed_count' => 'Rimborsi completati',
+        'summary_total_amount' => 'Totale rimborsato',
 
         // Delete Modal
         'delete_confirm' => 'Conferma eliminazione',

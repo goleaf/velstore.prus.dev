@@ -15,6 +15,7 @@
                 <thead class="table-header">
                     <tr>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.id') }}</th>
+                        <th scope="col" class="table-header-cell">{{ __('cms.banners.title') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.banner_type') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.image') }}</th>
                         <th scope="col" class="table-header-cell">{{ __('cms.banners.status') }}</th>
@@ -74,7 +75,16 @@
                 },
                 columns: [
                     { data: 'id', name: 'id' },
-                    { data: 'type', name: 'type' },
+                    { data: 'title', name: 'banner_translations.title', defaultContent: '' },
+                    {
+                        data: 'type_badge',
+                        name: 'type',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data) {
+                            return data || '';
+                        },
+                    },
                     {
                         data: 'image',
                         name: 'image',
