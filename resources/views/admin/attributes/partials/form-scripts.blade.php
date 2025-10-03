@@ -10,8 +10,6 @@
         const languages = @json($languageMeta);
         const valueContainer = document.getElementById('attribute-values-container');
         const addButton = document.getElementById('add-attribute-value');
-        const tabTriggers = Array.from(document.querySelectorAll('[data-language-tab-target]'));
-        const tabPanels = Array.from(document.querySelectorAll('[data-language-panel]'));
         const removeText = @json(__('cms.attributes.remove_value'));
         const valuePlaceholder = @json(__('cms.attributes.attribute_values'));
         const translationPlaceholder = @json(__('cms.attributes.translated_value'));
@@ -19,6 +17,8 @@
         if (!valueContainer) {
             return;
         }
+
+        const rowTabControllers = new WeakMap();
 
         const generateRowId = () => `attribute-value-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
@@ -40,10 +40,52 @@
             });
         };
 
-        const activateFirstTab = (row) => {
-            const firstTabTrigger = row.querySelector('.attribute-language-tabs button');
-            if (firstTabTrigger && typeof bootstrap !== 'undefined') {
-                bootstrap.Tab.getOrCreateInstance(firstTabTrigger).show();
+        const createTabController = (row) => {
+            const tabButtons = Array.from(row.querySelectorAll('[data-language-tab-target]'));
+            const tabPanels = Array.from(row.querySelectorAll('[data-language-panel]'));
+
+            if (!tabButtons.length || !tabPanels.length) {
+                return null;
+            }
+
+            const setActiveTab = (targetCode) => {
+                if (!targetCode) {
+                    return;
+                }
+
+                tabButtons.forEach((button) => {
+                    const isActive = button.dataset.languageTabTarget === targetCode;
+                    button.classList.toggle('nav-tab-active', isActive);
+                    button.classList.toggle('nav-tab-inactive', !isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                tabPanels.forEach((panel) => {
+                    const isActive = panel.dataset.languagePanel === targetCode;
+                    panel.classList.toggle('hidden', !isActive);
+                    panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+                });
+            };
+
+            tabButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    setActiveTab(button.dataset.languageTabTarget);
+                });
+            });
+
+            const initiallySelected = tabButtons.find((button) => button.getAttribute('aria-selected') === 'true');
+            const initialCode = initiallySelected?.dataset.languageTabTarget || tabButtons[0]?.dataset.languageTabTarget;
+            if (initialCode) {
+                setActiveTab(initialCode);
+            }
+
+            return { setActiveTab };
+        };
+
+        const registerRow = (row) => {
+            const controller = createTabController(row);
+            if (controller) {
+                rowTabControllers.set(row, controller);
             }
         };
 
@@ -78,57 +120,66 @@
             row.appendChild(header);
 
             const translationWrapper = document.createElement('div');
-            translationWrapper.className = 'translation-section';
+            translationWrapper.className = 'translation-section space-y-3';
+            translationWrapper.dataset.languageTabs = 'true';
 
-            const navTabs = document.createElement('ul');
-            navTabs.className = 'nav nav-tabs attribute-language-tabs';
-            navTabs.id = `${rowId}-tabs`;
-            navTabs.setAttribute('role', 'tablist');
-
-            const tabContent = document.createElement('div');
-            tabContent.className = 'tab-content mt-3';
-            tabContent.id = `${rowId}-tab-content`;
+            const tabList = document.createElement('div');
+            tabList.className = 'flex flex-wrap gap-2';
+            tabList.setAttribute('role', 'tablist');
+            translationWrapper.appendChild(tabList);
 
             languages.forEach(({ code, name }, index) => {
                 const tabId = `${rowId}-${code}-tab`;
-                const paneId = `${rowId}-${code}-panel`;
-
-                const listItem = document.createElement('li');
-                listItem.className = 'nav-item';
-                listItem.setAttribute('role', 'presentation');
+                const panelId = `${rowId}-${code}-panel`;
 
                 const tabButton = document.createElement('button');
                 tabButton.type = 'button';
-                tabButton.className = `nav-link${index === 0 ? ' active' : ''}`;
                 tabButton.id = tabId;
-                tabButton.dataset.bsToggle = 'tab';
-                tabButton.dataset.bsTarget = `#${paneId}`;
-                tabButton.setAttribute('role', 'tab');
-                tabButton.setAttribute('aria-controls', paneId);
+                tabButton.dataset.languageTabTarget = code;
+                tabButton.className = `nav-tab ${index === 0 ? 'nav-tab-active' : 'nav-tab-inactive'}`;
+                tabButton.setAttribute('aria-controls', panelId);
                 tabButton.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
-                tabButton.textContent = name;
 
-                listItem.appendChild(tabButton);
-                navTabs.appendChild(listItem);
+                const tabLabel = document.createElement('span');
+                tabLabel.className = 'inline-flex items-center gap-2';
 
-                const tabPane = document.createElement('div');
-                tabPane.className = `tab-pane fade show${index === 0 ? ' active' : ''}`;
-                tabPane.id = paneId;
-                tabPane.setAttribute('role', 'tabpanel');
-                tabPane.setAttribute('aria-labelledby', tabId);
+                const tabCode = document.createElement('span');
+                tabCode.className = 'text-xs font-semibold uppercase text-gray-500';
+                tabCode.textContent = code.toUpperCase();
+
+                const tabName = document.createElement('span');
+                tabName.className = 'text-sm font-medium text-gray-700';
+                tabName.textContent = name;
+
+                tabLabel.append(tabCode, tabName);
+                tabButton.appendChild(tabLabel);
+                tabList.appendChild(tabButton);
+
+                const panel = document.createElement('div');
+                panel.className = `space-y-2${index === 0 ? '' : ' hidden'}`;
+                panel.id = panelId;
+                panel.dataset.languagePanel = code;
+                panel.setAttribute('role', 'tabpanel');
+                panel.setAttribute('aria-labelledby', tabId);
+                panel.setAttribute('aria-hidden', index === 0 ? 'false' : 'true');
+
+                const label = document.createElement('label');
+                label.className = 'form-label sr-only';
+                label.setAttribute('for', `${rowId}-${code}-input`);
+                label.textContent = `${translationPlaceholder} (${name})`;
+                panel.appendChild(label);
 
                 const translationInput = document.createElement('input');
                 translationInput.type = 'text';
                 translationInput.name = `translations[${code}][]`;
+                translationInput.id = `${rowId}-${code}-input`;
                 translationInput.value = translationValues[code] ?? '';
                 translationInput.className = 'form-control';
+                panel.appendChild(translationInput);
 
-                tabPane.appendChild(translationInput);
-                tabContent.appendChild(tabPane);
+                translationWrapper.appendChild(panel);
             });
 
-            translationWrapper.appendChild(navTabs);
-            translationWrapper.appendChild(tabContent);
             row.appendChild(translationWrapper);
 
             return row;
@@ -137,8 +188,8 @@
         const addValueRow = (value = '', translationValues = {}) => {
             const row = createRow(value, translationValues);
             valueContainer.appendChild(row);
+            registerRow(row);
             updatePlaceholders();
-            activateFirstTab(row);
         };
 
         const clearSingleRow = (row) => {
@@ -154,7 +205,14 @@
                 }
             });
 
-            activateFirstTab(row);
+            const controller = rowTabControllers.get(row);
+            if (controller) {
+                const firstButton = row.querySelector('[data-language-tab-target]');
+                if (firstButton) {
+                    controller.setActiveTab(firstButton.dataset.languageTabTarget);
+                }
+            }
+
             updatePlaceholders();
         };
 
@@ -165,6 +223,7 @@
                 return;
             }
 
+            rowTabControllers.delete(row);
             row.remove();
             updatePlaceholders();
         };
@@ -188,22 +247,23 @@
             });
         }
 
-        if (valueContainer.querySelectorAll('.attribute-value-row').length === 0) {
+        const existingRows = Array.from(valueContainer.querySelectorAll('.attribute-value-row'));
+        if (!existingRows.length) {
             addValueRow();
         } else {
+            existingRows.forEach((row) => registerRow(row));
             updatePlaceholders();
-            valueContainer.querySelectorAll('.attribute-value-row').forEach((row) => activateFirstTab(row));
         }
 
         @if ($errors->any())
             const firstInvalid = document.querySelector('.is-invalid');
             if (firstInvalid) {
+                const row = firstInvalid.closest('.attribute-value-row');
                 const tabPane = firstInvalid.closest('[data-language-panel]');
-                if (tabPane) {
-                    const code = tabPane.dataset.languagePanel;
-                    const trigger = document.querySelector(`[data-language-tab-target="${code}"]`);
-                    if (trigger) {
-                        setActiveTab(code);
+                if (row && tabPane) {
+                    const controller = rowTabControllers.get(row);
+                    if (controller) {
+                        controller.setActiveTab(tabPane.dataset.languagePanel);
                     }
                 }
             }
