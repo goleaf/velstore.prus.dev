@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoDataSeeder;
+use Database\Seeders\ShopSeeder;
 
 class DataImport extends Command
 {
@@ -32,6 +33,7 @@ class DataImport extends Command
 
         $seeders = [
             DatabaseSeeder::class => 'Base application seeders',
+            ShopSeeder::class => 'Vendor shop fixtures',
             DemoDataSeeder::class => 'Comprehensive multilingual demo data',
         ];
 

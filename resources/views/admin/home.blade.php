@@ -19,6 +19,24 @@
         $customersGrowth = $kpi['customers_growth'] ?? null;
         $customersMonth = $kpi['customers_month'] ?? 0;
 
+        $selectedShop = $selectedShop ?? null;
+        $selectedShopId = $selectedShop?->id;
+        $shops = collect($shops ?? []);
+        $shopMetrics = [
+            'totals' => $shopPerformance['totals'] ?? ['total' => 0, 'active' => 0, 'inactive' => 0],
+            'topRevenue' => $shopPerformance['top_revenue'] ?? null,
+            'topOrders' => $shopPerformance['top_orders'] ?? null,
+            'list' => collect($shopPerformance['list'] ?? []),
+        ];
+        $shopStatusLabels = [
+            'active' => __('cms.dashboard.shop_status_active'),
+            'inactive' => __('cms.dashboard.shop_status_inactive'),
+        ];
+        $shopStatusClasses = [
+            'active' => 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+            'inactive' => 'bg-slate-100 text-slate-600 ring-slate-500/10',
+        ];
+
         $statusMap = [
             'pending' => __('cms.dashboard.pending_orders'),
             'processing' => __('cms.dashboard.processing_orders'),
@@ -46,9 +64,39 @@
         $charts = $cardCharts ?? [];
     @endphp
     <div class="max-w-7xl mx-auto mt-4 px-4 space-y-6">
-        <div>
-            <h2 class="text-2xl font-semibold text-gray-900">{{ __('cms.dashboard.title') }}</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ __('cms.dashboard.overview_subtitle') }}</p>
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-900">{{ __('cms.dashboard.title') }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ __('cms.dashboard.overview_subtitle') }}</p>
+                @if($selectedShop)
+                    <span class="mt-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200">
+                        <i class="fas fa-store"></i>
+                        {{ __('cms.dashboard.shop_filter_active', ['shop' => $selectedShop->name]) }}
+                    </span>
+                @endif
+            </div>
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="bg-white border border-gray-200 shadow-sm rounded-2xl p-4 flex flex-col md:flex-row md:items-end gap-3">
+                <div class="flex-1">
+                    <label for="shop_id" class="block text-sm font-medium text-gray-700">{{ __('cms.dashboard.shop_filter_label') }}</label>
+                    <select id="shop_id" name="shop_id" class="mt-1 block w-full rounded-xl border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">{{ __('cms.dashboard.shop_filter_all') }}</option>
+                        @foreach($shops as $shop)
+                            <option value="{{ $shop->id }}" @selected($selectedShopId === $shop->id)>{{ $shop->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-xs text-gray-500">{{ __('cms.dashboard.shop_filter_placeholder') }}</p>
+                </div>
+                <div class="flex gap-2 md:flex-shrink-0">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                        <i class="fas fa-filter mr-2"></i>{{ __('cms.dashboard.shop_filter_apply') }}
+                    </button>
+                    @if($selectedShopId)
+                        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                            {{ __('cms.dashboard.shop_filter_clear') }}
+                        </a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -170,6 +218,131 @@
                     </div>
                 @endif
             </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.shops_total_label') }}</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ number_format($shopMetrics['totals']['total'] ?? 0) }}</p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600">
+                        <i class="fas fa-store"></i>
+                    </span>
+                </div>
+                <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.shops_total_description') }}</p>
+                <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.shops_active_breakdown', ['active' => number_format($shopMetrics['totals']['active'] ?? 0), 'inactive' => number_format($shopMetrics['totals']['inactive'] ?? 0)]) }}</p>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.shops_top_revenue_label') }}</p>
+                        <p class="mt-2 text-2xl font-semibold text-gray-900">
+                            @if($shopMetrics['topRevenue'])
+                                {{ $shopMetrics['topRevenue']['name'] }}
+                            @else
+                                {{ __('cms.dashboard.no_data') }}
+                            @endif
+                        </p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                        <i class="fas fa-coins"></i>
+                    </span>
+                </div>
+                <p class="mt-3 text-sm text-gray-500">
+                    @if($shopMetrics['topRevenue'])
+                        {{ __('cms.dashboard.shops_top_revenue_description', ['value' => number_format($shopMetrics['topRevenue']['revenue'], 2)]) }}
+                    @else
+                        {{ __('cms.dashboard.shops_top_revenue_empty') }}
+                    @endif
+                </p>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.shops_top_orders_label') }}</p>
+                        <p class="mt-2 text-2xl font-semibold text-gray-900">
+                            @if($shopMetrics['topOrders'])
+                                {{ $shopMetrics['topOrders']['name'] }}
+                            @else
+                                {{ __('cms.dashboard.no_data') }}
+                            @endif
+                        </p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+                        <i class="fas fa-shopping-basket"></i>
+                    </span>
+                </div>
+                <p class="mt-3 text-sm text-gray-500">
+                    @if($shopMetrics['topOrders'])
+                        {{ __('cms.dashboard.shops_top_orders_description', ['value' => number_format($shopMetrics['topOrders']['orders'])]) }}
+                    @else
+                        {{ __('cms.dashboard.shops_top_orders_empty') }}
+                    @endif
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.shops_table_title') }}</h3>
+                    <p class="text-sm text-gray-500">{{ __('cms.dashboard.shops_table_description') }}</p>
+                </div>
+                @if($selectedShopId)
+                    <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200">
+                        <i class="fas fa-filter"></i>{{ __('cms.dashboard.shops_table_filtered', ['shop' => $selectedShop->name]) }}
+                    </span>
+                @endif
+            </div>
+
+            @if($shopMetrics['list']->isEmpty())
+                <p class="mt-6 text-sm text-gray-500">{{ __('cms.dashboard.shops_table_empty') }}</p>
+            @else
+                <div class="mt-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 sm:pl-6">
+                                    {{ __('cms.dashboard.shops_table_column_shop') }}
+                                </th>
+                                <th scope="col" class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+                                    {{ __('cms.dashboard.shops_table_column_revenue') }}
+                                </th>
+                                <th scope="col" class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+                                    {{ __('cms.dashboard.shops_table_column_orders') }}
+                                </th>
+                                <th scope="col" class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">
+                                    {{ __('cms.dashboard.shops_table_column_customers') }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            @foreach($shopMetrics['list'] as $row)
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600"><i class="fas fa-store"></i></span>
+                                            <div>
+                                                <div>{{ $row['name'] }}</div>
+                                                <span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset {{ $shopStatusClasses[$row['status']] ?? 'bg-gray-100 text-gray-600 ring-gray-500/10' }}">
+                                                    {{ $shopStatusLabels[$row['status']] ?? ucfirst($row['status']) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-700">{{ number_format($row['revenue'], 2) }}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-700">{{ number_format($row['orders']) }}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-700">{{ number_format($row['customers']) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

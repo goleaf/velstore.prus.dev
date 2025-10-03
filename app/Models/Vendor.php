@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -19,4 +20,9 @@ class Vendor extends Authenticatable
     protected $hidden = ['password'];
 
     protected $casts = ['password' => 'hashed'];
+
+    public function shops(): HasMany
+    {
+        return $this->hasMany(Shop::class);
+    }
 }

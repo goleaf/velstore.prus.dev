@@ -69,6 +69,11 @@ class Product extends Model
         return $this->belongsTo(Vendor::class);
     }
 
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
