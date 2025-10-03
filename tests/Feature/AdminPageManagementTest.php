@@ -32,7 +32,14 @@ class AdminPageManagementTest extends TestCase
             ->assertViewIs('admin.pages.index')
             ->assertViewHas('pages', function ($pages) use ($page) {
                 return $pages->contains('id', $page->id);
-            });
+            })
+            ->assertViewHas('stats', function ($stats) use ($page) {
+                return $stats['total'] === 1
+                    && $stats['active'] === 1
+                    && $stats['inactive'] === 0
+                    && optional($stats['last_updated'])->equalTo($page->fresh()->updated_at);
+            })
+            ->assertSee('data-page-stats', false);
     }
 
     public function test_admin_can_view_create_page_form(): void
@@ -49,7 +56,9 @@ class AdminPageManagementTest extends TestCase
             ->assertViewIs('admin.pages.create')
             ->assertViewHas('activeLanguages', function ($languages) use ($language) {
                 return $languages->contains('id', $language->id);
-            });
+            })
+            ->assertSee(__('cms.pages.slug_preview_label'))
+            ->assertSee(__('cms.pages.form_status_label'));
     }
 
     public function test_admin_can_view_edit_page_form(): void
@@ -257,7 +266,10 @@ class AdminPageManagementTest extends TestCase
         $row = collect($payload['data'])->firstWhere('id', $page->id);
 
         $this->assertNotNull($row);
-        $this->assertSame('About Us', $row['translated_title']);
+        $this->assertStringContainsString('About Us', $row['title']);
+        $this->assertStringContainsString('badge', $row['languages']);
+        $this->assertStringContainsString('js-page-status-toggle', $row['status']);
         $this->assertStringContainsString(route('admin.pages.edit', $page), $row['action']);
+        $this->assertArrayHasKey('updated_at', $row);
     }
 }
