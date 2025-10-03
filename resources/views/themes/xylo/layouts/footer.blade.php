@@ -19,8 +19,13 @@
       <div class="col-6 col-md-3 mb-4">
         <h5>{{ __('store.footer.pages') }}</h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a href="#" class="text-muted text-decoration-none">{{ __('store.footer.privacy_policy') }}</a></li>
-          <li class="mb-2"><a href="#" class="text-muted text-decoration-none">{{ __('store.footer.terms_of_service') }}</a></li>
+          @forelse ($footerPages ?? [] as $footerPage)
+            <li class="mb-2">
+              <a href="{{ $footerPage->url }}" class="text-muted text-decoration-none">{{ $footerPage->title }}</a>
+            </li>
+          @empty
+            <li class="mb-2 text-muted small">{{ __('store.footer.no_pages') }}</li>
+          @endforelse
         </ul>
       </div>
 

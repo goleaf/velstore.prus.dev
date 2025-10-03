@@ -216,7 +216,11 @@ class DemoDataSeeder extends Seeder
                         ],
                         [
                             'title' => Str::title($this->fakerFor($languageCode)->sentence(3)),
+                            'excerpt' => $this->fakerFor($languageCode)->sentence(15),
                             'content' => $this->fakerFor($languageCode)->paragraphs(3, true),
+                            'meta_title' => Str::title($this->fakerFor($languageCode)->sentence(6)),
+                            'meta_description' => Str::limit($this->fakerFor($languageCode)->paragraph(2), 155),
+                            'image_url' => null,
                         ]
                     );
                 }

@@ -109,6 +109,36 @@
         </div>
     </section>
 
+    @if(isset($featuredPages) && $featuredPages->count())
+    <section class="py-5 animate-on-scroll">
+        <div class="container">
+            <h2 class="sec-heading text-start mb-4">{{ __('store.pages.featured_heading') }}</h2>
+            <div class="row g-4">
+                @foreach ($featuredPages as $page)
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            @if (!empty($page['image_url']))
+                                <img src="{{ Storage::url($page['image_url']) }}" class="card-img-top" alt="{{ $page['title'] }}">
+                            @endif
+                            <div class="card-body d-flex flex-column">
+                                <h3 class="h5">{{ $page['title'] }}</h3>
+                                @if (!empty($page['excerpt']))
+                                    <p class="text-muted">{{ Str::limit(strip_tags($page['excerpt']), 140) }}</p>
+                                @endif
+                                <div class="mt-auto">
+                                    <a href="{{ route('store.pages.show', $page['slug']) }}" class="btn btn-link px-0">
+                                        {{ __('store.pages.featured_cta') }} <i class="fa fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
 
     <section class="sale-banner pt-5 pb-5 animate-on-scroll">
         <img src="/assets/images/placeholder-banner.svg" alt="Home Sale">

@@ -123,14 +123,28 @@ class PageController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->filled('slug')) {
+            $request->merge(['slug' => Str::slug($request->input('slug'))]);
+        }
+
         $rules = [
+            'slug' => 'nullable|string|max:255|unique:pages,slug',
+            'status' => 'nullable|boolean',
+            'template' => 'required|string|in:default,with-hero',
+            'show_in_navigation' => 'nullable|boolean',
+            'show_in_footer' => 'nullable|boolean',
+            'is_featured' => 'nullable|boolean',
+            'published_at' => 'nullable|date',
             'translations' => 'required|array',
         ];
 
         foreach ($request->input('translations', []) as $lang => $data) {
             $rules["translations.$lang.title"] = 'required|string|max:255';
+            $rules["translations.$lang.excerpt"] = 'nullable|string|max:500';
             $rules["translations.$lang.content"] = 'required|string|min:5';
-            $rules["translations.$lang.image"] = 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048';
+            $rules["translations.$lang.meta_title"] = 'nullable|string|max:255';
+            $rules["translations.$lang.meta_description"] = 'nullable|string|max:500';
+            $rules["translations.$lang.image"] = 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048';
         }
 
         $request->validate($rules);
@@ -146,17 +160,28 @@ class PageController extends Controller
         $defaultLang = config('app.locale');
         $title = $request->translations[$defaultLang]['title'] ?? null;
 
-        $baseSlug = Str::slug($title);
+        $slugInput = $request->input('slug');
+        $baseSlug = $slugInput ?: Str::slug($title);
         $slug = $baseSlug;
         $counter = 1;
 
-        while (Page::where('slug', $slug)->exists()) {
+        while ($slug && Page::where('slug', $slug)->exists()) {
             $slug = $baseSlug.'-'.$counter++;
         }
 
+        $status = (bool) $request->boolean('status', true);
+        $publishedAt = $request->filled('published_at')
+            ? Carbon::parse($request->input('published_at'))
+            : ($status ? now() : null);
+
         $page = Page::create([
-            'slug' => $slug,
-            'status' => $request->status ?? 1,
+            'slug' => $slug ?: Str::slug(Str::uuid()),
+            'status' => $status,
+            'template' => $request->input('template', 'default'),
+            'show_in_navigation' => $request->boolean('show_in_navigation'),
+            'show_in_footer' => $request->boolean('show_in_footer'),
+            'is_featured' => $request->boolean('is_featured'),
+            'published_at' => $publishedAt,
         ]);
 
         foreach ($request->translations as $lang => $data) {
@@ -170,7 +195,10 @@ class PageController extends Controller
                 'page_id' => $page->id,
                 'language_code' => $lang,
                 'title' => $data['title'],
+                'excerpt' => $data['excerpt'] ?? null,
                 'content' => $data['content'] ?? null,
+                'meta_title' => $data['meta_title'] ?? null,
+                'meta_description' => $data['meta_description'] ?? null,
                 'image_url' => $imagePath,
             ]);
         }
@@ -190,20 +218,45 @@ class PageController extends Controller
     {
         $page = Page::findOrFail($id);
 
+        if ($request->filled('slug')) {
+            $request->merge(['slug' => Str::slug($request->input('slug'))]);
+        }
+
         $rules = [
+            'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
+            'status' => 'nullable|boolean',
+            'template' => 'required|string|in:default,with-hero',
+            'show_in_navigation' => 'nullable|boolean',
+            'show_in_footer' => 'nullable|boolean',
+            'is_featured' => 'nullable|boolean',
+            'published_at' => 'nullable|date',
             'translations' => 'required|array',
         ];
 
         foreach ($request->input('translations', []) as $lang => $data) {
             $rules["translations.$lang.title"] = 'required|string|max:255';
+            $rules["translations.$lang.excerpt"] = 'nullable|string|max:500';
             $rules["translations.$lang.content"] = 'nullable|string';
+            $rules["translations.$lang.meta_title"] = 'nullable|string|max:255';
+            $rules["translations.$lang.meta_description"] = 'nullable|string|max:500';
             $rules["translations.$lang.image"] = 'nullable|image|max:2048';
         }
 
         $request->validate($rules);
 
+        $status = $request->boolean('status', true);
+        $publishedAt = $request->filled('published_at')
+            ? Carbon::parse($request->input('published_at'))
+            : ($status ? ($page->published_at ?? now()) : null);
+
         $page->update([
-            'status' => $request->status ?? 1,
+            'slug' => $request->input('slug') ?: $page->slug,
+            'status' => $status,
+            'template' => $request->input('template', 'default'),
+            'show_in_navigation' => $request->boolean('show_in_navigation'),
+            'show_in_footer' => $request->boolean('show_in_footer'),
+            'is_featured' => $request->boolean('is_featured'),
+            'published_at' => $status ? $publishedAt : null,
         ]);
 
         foreach ($request->translations as $lang => $data) {
@@ -221,7 +274,10 @@ class PageController extends Controller
             if ($translation) {
                 $translation->update([
                     'title' => $data['title'],
+                    'excerpt' => $data['excerpt'] ?? null,
                     'content' => $data['content'],
+                    'meta_title' => $data['meta_title'] ?? null,
+                    'meta_description' => $data['meta_description'] ?? null,
                     'image_url' => $imagePath,
                 ]);
             } else {
@@ -229,7 +285,10 @@ class PageController extends Controller
                     'page_id' => $page->id,
                     'language_code' => $lang,
                     'title' => $data['title'],
+                    'excerpt' => $data['excerpt'] ?? null,
                     'content' => $data['content'],
+                    'meta_title' => $data['meta_title'] ?? null,
+                    'meta_description' => $data['meta_description'] ?? null,
                     'image_url' => $imagePath,
                 ]);
             }
@@ -258,6 +317,9 @@ class PageController extends Controller
 
         $page = Page::find($request->id);
         $page->status = $request->status;
+        $page->published_at = $request->boolean('status')
+            ? ($page->published_at ?? now())
+            : null;
         $page->save();
 
         return response()->json([
