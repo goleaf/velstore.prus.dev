@@ -21,6 +21,9 @@ class CustomerSeeder extends Seeder
                 'phone' => '+1 555 0100',
                 'address' => '123 Main St, Springfield',
                 'status' => 'active',
+                'marketing_opt_in' => true,
+                'loyalty_tier' => 'gold',
+                'notes' => 'Frequent shopper who prefers express shipping.',
             ],
             [
                 'name' => 'Jane Smith',
@@ -29,6 +32,9 @@ class CustomerSeeder extends Seeder
                 'phone' => '+1 555 0101',
                 'address' => '456 Oak Ave, Metropolis',
                 'status' => 'active',
+                'marketing_opt_in' => false,
+                'loyalty_tier' => 'silver',
+                'notes' => 'Subscribed to SMS reminders only.',
             ],
             [
                 'name' => 'Alex Johnson',
@@ -37,6 +43,9 @@ class CustomerSeeder extends Seeder
                 'phone' => '+1 555 0102',
                 'address' => '789 Pine Rd, Gotham',
                 'status' => 'inactive',
+                'marketing_opt_in' => false,
+                'loyalty_tier' => 'bronze',
+                'notes' => 'Account paused after request.',
             ],
         ];
 
@@ -49,6 +58,9 @@ class CustomerSeeder extends Seeder
                     'phone' => $data['phone'],
                     'address' => $data['address'],
                     'status' => $data['status'],
+                    'marketing_opt_in' => $data['marketing_opt_in'],
+                    'loyalty_tier' => $data['loyalty_tier'],
+                    'notes' => $data['notes'],
                 ]
             );
         }

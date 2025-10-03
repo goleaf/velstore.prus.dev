@@ -21,6 +21,9 @@ class CustomerStoreRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'marketing_opt_in' => ['sometimes', 'boolean'],
+            'loyalty_tier' => ['required', Rule::in(['bronze', 'silver', 'gold', 'platinum'])],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
