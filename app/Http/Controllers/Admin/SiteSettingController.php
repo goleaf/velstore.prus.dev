@@ -3,43 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SiteSettingUpdateRequest;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SiteSettingController extends Controller
 {
     public function index(): View
     {
+        $settings = $this->getSiteSettings();
+
         return view('admin.site-settings.index', [
-            'settings' => $this->getSiteSettings(),
+            'settings' => $settings,
         ]);
     }
 
     public function edit(): View
     {
+        $settings = $this->getSiteSettings();
+
         return view('admin.site-settings.edit', [
-            'settings' => $this->getSiteSettings(),
+            'settings' => $settings,
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(SiteSettingUpdateRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'site_name' => ['required', 'string', 'max:255'],
-            'tagline' => ['nullable', 'string', 'max:255'],
-            'meta_title' => ['nullable', 'string', 'max:255'],
-            'meta_description' => ['nullable', 'string'],
-            'meta_keywords' => ['nullable', 'string'],
-            'contact_email' => ['nullable', 'email'],
-            'contact_phone' => ['nullable', 'string', 'max:20'],
-            'address' => ['nullable', 'string'],
-            'footer_text' => ['nullable', 'string'],
-        ]);
-
         $settings = $this->getSiteSettings();
-        $settings->fill($validated);
+        $payload = $request->validated();
+
+        $settings->fill($payload);
+        $settings->maintenance_mode = $request->boolean('maintenance_mode');
         $settings->save();
 
         return redirect()
