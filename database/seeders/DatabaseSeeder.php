@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             RefundSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
+            ProductVariantDemoSeeder::class,
         ]);
     }
 }
