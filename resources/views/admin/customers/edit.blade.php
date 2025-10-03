@@ -69,18 +69,60 @@
                     <label for="status" class="form-label">{{ __('cms.customers.status') }}</label>
                     <select name="status" id="status"
                             class="form-select @error('status') is-invalid @enderror" required>
-                        <option value="active" {{ old('status', $customer->status) === 'active' ? 'selected' : '' }}>
-                            {{ __('cms.customers.active') }}</option>
-                        <option value="inactive" {{ old('status', $customer->status) === 'inactive' ? 'selected' : '' }}>
-                            {{ __('cms.customers.inactive') }}</option>
+                        @foreach ($statusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(old('status', $customer->status) === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
                     </select>
                     @error('status')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
+                <div class="col-md-4">
+                    <label for="loyalty_tier" class="form-label">{{ __('cms.customers.loyalty_tier') }}</label>
+                    <select name="loyalty_tier" id="loyalty_tier"
+                            class="form-select @error('loyalty_tier') is-invalid @enderror" required>
+                        @foreach ($loyaltyTierOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(old('loyalty_tier', $customer->loyalty_tier) === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted d-block mt-1">{{ __('cms.customers.loyalty_tier_help') }}</small>
+                    @error('loyalty_tier')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check mt-4 pt-2">
+                        <input class="form-check-input" type="checkbox" value="1" id="marketing_opt_in"
+                               name="marketing_opt_in" {{ old('marketing_opt_in', $customer->marketing_opt_in) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="marketing_opt_in">
+                            <span class="d-block fw-semibold">{{ __('cms.customers.marketing_opt_in_label') }}</span>
+                            <span class="text-muted small">{{ __('cms.customers.marketing_opt_in_help') }}</span>
+                        </label>
+                    </div>
+                    @error('marketing_opt_in')
+                        <div class="text-danger small">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="notes" class="form-label">{{ __('cms.customers.notes') }}</label>
+                    <textarea name="notes" id="notes" rows="3"
+                              class="form-control @error('notes') is-invalid @enderror"
+                              maxlength="1000"
+                              placeholder="{{ __('cms.customers.notes_placeholder') }}">{{ old('notes', $customer->notes) }}</textarea>
+                    @error('notes')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-success">{{ __('Update Customer') }}</button>
+                    <button type="submit" class="btn btn-success">{{ __('cms.customers.update_button') }}</button>
                     <button type="button" class="btn btn-secondary"
                             data-url="{{ route('admin.customers.index') }}">{{ __('cms.customers.cancel_button') }}</button>
                 </div>

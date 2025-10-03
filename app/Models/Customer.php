@@ -18,6 +18,9 @@ class Customer extends Authenticatable
         'phone',
         'address',
         'status',
+        'marketing_opt_in',
+        'loyalty_tier',
+        'notes',
     ];
 
     protected $hidden = [
@@ -26,6 +29,7 @@ class Customer extends Authenticatable
 
     protected $casts = [
         'password' => 'hashed',
+        'marketing_opt_in' => 'boolean',
     ];
 
     protected $appends = [

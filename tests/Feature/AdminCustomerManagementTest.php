@@ -26,10 +26,14 @@ class AdminCustomerManagementTest extends TestCase
             'name' => 'Alice Active',
             'email' => 'alice@example.com',
             'status' => 'active',
+            'marketing_opt_in' => true,
+            'loyalty_tier' => 'gold',
         ]);
         Customer::factory()->inactive()->create([
             'name' => 'Ivan Idle',
             'email' => 'ivan@example.com',
+            'marketing_opt_in' => false,
+            'loyalty_tier' => 'bronze',
         ]);
 
         $this->actingAs($admin);
@@ -37,6 +41,8 @@ class AdminCustomerManagementTest extends TestCase
         $response = $this->get(route('admin.customers.index', [
             'search' => 'Alice',
             'status' => 'active',
+            'tier' => 'gold',
+            'marketing' => 'opted_in',
         ]));
 
         $response->assertOk();
@@ -45,6 +51,8 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertDontSee('Ivan Idle');
         $response->assertSeeText(__('cms.customers.metric_active'));
         $response->assertSeeText((string) $matchingCustomer->id);
+        $response->assertSeeText(__('cms.customers.loyalty_tier_gold'));
+        $response->assertSeeText(__('cms.customers.marketing_opted_in'));
     }
 
     public function test_admin_can_view_create_form(): void
@@ -58,6 +66,7 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertViewIs('admin.customers.create');
         $response->assertSeeText(__('cms.customers.create_title'));
         $response->assertSeeText(__('cms.customers.form_section_profile'));
+        $response->assertSeeText(__('cms.customers.loyalty_tier'));
     }
 
     public function test_admin_can_create_customer(): void
@@ -72,6 +81,9 @@ class AdminCustomerManagementTest extends TestCase
             'phone' => '+1 555 0200',
             'address' => '100 Demo Street, Test City',
             'status' => 'active',
+            'loyalty_tier' => 'platinum',
+            'marketing_opt_in' => '1',
+            'notes' => 'Joined from in-store event.',
         ];
 
         $response = $this->post(route('admin.customers.store'), $payload);
@@ -80,6 +92,8 @@ class AdminCustomerManagementTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'email' => 'test.customer@example.com',
             'status' => 'active',
+            'loyalty_tier' => 'platinum',
+            'marketing_opt_in' => true,
         ]);
     }
 
@@ -99,6 +113,9 @@ class AdminCustomerManagementTest extends TestCase
             'phone' => '+1 555 0201',
             'address' => '200 Demo Street, Test City',
             'status' => 'active',
+            'loyalty_tier' => 'silver',
+            'marketing_opt_in' => '0',
+            'notes' => 'Duplicate email test.',
         ];
 
         $response = $this

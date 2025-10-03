@@ -126,6 +126,26 @@
                         </div>
 
                         <div>
+                            <label for="loyalty_tier" class="form-label">{{ __('cms.customers.loyalty_tier') }}</label>
+                            <select
+                                id="loyalty_tier"
+                                name="loyalty_tier"
+                                class="form-select @error('loyalty_tier') is-invalid @enderror"
+                                required
+                            >
+                                @foreach ($loyaltyTierOptions as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('loyalty_tier', 'bronze') === $value)>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('cms.customers.loyalty_tier_help') }}</p>
+                            @error('loyalty_tier')
+                                <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="address" class="form-label">{{ __('cms.customers.address') }}</label>
                             <textarea
                                 id="address"
@@ -136,6 +156,40 @@
                                 placeholder="{{ __('cms.customers.address_placeholder') }}"
                             >{{ old('address') }}</textarea>
                             @error('address')
+                                <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                            <label class="flex items-start gap-3">
+                                <input
+                                    type="checkbox"
+                                    name="marketing_opt_in"
+                                    value="1"
+                                    class="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                    @checked(old('marketing_opt_in', false))
+                                >
+                                <span class="flex flex-col">
+                                    <span class="text-sm font-medium text-gray-900">{{ __('cms.customers.marketing_opt_in_label') }}</span>
+                                    <span class="text-xs text-gray-500">{{ __('cms.customers.marketing_opt_in_help') }}</span>
+                                </span>
+                            </label>
+                            @error('marketing_opt_in')
+                                <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="notes" class="form-label">{{ __('cms.customers.notes') }}</label>
+                            <textarea
+                                id="notes"
+                                name="notes"
+                                rows="3"
+                                maxlength="1000"
+                                class="form-textarea @error('notes') is-invalid @enderror"
+                                placeholder="{{ __('cms.customers.notes_placeholder') }}"
+                            >{{ old('notes') }}</textarea>
+                            @error('notes')
                                 <p class="text-sm text-danger mt-1">{{ $message }}</p>
                             @enderror
                         </div>

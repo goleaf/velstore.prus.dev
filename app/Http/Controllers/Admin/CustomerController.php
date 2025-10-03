@@ -23,9 +23,16 @@ class CustomerController extends Controller
             'active' => __('cms.customers.active'),
             'inactive' => __('cms.customers.inactive'),
         ];
+        $loyaltyTierOptions = [
+            'bronze' => __('cms.customers.loyalty_tier_bronze'),
+            'silver' => __('cms.customers.loyalty_tier_silver'),
+            'gold' => __('cms.customers.loyalty_tier_gold'),
+            'platinum' => __('cms.customers.loyalty_tier_platinum'),
+        ];
 
         return view('admin.customers.create', [
             'statusOptions' => $statusOptions,
+            'loyaltyTierOptions' => $loyaltyTierOptions,
         ]);
     }
 
@@ -41,6 +48,9 @@ class CustomerController extends Controller
             'phone' => $request->input('phone'),
             'address' => $request->input('address'),
             'status' => $request->string('status'),
+            'marketing_opt_in' => $request->boolean('marketing_opt_in'),
+            'loyalty_tier' => $request->string('loyalty_tier'),
+            'notes' => $request->input('notes'),
         ]);
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
@@ -49,6 +59,7 @@ class CustomerController extends Controller
     /**
      * List all customers.
      */
+
     public function index(Request $request)
     {
         $statusOptions = [
@@ -56,17 +67,41 @@ class CustomerController extends Controller
             'active' => __('cms.customers.active'),
             'inactive' => __('cms.customers.inactive'),
         ];
+        $loyaltyTierOptions = [
+            '' => __('cms.customers.filter_tier_all'),
+            'bronze' => __('cms.customers.loyalty_tier_bronze'),
+            'silver' => __('cms.customers.loyalty_tier_silver'),
+            'gold' => __('cms.customers.loyalty_tier_gold'),
+            'platinum' => __('cms.customers.loyalty_tier_platinum'),
+        ];
+        $marketingOptions = [
+            '' => __('cms.customers.filter_marketing_all'),
+            'opted_in' => __('cms.customers.filter_marketing_opted_in'),
+            'opted_out' => __('cms.customers.filter_marketing_opted_out'),
+        ];
 
         $search = trim((string) $request->query('search', ''));
         $status = (string) $request->query('status', '');
+        $tier = (string) $request->query('tier', '');
+        $marketing = (string) $request->query('marketing', '');
 
         if (! array_key_exists($status, $statusOptions)) {
             $status = '';
         }
 
+        if (! array_key_exists($tier, $loyaltyTierOptions)) {
+            $tier = '';
+        }
+
+        if (! array_key_exists($marketing, $marketingOptions)) {
+            $marketing = '';
+        }
+
         $filters = [
             'search' => $search,
             'status' => $status,
+            'tier' => $tier,
+            'marketing' => $marketing,
         ];
 
         $query = Customer::query()
@@ -83,6 +118,15 @@ class CustomerController extends Controller
             ->when(in_array($filters['status'], ['active', 'inactive'], true), function (Builder $builder) use ($filters): void {
                 $builder->where('status', $filters['status']);
             })
+            ->when(in_array($filters['tier'], ['bronze', 'silver', 'gold', 'platinum'], true), function (Builder $builder) use ($filters): void {
+                $builder->where('loyalty_tier', $filters['tier']);
+            })
+            ->when($filters['marketing'] === 'opted_in', function (Builder $builder): void {
+                $builder->where('marketing_opt_in', true);
+            })
+            ->when($filters['marketing'] === 'opted_out', function (Builder $builder): void {
+                $builder->where('marketing_opt_in', false);
+            })
             ->latest();
 
         $customers = $query->paginate(15)->withQueryString();
@@ -92,21 +136,60 @@ class CustomerController extends Controller
             ->groupBy('status')
             ->pluck('aggregate', 'status');
 
+        $marketingCounts = Customer::query()
+            ->selectRaw('marketing_opt_in, COUNT(*) as aggregate')
+            ->groupBy('marketing_opt_in')
+            ->pluck('aggregate', 'marketing_opt_in');
+
+        $tierCounts = Customer::query()
+            ->selectRaw('loyalty_tier, COUNT(*) as aggregate')
+            ->groupBy('loyalty_tier')
+            ->pluck('aggregate', 'loyalty_tier');
+
+        $tierCountsArray = [
+            'bronze' => (int) ($tierCounts['bronze'] ?? 0),
+            'silver' => (int) ($tierCounts['silver'] ?? 0),
+            'gold' => (int) ($tierCounts['gold'] ?? 0),
+            'platinum' => (int) ($tierCounts['platinum'] ?? 0),
+        ];
+
+        $topTierKey = collect($tierCountsArray)
+            ->sortByDesc(fn ($count) => $count)
+            ->filter(fn ($count) => $count > 0)
+            ->keys()
+            ->first();
+
+        $topTier = [
+            'label' => $topTierKey
+                ? __('cms.customers.loyalty_tier_' . $topTierKey)
+                : __('cms.customers.loyalty_tier_none'),
+            'count' => $topTierKey ? $tierCountsArray[$topTierKey] : 0,
+        ];
+
         return view('admin.customers.index', [
             'customers' => $customers,
             'filters' => $filters,
             'statusOptions' => $statusOptions,
+            'loyaltyTierOptions' => $loyaltyTierOptions,
+            'marketingOptions' => $marketingOptions,
             'statusCounts' => [
                 'active' => (int) ($statusCounts['active'] ?? 0),
                 'inactive' => (int) ($statusCounts['inactive'] ?? 0),
             ],
+            'marketingCounts' => [
+                'opted_in' => (int) ($marketingCounts[true] ?? 0),
+                'opted_out' => (int) ($marketingCounts[false] ?? 0),
+            ],
+            'tierCounts' => $tierCountsArray,
+            'topTier' => $topTier,
         ]);
     }
+
 
     public function getCustomerData()
     {
         $customers = Customer::with('defaultAddress')
-            ->select(['id', 'name', 'email', 'phone', 'address', 'status']);
+            ->select(['id', 'name', 'email', 'phone', 'address', 'status', 'marketing_opt_in', 'loyalty_tier']);
 
         return DataTables::of($customers)
             ->editColumn('address', function (Customer $customer) {
@@ -127,6 +210,27 @@ class CustomerController extends Controller
 
                 return '<span class="' . $class . '">' . e($label) . '</span>';
             })
+            ->addColumn('marketing_opt_in', function ($customer) {
+                $label = $customer->marketing_opt_in
+                    ? __('cms.customers.marketing_opted_in')
+                    : __('cms.customers.marketing_opted_out');
+
+                $class = $customer->marketing_opt_in
+                    ? 'badge badge-success'
+                    : 'badge';
+
+                return '<span class="' . $class . '">' . e($label) . '</span>';
+            })
+            ->addColumn('loyalty_tier', function ($customer) {
+                $tierKey = match ($customer->loyalty_tier) {
+                    'silver' => 'loyalty_tier_silver',
+                    'gold' => 'loyalty_tier_gold',
+                    'platinum' => 'loyalty_tier_platinum',
+                    default => 'loyalty_tier_bronze',
+                };
+
+                return e(__('cms.customers.' . $tierKey));
+            })
             ->addColumn('action', function ($customer) {
                 $viewUrl = route('admin.customers.show', $customer);
                 $viewLabel = __('cms.customers.view_button');
@@ -146,7 +250,7 @@ class CustomerController extends Controller
                         </div>
                     HTML;
             })
-            ->rawColumns(['status', 'action'])
+            ->rawColumns(['status', 'marketing_opt_in', 'action'])
             ->make(true);
     }
 
@@ -155,7 +259,18 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        return view('admin.customers.edit', compact('customer'));
+        $statusOptions = [
+            'active' => __('cms.customers.active'),
+            'inactive' => __('cms.customers.inactive'),
+        ];
+        $loyaltyTierOptions = [
+            'bronze' => __('cms.customers.loyalty_tier_bronze'),
+            'silver' => __('cms.customers.loyalty_tier_silver'),
+            'gold' => __('cms.customers.loyalty_tier_gold'),
+            'platinum' => __('cms.customers.loyalty_tier_platinum'),
+        ];
+
+        return view('admin.customers.edit', compact('customer', 'statusOptions', 'loyaltyTierOptions'));
     }
 
     /**
@@ -190,7 +305,9 @@ class CustomerController extends Controller
      */
     public function update(CustomerUpdateRequest $request, Customer $customer)
     {
-        $data = $request->only(['name', 'email', 'phone', 'address', 'status']);
+        $data = $request->only(['name', 'email', 'phone', 'address', 'status', 'loyalty_tier', 'notes']);
+
+        $data['marketing_opt_in'] = $request->boolean('marketing_opt_in');
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->input('password'));

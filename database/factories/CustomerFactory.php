@@ -21,6 +21,9 @@ class CustomerFactory extends Factory
             'phone' => $this->faker->phoneNumber(),
             'address' => $this->faker->address(),
             'status' => 'active',
+            'marketing_opt_in' => $this->faker->boolean(60),
+            'loyalty_tier' => $this->faker->randomElement(['bronze', 'silver', 'gold', 'platinum']),
+            'notes' => $this->faker->optional()->sentence(),
         ];
     }
 

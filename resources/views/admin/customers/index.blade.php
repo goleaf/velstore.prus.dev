@@ -19,7 +19,7 @@
 
     <x-admin.card class="mt-6">
         <div class="grid gap-6">
-            <form method="GET" action="{{ route('admin.customers.index') }}" class="grid gap-4 lg:grid-cols-[2fr,1fr,auto]">
+            <form method="GET" action="{{ route('admin.customers.index') }}" class="grid gap-4 lg:grid-cols-[2fr,1fr,1fr,1fr,auto]">
                 <div>
                     <label for="search" class="form-label">{{ __('cms.customers.search_label') }}</label>
                     <input
@@ -43,6 +43,28 @@
                     </select>
                 </div>
 
+                <div>
+                    <label for="tier" class="form-label">{{ __('cms.customers.filter_tier_label') }}</label>
+                    <select id="tier" name="tier" class="form-select">
+                        @foreach ($loyaltyTierOptions as $value => $label)
+                            <option value="{{ $value }}" @selected($filters['tier'] === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="marketing" class="form-label">{{ __('cms.customers.filter_marketing_label') }}</label>
+                    <select id="marketing" name="marketing" class="form-select">
+                        @foreach ($marketingOptions as $value => $label)
+                            <option value="{{ $value }}" @selected($filters['marketing'] === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="flex items-end gap-3">
                     <button type="submit" class="btn btn-primary">
                         {{ __('cms.customers.apply_filters') }}
@@ -53,7 +75,7 @@
                 </div>
             </form>
 
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-xl border border-gray-200 bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">{{ __('cms.customers.metric_total') }}</p>
                     <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($customers->total()) }}</p>
@@ -69,18 +91,36 @@
                     <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($statusCounts['inactive']) }}</p>
                     <p class="mt-1 text-xs text-gray-500">{{ __('cms.customers.metric_inactive_hint') }}</p>
                 </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <p class="text-sm font-medium text-gray-500">{{ __('cms.customers.metric_marketing_opt_in') }}</p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">{{ number_format($marketingCounts['opted_in']) }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('cms.customers.metric_marketing_opt_in_hint') }}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-4">
+                    <p class="text-sm font-medium text-gray-500">{{ __('cms.customers.metric_top_tier') }}</p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">{{ $topTier['label'] }}</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        @if ($topTier['count'] > 0)
+                            {{ __('cms.customers.metric_top_tier_hint', ['count' => number_format($topTier['count'])]) }}
+                        @else
+                            {{ __('cms.customers.metric_top_tier_empty') }}
+                        @endif
+                    </p>
+                </div>
             </div>
 
             <x-admin.table
                 data-customers-table
-                data-column-count="6"
+                data-column-count="8"
                 data-empty-message="{{ __('cms.customers.empty_state_message') }}"
                 :columns="[
                     __('cms.customers.id'),
                     __('cms.customers.name'),
                     __('cms.customers.email'),
                     __('cms.customers.phone'),
+                    __('cms.customers.loyalty_tier'),
                     __('cms.customers.status'),
+                    __('cms.customers.marketing_opt_in_column'),
                     __('cms.customers.actions'),
                 ]"
             >
@@ -103,6 +143,17 @@
                         </td>
                         <td class="table-cell">
                             @php
+                                $tierKey = match ($customer->loyalty_tier) {
+                                    'silver' => 'loyalty_tier_silver',
+                                    'gold' => 'loyalty_tier_gold',
+                                    'platinum' => 'loyalty_tier_platinum',
+                                    default => 'loyalty_tier_bronze',
+                                };
+                            @endphp
+                            {{ __('cms.customers.' . $tierKey) }}
+                        </td>
+                        <td class="table-cell">
+                            @php
                                 $status = $customer->status;
                                 $badgeClass = $statusBadges[$status] ?? 'badge';
                                 $statusLabel = $status === 'active'
@@ -110,6 +161,13 @@
                                     : __('cms.customers.inactive');
                             @endphp
                             <span class="{{ $badgeClass }}">{{ $statusLabel }}</span>
+                        </td>
+                        <td class="table-cell">
+                            @if ($customer->marketing_opt_in)
+                                <span class="badge badge-success">{{ __('cms.customers.marketing_opted_in') }}</span>
+                            @else
+                                <span class="badge">{{ __('cms.customers.marketing_opted_out') }}</span>
+                            @endif
                         </td>
                         <td class="table-cell">
                             <div class="flex flex-wrap gap-2">
@@ -129,7 +187,7 @@
                     </tr>
                 @empty
                     <tr data-customers-empty-row>
-                        <td colspan="6" class="table-cell py-6 text-center text-sm text-gray-500">
+                        <td colspan="8" class="table-cell py-6 text-center text-sm text-gray-500">
                             {{ __('cms.customers.empty_state_message') }}
                         </td>
                     </tr>
