@@ -713,6 +713,8 @@ return [
         'status_filter_inactive' => 'Inactive',
         'translations_section_title' => 'Translations',
         'translations_section_description' => 'Provide localized names, descriptions, and media for each active language.',
+        'language_tabs_label' => 'Category translation languages',
+        'language_tab_button' => ':language translation tab',
         'back_to_index' => 'Back to categories',
         'apply_filters' => 'Apply filters',
         'reset_filters' => 'Reset',
