@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -38,6 +39,7 @@ class ShopController extends Controller
             'price_max' => (int) $request->input('price_max', 1000),
             'color' => array_filter((array) $request->input('color', [])),
             'size' => array_filter((array) $request->input('size', [])),
+            'shop' => array_filter((array) $request->input('shop', [])),
         ];
 
         $products = Product::with(['translation', 'variants.attributeValues'])
@@ -46,6 +48,9 @@ class ShopController extends Controller
             })
             ->when(! empty($filters['brand']), function ($query) use ($filters) {
                 $query->whereIn('brand_id', $filters['brand']);
+            })
+            ->when(! empty($filters['shop']), function ($query) use ($filters) {
+                $query->whereIn('shop_id', $filters['shop']);
             })
             ->whereHas('variants', function ($variantQuery) use ($filters) {
                 $variantQuery
@@ -77,6 +82,7 @@ class ShopController extends Controller
 
         $brands = Brand::with('translation')->withCount('products')->get();
         $categories = Category::with('translation')->withCount('products')->get();
+        $shops = Shop::where('status', 'active')->withCount('products')->orderBy('name')->get();
 
         if ($request->ajax()) {
             return view('themes.xylo.partials.product-list', compact('products'))->render();
@@ -86,6 +92,7 @@ class ShopController extends Controller
             'products' => $products,
             'categories' => $categories,
             'brands' => $brands,
+            'shops' => $shops,
             'filters' => $filters,
             'currentCategory' => $currentCategory,
         ]);

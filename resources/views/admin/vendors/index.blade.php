@@ -2,11 +2,15 @@
 
 @php
     $datatableLang = __('cms.datatables');
-    $vendorStats = $stats ?? [
+    $vendorStats = $stats['vendors'] ?? [
         'total' => 0,
         'active' => 0,
         'inactive' => 0,
         'banned' => 0,
+    ];
+    $shopStats = $stats['shops'] ?? [
+        'total' => 0,
+        'active' => 0,
     ];
 @endphp
 
@@ -21,7 +25,7 @@
 </x-admin.page-header>
 
 <x-admin.card>
-    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
             <p class="text-xs uppercase tracking-wide text-slate-600 mb-1">{{ __('cms.vendors.total_vendors') }}</p>
             <p class="text-xl font-semibold text-slate-900">{{ number_format($vendorStats['total']) }}</p>
@@ -37,6 +41,14 @@
         <div class="p-4 rounded-lg bg-rose-50 border border-rose-100">
             <p class="text-xs uppercase tracking-wide text-rose-600 mb-1">{{ __('cms.vendors.banned_vendors') }}</p>
             <p class="text-xl font-semibold text-rose-900">{{ number_format($vendorStats['banned']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-indigo-50 border border-indigo-100">
+            <p class="text-xs uppercase tracking-wide text-indigo-600 mb-1">{{ __('cms.vendors.total_shops') }}</p>
+            <p class="text-xl font-semibold text-indigo-900">{{ number_format($shopStats['total']) }}</p>
+        </div>
+        <div class="p-4 rounded-lg bg-cyan-50 border border-cyan-100">
+            <p class="text-xs uppercase tracking-wide text-cyan-600 mb-1">{{ __('cms.vendors.active_shops') }}</p>
+            <p class="text-xl font-semibold text-cyan-900">{{ number_format($shopStats['active']) }}</p>
         </div>
     </div>
 </x-admin.card>
@@ -61,6 +73,7 @@
         __('cms.vendors.email'),
         __('cms.vendors.phone'),
         __('cms.vendors.registered_at'),
+        __('cms.vendors.shops'),
         __('cms.vendors.status'),
         __('cms.vendors.actions'),
     ]">
@@ -91,6 +104,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const routes = {
                 data: '{{ route('admin.vendors.data') }}',
+                show: '{{ route('admin.vendors.show', ['vendor' => '__ID__']) }}',
                 destroy: '{{ route('admin.vendors.destroy', ['id' => '__ID__']) }}',
             };
 
@@ -116,6 +130,7 @@
                     { data: 'email', name: 'email' },
                     { data: 'phone', name: 'phone', defaultContent: '—' },
                     { data: 'registered_at', name: 'registered_at', orderable: false, searchable: false, defaultContent: '—' },
+                    { data: 'shops', name: 'shops', orderable: false, searchable: false, defaultContent: '—' },
                     { data: 'status', name: 'status', orderable: false, searchable: false },
                     { data: 'action', orderable: false, searchable: false },
                 ],
@@ -133,14 +148,22 @@
             let vendorToDelete = null;
 
             document.addEventListener('click', (event) => {
-                const trigger = event.target.closest('[data-action="delete-vendor"]');
-                if (! trigger) {
+                const deleteTrigger = event.target.closest('[data-action="delete-vendor"]');
+                if (deleteTrigger) {
+                    vendorToDelete = deleteTrigger.getAttribute('data-vendor-id');
+                    if (vendorToDelete && deleteModal) {
+                        deleteModal.show();
+                    }
+
                     return;
                 }
 
-                vendorToDelete = trigger.getAttribute('data-vendor-id');
-                if (vendorToDelete && deleteModal) {
-                    deleteModal.show();
+                const viewTrigger = event.target.closest('[data-action="view-vendor"]');
+                if (viewTrigger) {
+                    const vendorId = viewTrigger.getAttribute('data-vendor-id');
+                    if (vendorId) {
+                        window.location.href = routes.show.replace('__ID__', vendorId);
+                    }
                 }
             });
 

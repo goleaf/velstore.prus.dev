@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Models\Shop;
 use App\Services\Admin\ImageService;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -40,14 +41,14 @@ class ProductRepository implements ProductRepositoryInterface
 
         $defaultCurrencyCode = getWebConfig('default_currency', 'USD');
 
-        $shop = Shop::where('vendor_id', 1)->first();
+        $shop = Shop::where('status', 'active')->orderBy('id')->first();
 
         if (! $shop) {
-            throw new Exception('No shop found for this vendor.');
+            throw new RuntimeException('No active shop found for product assignment.');
         }
 
         $product = Product::create([
-            'vendor_id' => 1,
+            'vendor_id' => $shop->vendor_id,
             'shop_id' => $shop->id,
             'category_id' => $data['category_id'],
             'price' => currency_to_usd($data['price'], $defaultCurrencyCode),

@@ -12,6 +12,7 @@
             'price_max' => 1000,
             'color' => [],
             'size' => [],
+            'shop' => [],
         ];
     @endphp
     <section class="products-home py-5 mb-5 main-shop">
@@ -19,6 +20,15 @@
         <div class="row">
             <aside class="col-md-3 d-none d-lg-inline">
                 <div class="sidebar" id="filterSidebar">
+                    <h5 class="mb-3">SHOPS</h5>
+                    @foreach($shops ?? [] as $shop)
+                    <div class="form-check mb-3">
+                        <input class="form-check-input filter-input" type="checkbox" name="shop[]" value="{{ $shop->id }}" @checked(in_array($shop->id, $filters['shop']))>
+                        <label class="form-check-label">{{ $shop->name }}</label>
+                        <span class="text-muted">({{ $shop->products_count }})</span>
+                    </div>
+                    @endforeach
+
                     <h5 class="mb-3">BRANDS</h5>
                     @foreach($brands as $brand)
                     <div class="form-check mb-3">

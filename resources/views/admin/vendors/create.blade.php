@@ -11,12 +11,19 @@
 </x-admin.page-header>
 
 <x-admin.card class="mt-6">
-    <form action="{{ route('admin.vendors.store') }}" method="POST" class="grid gap-6">
+    <form action="{{ route('admin.vendors.store') }}" method="POST" class="grid gap-8">
         @csrf
 
         <div class="grid gap-6 lg:grid-cols-2">
             <div class="space-y-4">
-                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">{{ __('cms.vendors.vendor_details_heading') }}</h3>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        {{ __('cms.vendors.vendor_details_heading') }}
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ __('cms.vendors.vendor_details_hint') }}
+                    </p>
+                </div>
 
                 <div class="grid gap-4">
                     <div>
@@ -78,7 +85,14 @@
             </div>
 
             <div class="space-y-4">
-                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">{{ __('cms.vendors.account_security_heading') }}</h3>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        {{ __('cms.vendors.account_security_heading') }}
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ __('cms.vendors.account_security_hint') }}
+                    </p>
+                </div>
 
                 <div class="grid gap-4">
                     <div>
@@ -138,6 +152,88 @@
             </div>
         </div>
 
+        <div class="space-y-4">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                    {{ __('cms.vendors.shop_details_heading') }}
+                </h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ __('cms.vendors.shop_details_hint') }}
+                </p>
+            </div>
+
+            <div class="grid gap-4 lg:grid-cols-2">
+                <div>
+                    <label for="shop_name" class="form-label">{{ __('cms.vendors.shop_name') }}</label>
+                    <input
+                        id="shop_name"
+                        type="text"
+                        name="shop_name"
+                        value="{{ old('shop_name') }}"
+                        maxlength="255"
+                        class="form-control @error('shop_name') is-invalid @enderror"
+                        required
+                    >
+                    @error('shop_name')
+                        <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="shop_slug" class="form-label">{{ __('cms.vendors.shop_slug') }}</label>
+                    <input
+                        id="shop_slug"
+                        type="text"
+                        name="shop_slug"
+                        value="{{ old('shop_slug') }}"
+                        maxlength="255"
+                        class="form-control @error('shop_slug') is-invalid @enderror"
+                        placeholder="{{ __('cms.vendors.shop_slug_placeholder') }}"
+                    >
+                    <p class="form-text text-xs text-gray-500 mt-1">
+                        {{ __('cms.vendors.shop_slug_hint') }}
+                    </p>
+                    @error('shop_slug')
+                        <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="lg:col-span-2">
+                    <label for="shop_description" class="form-label">{{ __('cms.vendors.shop_description') }}</label>
+                    <textarea
+                        id="shop_description"
+                        name="shop_description"
+                        rows="4"
+                        maxlength="500"
+                        class="form-textarea @error('shop_description') is-invalid @enderror"
+                        placeholder="{{ __('cms.vendors.shop_description_placeholder') }}"
+                    >{{ old('shop_description') }}</textarea>
+                    @error('shop_description')
+                        <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="shop_status" class="form-label">{{ __('cms.vendors.shop_status') }}</label>
+                    <select
+                        id="shop_status"
+                        name="shop_status"
+                        class="form-select @error('shop_status') is-invalid @enderror"
+                        required
+                    >
+                        @foreach ($shopStatusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(old('shop_status', 'active') === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('shop_status')
+                        <p class="text-sm text-danger mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-wrap justify-end gap-3">
             <button type="submit" class="btn btn-primary">
                 {{ __('cms.vendors.register_button') }}
@@ -148,4 +244,38 @@
         </div>
     </form>
 </x-admin.card>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('shop_name');
+            const slugInput = document.getElementById('shop_slug');
+
+            if (! nameInput || ! slugInput) {
+                return;
+            }
+
+            const slugify = (value) => value
+                .toString()
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+
+            nameInput.addEventListener('input', (event) => {
+                if (slugInput.dataset.touched === 'true') {
+                    return;
+                }
+
+                slugInput.value = slugify(event.target.value);
+            });
+
+            slugInput.addEventListener('input', () => {
+                slugInput.dataset.touched = 'true';
+                slugInput.value = slugify(slugInput.value);
+            });
+        });
+    </script>
+@endpush
 @endsection

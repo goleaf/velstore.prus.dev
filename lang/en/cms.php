@@ -563,7 +563,9 @@ return [
 
         // Form labels
         'vendor_details_heading' => 'Vendor details',
+        'vendor_details_hint' => 'Tell us who the vendor is so we can keep their profile consistent everywhere.',
         'account_security_heading' => 'Account security',
+        'account_security_hint' => 'Create secure credentials and decide how the account should behave.',
         'vendor_name' => 'Vendor name',
         'vendor_email' => 'Vendor email',
         'phone_optional' => 'Phone (optional)',
@@ -574,12 +576,22 @@ return [
         'password_requirements' => 'Use at least 8 characters, including one symbol.',
         'phone_format_hint' => 'Include the country code, e.g. +1 555 123 4567.',
         'password_symbol_validation' => 'The password must include at least one symbol character.',
+        'shop_details_heading' => 'Shop profile',
+        'shop_details_hint' => 'Every vendor needs a shop so customers can browse their catalogue.',
+        'shop_name' => 'Shop name',
+        'shop_slug' => 'Shop URL slug',
+        'shop_slug_placeholder' => 'e.g. aurora-studios',
+        'shop_slug_hint' => 'We will auto-generate this from the shop name if you leave it blank.',
+        'shop_description' => 'Shop description',
+        'shop_description_placeholder' => 'Tell customers what makes this shop special (max 500 characters).',
+        'shop_status' => 'Shop status',
 
         // Buttons
         'add_vendor' => 'Add Vendor',
         'register_button' => 'Create vendor',
         'cancel_button' => 'Cancel',
         'delete_button' => 'Delete vendor',
+        'view_button' => 'View profile',
         'cancel' => 'Cancel',
         'delete' => 'Delete',
 
@@ -596,6 +608,22 @@ return [
         // Filters
         'filter_status_label' => 'Filter by status',
         'filter_status_all' => 'All statuses',
+
+        // Shop support
+        'shops' => 'Shops',
+        'total_shops' => 'Total shops',
+        'active_shops' => 'Active shops',
+        'shop_list_title' => 'Associated shops',
+        'shops_empty_state' => 'This vendor does not manage any shops yet.',
+        'shop_products_count' => 'Products',
+        'shop_status_label_active' => 'Active',
+        'shop_status_label_inactive' => 'Inactive',
+        'shop_description_empty' => 'No description provided yet.',
+        'total_shop_products' => 'Products across shops',
+        'shop_count_label' => 'Number of shops',
+        'profile_description' => 'Vendor account overview and connected shops.',
+        'profile_overview_heading' => 'Contact details',
+        'vendor_metrics_heading' => 'Marketplace metrics',
 
         // Legacy keys kept for backwards compatibility
         'title_list' => 'Vendor List',
