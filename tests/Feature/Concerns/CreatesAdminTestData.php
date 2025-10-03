@@ -30,6 +30,7 @@ use App\Models\ProductVariant;
 use App\Models\ProductVariantTranslation;
 use App\Models\Refund;
 use App\Models\ShippingAddress;
+use App\Models\Shop;
 use App\Models\SiteSetting;
 use App\Models\SocialMediaLink;
 use App\Models\SocialMediaLinkTranslation;
@@ -97,6 +98,15 @@ trait CreatesAdminTestData
             'status' => 'active',
         ]);
 
+        $shop = Shop::create([
+            'vendor_id' => $vendor->id,
+            'name' => 'Test Shop',
+            'slug' => 'test-shop',
+            'logo' => 'N/A',
+            'description' => 'Test shop description',
+            'status' => 'active',
+        ]);
+
         $size = Attribute::create(['name' => 'Size']);
         AttributeValue::create([
             'attribute_id' => $size->id,
@@ -119,7 +129,7 @@ trait CreatesAdminTestData
             'category_id' => $this->category->id,
             'brand_id' => $this->brand->id,
             'vendor_id' => $vendor->id,
-            'shop_id' => 1,
+            'shop_id' => $shop->id,
             'price' => 99.99,
             'stock' => 10,
             'status' => true,
@@ -177,7 +187,7 @@ trait CreatesAdminTestData
         $this->banner = Banner::create([
             'title' => 'Homepage Banner',
             'status' => true,
-            'type' => 'hero',
+            'type' => 'promotion',
         ]);
 
         BannerTranslation::create([
@@ -186,7 +196,6 @@ trait CreatesAdminTestData
             'title' => 'Homepage Banner',
             'description' => 'Banner description',
             'image_url' => 'banners/homepage-banner.jpg',
-            'type' => 'hero',
         ]);
 
         $this->socialLink = SocialMediaLink::create([
