@@ -115,7 +115,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     /* Attribute Value Management */
     Route::post('attributes/{attribute}/values', [AttributeController::class, 'storeValue'])->name('attributes.values.store');
     Route::delete('values/{value}', [AttributeController::class, 'destroyValue'])->name('values.destroy');
-    Route::post('attributes/data', [AttributeController::class, 'getAttributesData'])->name('attributes.data');
 
     /* Attribute Value Translations Management */
     Route::post('values/{value}/translations', [AttributeController::class, 'storeTranslation'])->name('values.translations.store');

@@ -7,42 +7,26 @@ use App\Models\Attribute;
 use App\Models\Language;
 use App\Services\Admin\AttributeService;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Validation\Rule;
 
 class AttributeController extends Controller
 {
-    protected $attributeService;
+    protected AttributeService $attributeService;
 
     public function __construct(AttributeService $attributeService)
     {
         $this->attributeService = $attributeService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $attributes = $this->attributeService->getAllAttributes();
+        $indexData = $this->attributeService->getIndexData($request->all());
 
-        return view('admin.attributes.index', compact('attributes'));
-    }
-
-    public function getAttributesData(Request $request)
-    {
-        if ($request->ajax()) {
-            $attributes = Attribute::with('values')->get();
-
-            return DataTables::of($attributes)
-                ->addColumn('values', function ($attribute) {
-                    return $attribute->values->map(function ($value) {
-                        return '<span class="badge bg-primary">'.e($value->value).'</span>';
-                    })->implode(' ');
-                })
-                ->addColumn('action', function ($attribute) {
-                    return '<a href="'.route('admin.attributes.edit', $attribute->id).'" class="btn btn-sm btn-warning">Edit</a>
-                            <button class="btn btn-sm btn-danger" onclick="deleteAttribute('.$attribute->id.')">Delete</button>';
-                })
-                ->rawColumns(['values', 'action'])
-                ->make(true);
-        }
+        return view('admin.attributes.index', [
+            'attributes' => $indexData['attributes'],
+            'stats' => $indexData['stats'],
+            'filters' => $indexData['filters'],
+        ]);
     }
 
     public function create()
@@ -67,7 +51,7 @@ class AttributeController extends Controller
             foreach ($request->input('translations', []) as $lang => $translations) {
                 if (is_array($translations)) {
                     foreach ($translations as $i => $val) {
-                        $rules["translations.$lang.$i"] = 'required|string|max:255';
+                        $rules["translations.$lang.$i"] = 'nullable|string|max:255';
                     }
                 }
             }
@@ -75,7 +59,7 @@ class AttributeController extends Controller
 
         $validated = $request->validate($rules);
 
-        $this->attributeService->createAttribute($request->all());
+        $this->attributeService->createAttribute($validated);
 
         return redirect()->route('admin.attributes.index')->with('success', __('cms.attributes.success_create'));
     }
@@ -90,28 +74,40 @@ class AttributeController extends Controller
 
     public function update(Request $request, Attribute $attribute)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'values' => 'required|array',
-            'values.*' => 'string|max:255',
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('attributes', 'name')->ignore($attribute->id)],
+            'values' => 'required|array|min:1',
+            'values.*' => 'required|string|max:255|distinct',
             'translations' => 'array',
             'translations.*' => 'array',
             'translations.*.*' => 'nullable|string|max:255',
         ]);
 
-        $this->attributeService->updateAttribute($attribute, $request->all());
+        $this->attributeService->updateAttribute($attribute, $validated);
 
         return redirect()->route('admin.attributes.index')->with('success', __('cms.attributes.success_update'));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, Attribute $attribute)
     {
         try {
-            $this->attributeService->deleteAttribute($id);
+            $this->attributeService->deleteAttribute($attribute);
 
-            return response()->json(['success' => true, 'message' => __('cms.attributes.success_delete')]);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => __('cms.attributes.success_delete')]);
+            }
+
+            return redirect()
+                ->route('admin.attributes.index')
+                ->with('success', __('cms.attributes.success_delete'));
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting attribute! Please try again.']);
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => __('cms.attributes.error_delete')], 500);
+            }
+
+            return redirect()
+                ->route('admin.attributes.index')
+                ->with('error', __('cms.attributes.error_delete'));
         }
     }
 }
