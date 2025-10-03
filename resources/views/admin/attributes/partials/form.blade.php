@@ -2,14 +2,10 @@
     $isEdit = isset($attribute);
 
     $values = old('values');
-    if (is_array($values)) {
-        $values = array_values($values);
-    } elseif ($isEdit) {
-        $values = $attribute->values->pluck('value')->toArray();
-    } else {
-        $values = [];
+    if (! is_array($values)) {
+        $values = $isEdit ? $attribute->values->pluck('value')->toArray() : [];
     }
-
+    $values = array_values(array_filter($values, fn ($value) => $value !== null));
     if (empty($values)) {
         $values = [''];
     }
@@ -19,21 +15,17 @@
         $code = $language->code;
         $languageTranslations = old("translations.{$code}");
 
-        if (is_array($languageTranslations)) {
-            $languageTranslations = array_values($languageTranslations);
-        } elseif ($isEdit) {
+        if (! is_array($languageTranslations) && $isEdit) {
             $languageTranslations = $attribute->values->map(function ($value) use ($code) {
                 return optional($value->translations->firstWhere('language_code', $code))->translated_value ?? '';
             })->toArray();
-        } else {
+        }
+
+        if (! is_array($languageTranslations)) {
             $languageTranslations = [];
         }
 
-        if (count($languageTranslations) > count($values)) {
-            $languageTranslations = array_slice($languageTranslations, 0, count($values));
-        }
-
-        $translations[$code] = array_pad($languageTranslations, count($values), '');
+        $translations[$code] = array_pad(array_values($languageTranslations), count($values), '');
     }
 
     $formMethod = strtoupper($method ?? 'POST');
@@ -46,8 +38,8 @@
     @endif
 
     <x-admin.card :title="__('cms.attributes.attribute_name')">
-        <div class="grid gap-4 md:grid-cols-2">
-            <div class="md:col-span-2">
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
                 <label for="name" class="form-label">{{ __('cms.attributes.attribute_name') }}</label>
                 <input
                     type="text"
@@ -55,6 +47,7 @@
                     id="name"
                     value="{{ old('name', $attribute->name ?? '') }}"
                     class="form-control @error('name') is-invalid @enderror"
+                    placeholder="{{ __('cms.attributes.attribute_name_placeholder') }}"
                 >
                 @error('name')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -63,28 +56,29 @@
         </div>
     </x-admin.card>
 
-    <x-admin.card :title="__('cms.attributes.attribute_values')">
+    <x-admin.card :title="__('cms.attributes.attribute_values')" :description="__('cms.attributes.attribute_values_help')">
         <div id="attribute-values-container" class="space-y-4">
             @foreach ($values as $index => $value)
-                @php
-                    $rowId = 'attribute-value-row-' . $index;
-                @endphp
-                <div class="attribute-value-row space-y-4 rounded-lg border border-gray-200 p-4" data-row-id="{{ $rowId }}">
-                    <div class="flex flex-col gap-2 md:flex-row md:items-start md:gap-3">
-                        <div class="flex-1">
+                <div class="attribute-value-row rounded border border-gray-200 p-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-6 col-lg-5">
+                            <label class="form-label" data-value-label>{{ __('cms.attributes.value_label', ['number' => $loop->iteration]) }}</label>
                             <input
                                 type="text"
                                 name="values[]"
                                 value="{{ $value }}"
                                 class="form-control @error('values.' . $index) is-invalid @enderror"
+                                placeholder="{{ __('cms.attributes.value_placeholder', ['number' => $loop->iteration]) }}"
                             >
                             @error('values.' . $index)
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
-                        <button type="button" class="btn btn-outline-danger attribute-value-remove self-start">
-                            {{ __('cms.attributes.remove_value') }}
-                        </button>
+                        <div class="col-12 col-md-6 col-lg-4 d-flex gap-2">
+                            <button type="button" class="btn btn-outline-danger attribute-value-remove">
+                                {{ __('cms.attributes.remove_value') }}
+                            </button>
+                        </div>
                     </div>
 
                     <div class="translation-section space-y-3" data-language-tabs>
@@ -131,6 +125,23 @@
                                     value="{{ $translationValue }}"
                                     class="form-control @error('translations.' . $code . '.' . $index) is-invalid @enderror"
                                 >
+                    <div class="row g-3 mt-1">
+                        @foreach ($languages as $language)
+                            @php
+                                $code = $language->code;
+                                $translationValue = $translations[$code][$index] ?? '';
+                            @endphp
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label class="form-label" data-translation-label data-language="{{ $code }}">
+                                    {{ __('cms.attributes.translation_label', ['language' => ucwords($language->name)]) }}
+                                </label>
+                                <input
+                                    type="text"
+                                    name="translations[{{ $code }}][]"
+                                    value="{{ $translationValue }}"
+                                    class="form-control @error('translations.' . $code . '.' . $index) is-invalid @enderror"
+                                    placeholder="{{ __('cms.attributes.translation_placeholder', ['language' => ucwords($language->name)]) }}"
+                                >
                                 @error('translations.' . $code . '.' . $index)
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
@@ -145,7 +156,7 @@
         </button>
     </x-admin.card>
 
-    <div class="flex flex-col-reverse gap-3 md:flex-row md:items-center md:justify-end">
+    <div class="d-flex flex-column flex-md-row gap-3 justify-content-end">
         <x-admin.button-link href="{{ route('admin.attributes.index') }}" class="btn-outline">
             {{ __('cms.attributes.cancel') }}
         </x-admin.button-link>

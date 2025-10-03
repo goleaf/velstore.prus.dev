@@ -1747,11 +1747,19 @@ return [
         'title_create' => 'Create Attribute',
         'title_edit' => 'Edit Attribute',
         'title_manage' => 'Manage Attributes',
+        'index_description' => 'Browse and manage attribute definitions for your catalogue.',
 
         'attribute_name' => 'Attribute Name',
+        'attribute_name_placeholder' => 'Size, Material, Fabric...',
         'attribute_values' => 'Attribute Values',
+        'attribute_values_help' => 'Define the options customers can choose from. Add translations to localise labels.',
         'translations' => 'Translations',
         'translated_value' => 'Translated Value',
+
+        'value_label' => 'Value #:number',
+        'value_placeholder' => 'Value #:number',
+        'translation_label' => 'Translation (:language)',
+        'translation_placeholder' => 'Translation (:language)',
 
         'add_value' => 'Add Value',
         'remove_value' => 'Remove',
@@ -1762,6 +1770,7 @@ return [
         'success_create' => 'Attribute created successfully!',
         'success_update' => 'Attribute updated successfully!',
         'success_delete' => 'Attribute deleted successfully!',
+        'error_delete' => 'Error deleting attribute! Please try again.',
         'delete_confirmation' => 'Are you sure you want to delete this attribute?',
         'success' => 'Success',
         'error_delete' => 'Unable to delete attribute. Please try again.',
@@ -1769,7 +1778,9 @@ return [
         'id' => 'ID',
         'name' => 'Name',
         'values' => 'Values',
+        'no_values' => 'No values defined',
         'action' => 'Action',
+        'empty_state' => 'No attributes have been created yet.',
 
         'index_description' => 'Curate attribute options to power storefront filters and product variations.',
         'total_attributes' => 'Total attributes',

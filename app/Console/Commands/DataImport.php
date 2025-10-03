@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Support\SeederRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoDataSeeder;
 
 class DataImport extends Command
@@ -30,10 +30,8 @@ class DataImport extends Command
     {
         $this->info('Starting data import...');
 
-        $seeders = [
-            DatabaseSeeder::class => 'Base application seeders',
-            DemoDataSeeder::class => 'Comprehensive multilingual demo data',
-        ];
+        $seeders = SeederRegistry::baseSeeders();
+        $seeders[DemoDataSeeder::class] = 'Comprehensive multilingual demo data';
 
         foreach ($seeders as $seeder => $description) {
             $this->info("Seeding: {$description}...");

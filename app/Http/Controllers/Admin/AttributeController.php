@@ -7,7 +7,9 @@ use App\Models\Attribute;
 use App\Models\Language;
 use App\Services\Admin\AttributeService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class AttributeController extends Controller
 {
@@ -94,15 +96,21 @@ class AttributeController extends Controller
             $this->attributeService->deleteAttribute($attribute);
 
             if ($request->wantsJson()) {
-                return response()->json(['success' => true, 'message' => __('cms.attributes.success_delete')]);
+                return response()->json([
+                    'success' => true,
+                    'message' => __('cms.attributes.success_delete'),
+                ]);
             }
 
             return redirect()
                 ->route('admin.attributes.index')
                 ->with('success', __('cms.attributes.success_delete'));
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => __('cms.attributes.error_delete')], 500);
+                return response()->json([
+                    'success' => false,
+                    'message' => __('cms.attributes.error_delete'),
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             return redirect()

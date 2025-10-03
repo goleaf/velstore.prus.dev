@@ -8,13 +8,17 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const languages = @json($languageMeta);
-        const valueContainer = document.getElementById('attribute-values-container');
+        const container = document.getElementById('attribute-values-container');
         const addButton = document.getElementById('add-attribute-value');
         const removeText = @json(__('cms.attributes.remove_value'));
         const valuePlaceholder = @json(__('cms.attributes.attribute_values'));
         const translationPlaceholder = @json(__('cms.attributes.translated_value'));
+        const valueLabelTemplate = @json(__('cms.attributes.value_label', ['number' => ':number']));
+        const valuePlaceholderTemplate = @json(__('cms.attributes.value_placeholder', ['number' => ':number']));
+        const translationLabelTemplate = @json(__('cms.attributes.translation_label', ['language' => ':language']));
+        const translationPlaceholderTemplate = @json(__('cms.attributes.translation_placeholder', ['language' => ':language']));
 
-        if (!valueContainer) {
+        if (!container || !addButton) {
             return;
         }
 
@@ -22,24 +26,83 @@
 
         const generateRowId = () => `attribute-value-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
-        const updatePlaceholders = () => {
-            const rows = Array.from(valueContainer.querySelectorAll('.attribute-value-row'));
+        const escapeHtml = (value) => {
+            if (typeof value !== 'string') {
+                return '';
+            }
+
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        };
+
+        const createRow = (value = '', translationValues = {}) => {
+            const row = document.createElement('div');
+            row.className = 'attribute-value-row rounded border border-gray-200 p-4';
+
+            const translationsMarkup = languages.map(({ code }) => `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label" data-translation-label data-language="${code}"></label>
+                    <input
+                        type="text"
+                        name="translations[${code}][]"
+                        value="${escapeHtml(translationValues[code] ?? '')}"
+                        class="form-control"
+                    >
+                </div>
+            `).join('');
+
+            row.innerHTML = `
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-5">
+                        <label class="form-label" data-value-label></label>
+                        <input type="text" name="values[]" value="${escapeHtml(value)}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4 d-flex gap-2">
+                        <button type="button" class="btn btn-outline-danger attribute-value-remove">${removeText}</button>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    ${translationsMarkup}
+                </div>
+            `;
+
+            return row;
+        };
+
+        const updateRowLabels = () => {
+            const rows = Array.from(container.querySelectorAll('.attribute-value-row'));
 
             rows.forEach((row, index) => {
-                const baseInput = row.querySelector('input[name="values[]"]');
-                if (baseInput) {
-                    baseInput.placeholder = `${valuePlaceholder} #${index + 1}`;
+                const valueLabel = row.querySelector('[data-value-label]');
+                const valueInput = row.querySelector('input[name="values[]"]');
+
+                if (valueLabel) {
+                    valueLabel.textContent = valueLabelTemplate.replace(':number', index + 1);
                 }
 
-                languages.forEach(({ code, name }) => {
-                    const translationInput = row.querySelector(`input[name="translations[${code}][]"]`);
-                    if (translationInput) {
-                        translationInput.placeholder = `${translationPlaceholder} (${name}) #${index + 1}`;
+                if (valueInput) {
+                    valueInput.placeholder = valuePlaceholderTemplate.replace(':number', index + 1);
+                }
+
+                row.querySelectorAll('[data-translation-label]').forEach((label) => {
+                    const languageCode = label.getAttribute('data-language');
+                    const languageName = languages.find((language) => language.code === languageCode)?.name ?? languageCode.toUpperCase();
+
+                    label.textContent = translationLabelTemplate.replace(':language', languageName);
+
+                    const input = label.nextElementSibling;
+                    if (input && input.tagName === 'INPUT') {
+                        input.placeholder = translationPlaceholderTemplate.replace(':language', languageName);
                     }
                 });
             });
         };
 
+<<<<<<< HEAD
         const createTabController = (row) => {
             const tabButtons = Array.from(row.querySelectorAll('[data-language-tab-target]'));
             const tabPanels = Array.from(row.querySelectorAll('[data-language-panel]'));
@@ -190,20 +253,19 @@
             valueContainer.appendChild(row);
             registerRow(row);
             updatePlaceholders();
+=======
+        const addValueRow = (value = '', translationValues = {}) => {
+            const row = createRow(value, translationValues);
+            container.appendChild(row);
+            updateRowLabels();
+>>>>>>> origin/codex/refactor-admin-attributes-creation-and-seeds
         };
 
-        const clearSingleRow = (row) => {
-            const valueInput = row.querySelector('input[name="values[]"]');
-            if (valueInput) {
-                valueInput.value = '';
-            }
-
-            languages.forEach(({ code }) => {
-                const translationInput = row.querySelector(`input[name="translations[${code}][]"]`);
-                if (translationInput) {
-                    translationInput.value = '';
-                }
+        const clearRowValues = (row) => {
+            row.querySelectorAll('input').forEach((input) => {
+                input.value = '';
             });
+<<<<<<< HEAD
 
             const controller = rowTabControllers.get(row);
             if (controller) {
@@ -214,21 +276,24 @@
             }
 
             updatePlaceholders();
+=======
+>>>>>>> origin/codex/refactor-admin-attributes-creation-and-seeds
         };
 
         const removeValueRow = (row) => {
-            const rows = Array.from(valueContainer.querySelectorAll('.attribute-value-row'));
+            const rows = container.querySelectorAll('.attribute-value-row');
+
             if (rows.length <= 1) {
-                clearSingleRow(row);
+                clearRowValues(row);
                 return;
             }
 
             rowTabControllers.delete(row);
             row.remove();
-            updatePlaceholders();
+            updateRowLabels();
         };
 
-        valueContainer.addEventListener('click', (event) => {
+        container.addEventListener('click', (event) => {
             const trigger = event.target.closest('.attribute-value-remove');
             if (!trigger) {
                 return;
@@ -241,12 +306,11 @@
             }
         });
 
-        if (addButton) {
-            addButton.addEventListener('click', () => {
-                addValueRow();
-            });
-        }
+        addButton.addEventListener('click', () => {
+            addValueRow();
+        });
 
+<<<<<<< HEAD
         const existingRows = Array.from(valueContainer.querySelectorAll('.attribute-value-row'));
         if (!existingRows.length) {
             addValueRow();
@@ -268,5 +332,12 @@
                 }
             }
         @endif
+=======
+        if (container.querySelectorAll('.attribute-value-row').length === 0) {
+            addValueRow();
+        } else {
+            updateRowLabels();
+        }
+>>>>>>> origin/codex/refactor-admin-attributes-creation-and-seeds
     });
 </script>
