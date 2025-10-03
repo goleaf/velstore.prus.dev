@@ -1850,6 +1850,17 @@ return [
         'bulk_action_error' => 'Unable to complete the bulk action.',
         'bulk_action_empty' => 'Select at least one review to continue.',
 
+        'search_label' => 'Search reviews',
+        'search_placeholder' => 'Search by customer, product, or comment',
+        'rating_min_label' => 'Rating from',
+        'rating_max_label' => 'Rating to',
+        'rating_any' => 'Any',
+        'rating_value' => '{1}:value star|[2,*]:value stars',
+        'submitted_from_label' => 'Submitted from',
+        'submitted_to_label' => 'Submitted to',
+        'clear_filters' => 'Clear filters',
+        'review_excerpt_column' => 'Review excerpt',
+
         'submitted_at' => 'Submitted at',
         'updated_at' => 'Last updated',
 
@@ -1877,11 +1888,17 @@ return [
 
         'success_create' => 'Product review created successfully!',
         'success_update' => 'Product review updated successfully!',
+        'success_status_update' => 'Review status updated successfully!',
         'success_delete' => 'Product review deleted successfully!',
         'error_delete' => 'Error deleting product review! Please try again.',
+        'error_status_update' => 'Unable to update the review status. Please try again.',
 
         'success' => 'Success',
         'error' => 'Error',
+
+        'toggle_approval' => 'Toggle approval',
+        'mark_as_approved' => 'Approve',
+        'mark_as_pending' => 'Mark pending',
     ],
 
 ];

@@ -118,8 +118,18 @@
                         </div>
                         <div class="product-info mt-4">
                             <div class="top-info">
+                                @php
+                                    $reviewsCount = (int) ($product->reviews_count ?? 0);
+                                    $averageRating = number_format((float) ($product->reviews_avg_rating ?? 0), 1);
+                                @endphp
                                 <div class="reviews">
-                                    <i class="fa-solid fa-star"></i> ({{ $product->reviews_count }} Reviews)
+                                    <i class="fa-solid fa-star"></i>
+                                    @if($reviewsCount > 0)
+                                        <span class="rating-average">{{ $averageRating }}</span>
+                                        <span class="rating-count">({{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }})</span>
+                                    @else
+                                        <span class="rating-count">{{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }}</span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="bottom-info">
@@ -178,8 +188,19 @@
                             </div>
                             <div class="product-info mt-4">
                                 <div class="top-info">
-                                    <div class="reviews"><i class="fa-solid fa-star"></i>({{ $product->reviews_count }}
-                                        Reviews)</div>
+                                    @php
+                                        $reviewsCount = (int) ($product->reviews_count ?? 0);
+                                        $averageRating = number_format((float) ($product->reviews_avg_rating ?? 0), 1);
+                                    @endphp
+                                    <div class="reviews">
+                                        <i class="fa-solid fa-star"></i>
+                                        @if($reviewsCount > 0)
+                                            <span class="rating-average">{{ $averageRating }}</span>
+                                            <span class="rating-count">({{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }})</span>
+                                        @else
+                                            <span class="rating-count">{{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="bottom-info">
                                     <div class="left">

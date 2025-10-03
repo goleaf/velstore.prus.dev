@@ -26,10 +26,16 @@ class StoreController extends Controller
 
         $products = Product::where('status', 1)
             ->with(['translation', 'thumbnail', 'primaryVariant'])
-            ->withCount('reviews')
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->approved()])
+            ->withAvg(['reviews as reviews_avg_rating' => fn ($query) => $query->approved()], 'rating')
             ->orderBy('id', 'desc')
             ->take(10)
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $product->reviews_avg_rating = round((float) ($product->reviews_avg_rating ?? 0), 1);
+
+                return $product;
+            });
 
         return view('themes.xylo.home', compact('banners', 'categories', 'products'));
     }

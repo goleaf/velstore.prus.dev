@@ -9,11 +9,23 @@
         </div>
         <div class="product-info mt-4">
             <div class="top-info">
-                <div class="reviews"><i class="fa-solid fa-star"></i>0 Reviews</div>
+                @php
+                    $reviewsCount = (int) ($product->reviews_count ?? 0);
+                    $averageRating = number_format((float) ($product->reviews_avg_rating ?? 0), 1);
+                @endphp
+                <div class="reviews">
+                    <i class="fa-solid fa-star"></i>
+                    @if($reviewsCount > 0)
+                        <span class="rating-average">{{ $averageRating }}</span>
+                        <span class="rating-count">({{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }})</span>
+                    @else
+                        <span class="rating-count">{{ trans_choice('store.product_detail.reviews_count', $reviewsCount, ['count' => $reviewsCount]) }}</span>
+                    @endif
+                </div>
             </div>
             <div class="bottom-info">
                 <div class="left">
-                    <h3><a href="{{ route('product.show', $product->slug) }}" 
+                    <h3><a href="{{ route('product.show', $product->slug) }}"
                            class="product-title">{{ $product->translation->name ?? 'Product Name Not Available' }}</a></h3>
                            <p class="price">
                                 <span class="original {{ optional($product->primaryVariant)->converted_discount_price ? 'has-discount' : '' }}">

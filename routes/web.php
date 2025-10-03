@@ -111,6 +111,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/reviews/data', [ProductReviewController::class, 'getData'])->name('reviews.data');
     Route::get('/reviews/metrics', [ProductReviewController::class, 'metrics'])->name('reviews.metrics');
     Route::post('/reviews/bulk-action', [ProductReviewController::class, 'bulkAction'])->name('reviews.bulk-action');
+    Route::patch('/reviews/{review}/approval', [ProductReviewController::class, 'updateApproval'])->name('reviews.approval');
     Route::resource('reviews', ProductReviewController::class)->except(['create', 'store']);
 
     /* Attributes */

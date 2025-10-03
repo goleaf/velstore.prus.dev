@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkUpdateProductReviewRequest;
 use App\Http\Requests\Admin\ProductReviewDataRequest;
 use App\Http\Requests\Admin\UpdateProductReviewRequest;
+use App\Http\Requests\Admin\UpdateProductReviewStatusRequest;
 use App\Models\ProductReview;
 use App\Services\Admin\ProductReviewMetricsService;
 use App\Support\Filters\ProductReviewFilters;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -42,6 +44,52 @@ class ProductReviewController extends Controller
             ->select('product_reviews.*');
 
         $filters->apply($reviews, $request->filters());
+
+        $minRating = (int) $request->query('rating_min', 0);
+        $maxRating = (int) $request->query('rating_max', 5);
+
+        if ($minRating > 0) {
+            $reviews->where('rating', '>=', $minRating);
+        }
+
+        if ($maxRating > 0) {
+            $reviews->where('rating', '<=', $maxRating);
+        }
+
+        $search = (string) $request->query('keyword');
+
+        if ($search !== '') {
+            $reviews->where(function ($query) use ($search) {
+                $query
+                    ->where('review', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                        $customerQuery->where(function ($inner) use ($search) {
+                            $inner->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+                    })
+                    ->orWhereHas('product.translations', function ($productQuery) use ($search) {
+                        $productQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $productId = (int) $request->query('product_id');
+
+        if ($productId > 0) {
+            $reviews->where('product_id', $productId);
+        }
+
+        $submittedFrom = $request->query('submitted_from');
+        $submittedTo = $request->query('submitted_to');
+
+        if ($submittedFrom && Carbon::hasFormat($submittedFrom, 'Y-m-d')) {
+            $reviews->whereDate('created_at', '>=', Carbon::createFromFormat('Y-m-d', $submittedFrom));
+        }
+
+        if ($submittedTo && Carbon::hasFormat($submittedTo, 'Y-m-d')) {
+            $reviews->whereDate('created_at', '<=', Carbon::createFromFormat('Y-m-d', $submittedTo));
+        }
 
         return DataTables::of($reviews)
             ->filter(function ($query) use ($request) {
@@ -82,11 +130,21 @@ class ProductReviewController extends Controller
             ->editColumn('rating', function (ProductReview $review) {
                 return number_format((float) $review->rating, 1);
             })
+            ->addColumn('review_excerpt', function (ProductReview $review) {
+                return Str::limit((string) $review->review, 120);
+            })
+            ->addColumn('submitted_at', function (ProductReview $review) {
+                return optional($review->created_at)?->timezone(config('app.timezone'))
+                    ?->format('M j, Y g:i A');
+            })
             ->addColumn('status', function (ProductReview $review) {
                 return $review->status_label;
             })
             ->editColumn('created_at', function (ProductReview $review) {
                 return optional($review->created_at)->format('Y-m-d H:i');
+            })
+            ->addColumn('is_approved', function (ProductReview $review) {
+                return (bool) $review->is_approved;
             })
             ->toJson();
     }
@@ -148,6 +206,21 @@ class ProductReviewController extends Controller
             'updated' => (int) $updated,
             'action' => $action,
             'message' => __('cms.product_reviews.bulk_action_success', ['count' => (int) $updated]),
+=======
+    public function updateApproval(UpdateProductReviewStatusRequest $request, ProductReview $review)
+    {
+        $validated = $request->validated();
+
+        $review->forceFill([
+            'is_approved' => $validated['is_approved'],
+        ])->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('cms.product_reviews.success_status_update'),
+            'is_approved' => $review->is_approved,
+            'status_label' => $review->status_label,
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
         ]);
     }
 

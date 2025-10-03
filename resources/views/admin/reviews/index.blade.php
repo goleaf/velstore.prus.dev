@@ -16,6 +16,73 @@
             :value="number_format($metrics['average_rating'], 2)"
             :label="__('cms.product_reviews.average_rating')"
             metric-key="average-rating"
+                <div>
+                    <label for="reviews-search" class="form-label">{{ __('cms.product_reviews.search_label') }}</label>
+                    <input id="reviews-search" type="search" class="form-input" placeholder="{{ __('cms.product_reviews.search_placeholder') }}">
+                </div>
+
+                <div>
+                    <label for="reviews-status-filter" class="form-label">{{ __('cms.product_reviews.status_filter_label') }}</label>
+                    <select id="reviews-status-filter" class="form-select">
+                        <option value="">{{ __('cms.product_reviews.status_filter_all') }}</option>
+                        <option value="approved">{{ __('cms.product_reviews.approved') }}</option>
+                        <option value="pending">{{ __('cms.product_reviews.pending') }}</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label for="reviews-rating-min" class="form-label">{{ __('cms.product_reviews.rating_min_label') }}</label>
+                        <select id="reviews-rating-min" class="form-select">
+                            <option value="0">{{ __('cms.product_reviews.rating_any') }}</option>
+                            @for ($i = 1; $i <= 5; $i++)
+                                <option value="{{ $i }}">{{ trans_choice('cms.product_reviews.rating_value', $i, ['value' => $i]) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reviews-rating-max" class="form-label">{{ __('cms.product_reviews.rating_max_label') }}</label>
+                        <select id="reviews-rating-max" class="form-select">
+                            <option value="5">{{ __('cms.product_reviews.rating_any') }}</option>
+                            @for ($i = 5; $i >= 1; $i--)
+                                <option value="{{ $i }}">{{ trans_choice('cms.product_reviews.rating_value', $i, ['value' => $i]) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="reviews-date-from" class="form-label">{{ __('cms.product_reviews.submitted_from_label') }}</label>
+                    <input id="reviews-date-from" type="date" class="form-input">
+                </div>
+
+                <div>
+                    <label for="reviews-date-to" class="form-label">{{ __('cms.product_reviews.submitted_to_label') }}</label>
+                    <input id="reviews-date-to" type="date" class="form-input">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="reviews-clear-filters" type="button" class="btn btn-outline">
+                    {{ __('cms.product_reviews.clear_filters') }}
+                </button>
+            </div>
+        </div>
+
+        <x-admin.table
+            id="reviews-table"
+            :columns="[
+                __('cms.product_reviews.review_id'),
+                __('cms.product_reviews.customer_name'),
+                __('cms.product_reviews.product_name'),
+                __('cms.product_reviews.rating'),
+                __('cms.product_reviews.review_excerpt_column'),
+                __('cms.product_reviews.submitted_at'),
+                __('cms.product_reviews.status'),
+                __('cms.product_reviews.actions'),
+            ]"
+            class="mt-4"
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
         />
         <x-admin.stat-card
             icon="fa-solid fa-comments"
@@ -219,9 +286,17 @@
                 errorDelete: @json(__('cms.product_reviews.error_delete')),
                 viewLabel: @json(__('cms.product_reviews.view')),
                 editLabel: @json(__('cms.product_reviews.edit')),
+<<<<<<< HEAD
                 bulkSuccess: @json(__('cms.product_reviews.bulk_action_success', ['count' => ':count'])),
                 bulkEmpty: @json(__('cms.product_reviews.bulk_action_empty')),
                 bulkError: @json(__('cms.product_reviews.bulk_action_error')),
+=======
+                toggleApprove: @json(__('cms.product_reviews.toggle_approval')),
+                markApproved: @json(__('cms.product_reviews.mark_as_approved')),
+                markPending: @json(__('cms.product_reviews.mark_as_pending')),
+                statusUpdated: @json(__('cms.product_reviews.success_status_update')),
+                statusUpdateError: @json(__('cms.product_reviews.error_status_update')),
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
             };
 
             const statusLabels = {
@@ -233,6 +308,7 @@
                 show: @json(route('admin.reviews.show', ['review' => '__REVIEW__'])),
                 edit: @json(route('admin.reviews.edit', ['review' => '__REVIEW__'])),
                 destroy: @json(route('admin.reviews.destroy', ['review' => '__REVIEW__'])),
+<<<<<<< HEAD
                 metrics: @json(route('admin.reviews.metrics')),
                 bulk: @json(route('admin.reviews.bulk-action')),
             };
@@ -248,6 +324,19 @@
             const searchInput = document.getElementById('reviews-search');
 
             const bulkButtons = document.querySelectorAll('[data-bulk-action]');
+=======
+                approval: @json(route('admin.reviews.approval', ['review' => '__REVIEW__'])),
+            };
+
+            const statusFilter = document.getElementById('reviews-status-filter');
+            const searchInput = document.getElementById('reviews-search');
+            const ratingMin = document.getElementById('reviews-rating-min');
+            const ratingMax = document.getElementById('reviews-rating-max');
+            const dateFrom = document.getElementById('reviews-date-from');
+            const dateTo = document.getElementById('reviews-date-to');
+            const clearFiltersButton = document.getElementById('reviews-clear-filters');
+            let searchDebounce;
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
 
             const dataTable = $table.DataTable({
                 processing: true,
@@ -258,12 +347,20 @@
                     type: 'GET',
                     data: function(params) {
                         params.status = statusFilter?.value ?? '';
+<<<<<<< HEAD
                         params.rating_min = ratingMin?.value ?? '';
                         params.rating_max = ratingMax?.value ?? '';
                         params.product_name = productName?.value ?? '';
                         params.date_from = dateFrom?.value ?? '';
                         params.date_to = dateTo?.value ?? '';
                         params.has_review = hasText?.checked ? 1 : '';
+=======
+                        params.keyword = searchInput?.value ?? '';
+                        params.rating_min = ratingMin?.value ?? '';
+                        params.rating_max = ratingMax?.value ?? '';
+                        params.submitted_from = dateFrom?.value ?? '';
+                        params.submitted_to = dateTo?.value ?? '';
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
                     },
                 },
                 columns: [
@@ -279,6 +376,8 @@
                     { data: 'customer_name', name: 'customer_name' },
                     { data: 'product_name', name: 'product_name' },
                     { data: 'rating', name: 'rating' },
+                    { data: 'review_excerpt', name: 'review', orderable: false, searchable: false },
+                    { data: 'submitted_at', name: 'submitted_at' },
                     {
                         data: 'status',
                         name: 'status',
@@ -299,18 +398,25 @@
                         data: 'id',
                         orderable: false,
                         searchable: false,
-                        render: function(id) {
+                        render: function(id, type, row) {
+                            const isApproved = Boolean(row.is_approved);
+                            const approvalLabel = isApproved ? translations.markPending : translations.markApproved;
                             return `
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="${routes.show.replace('__REVIEW__', id)}" class="btn btn-outline btn-sm">
-                                        ${translations.viewLabel}
-                                    </a>
-                                    <a href="${routes.edit.replace('__REVIEW__', id)}" class="btn btn-outline-primary btn-sm">
-                                        ${translations.editLabel}
-                                    </a>
-                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-review" data-id="${id}">
-                                        ${translations.deleteLabel}
-                                    </button>
+                                <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="${routes.show.replace('__REVIEW__', id)}" class="btn btn-outline btn-sm">
+                                            ${translations.viewLabel}
+                                        </a>
+                                        <a href="${routes.edit.replace('__REVIEW__', id)}" class="btn btn-outline-primary btn-sm">
+                                            ${translations.editLabel}
+                                        </a>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-toggle-approval" data-id="${id}" data-approved="${isApproved ? 1 : 0}">
+                                            ${approvalLabel}
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm btn-delete-review" data-id="${id}">
+                                            ${translations.deleteLabel}
+                                        </button>
+                                    </div>
                                 </div>
                             `;
                         },
@@ -324,6 +430,7 @@
                 dataTable.ajax.reload();
             });
 
+<<<<<<< HEAD
             [ratingMin, ratingMax, productName, dateFrom, dateTo].forEach((element) => {
                 element?.addEventListener('change', () => dataTable.ajax.reload());
             });
@@ -388,6 +495,39 @@
                         },
                     });
                 });
+=======
+            ratingMin?.addEventListener('change', () => {
+                dataTable.ajax.reload();
+            });
+
+            ratingMax?.addEventListener('change', () => {
+                dataTable.ajax.reload();
+            });
+
+            dateFrom?.addEventListener('change', () => {
+                dataTable.ajax.reload();
+            });
+
+            dateTo?.addEventListener('change', () => {
+                dataTable.ajax.reload();
+            });
+
+            searchInput?.addEventListener('input', () => {
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(() => {
+                    dataTable.ajax.reload();
+                }, 300);
+            });
+
+            clearFiltersButton?.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                if (statusFilter) statusFilter.value = '';
+                if (ratingMin) ratingMin.value = '0';
+                if (ratingMax) ratingMax.value = '5';
+                if (dateFrom) dateFrom.value = '';
+                if (dateTo) dateTo.value = '';
+                dataTable.ajax.reload();
+>>>>>>> origin/codex/refactor-admin-reviews-and-integrate-features
             });
 
             const dialog = document.getElementById('deleteReviewDialog');
@@ -436,6 +576,41 @@
                     },
                     complete: () => {
                         confirmButton.disabled = false;
+                    },
+                });
+            });
+
+            $(document).on('click', '.btn-toggle-approval', (event) => {
+                const button = event.currentTarget;
+                const reviewId = button.getAttribute('data-id');
+                const currentApproved = button.getAttribute('data-approved') === '1';
+
+                if (! reviewId) {
+                    return;
+                }
+
+                button.disabled = true;
+
+                $.ajax({
+                    url: routes.approval.replace('__REVIEW__', reviewId),
+                    method: 'PATCH',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        is_approved: currentApproved ? 0 : 1,
+                    },
+                    success: (response) => {
+                        if (response?.success) {
+                            toastr.success(response.message ?? translations.statusUpdated, translations.successTitle);
+                            dataTable.ajax.reload(null, false);
+                        } else {
+                            toastr.error(translations.statusUpdateError, translations.errorTitle);
+                        }
+                    },
+                    error: () => {
+                        toastr.error(translations.statusUpdateError, translations.errorTitle);
+                    },
+                    complete: () => {
+                        button.disabled = false;
                     },
                 });
             });
