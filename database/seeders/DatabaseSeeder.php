@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             PageSeeder::class,
             CurrencySeeder::class,
             ProductSeeder::class,
+            ProductReviewSeeder::class,
             CouponSeeder::class,
             OrderSeeder::class,
             PaymentGatewaySeeder::class,
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
             RefundSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
+            ProductVariantDemoSeeder::class,
         ]);
     }
 }

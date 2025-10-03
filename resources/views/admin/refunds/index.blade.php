@@ -9,6 +9,73 @@
         </div>
     </div>
 
+    <div class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-2xl border border-primary-100 bg-primary-50 px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-primary-600">{{ __('cms.refunds.summary_total_count') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-primary-900">{{ number_format($stats['total'] ?? 0) }}</p>
+        </div>
+        <div class="rounded-2xl border border-success-100 bg-success-50 px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-success-600">{{ __('cms.refunds.summary_completed_count') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-success-900">{{ number_format($stats['completed'] ?? 0) }}</p>
+        </div>
+        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">{{ __('cms.refunds.summary_total_amount') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-amber-900">{{ number_format($stats['refunded_amount'] ?? 0, 2) }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.filters_title') }}</h2>
+        </div>
+
+        <div class="px-6 py-6">
+            <form id="refundFilters" class="grid gap-4 md:grid-cols-4">
+                <div class="md:col-span-2">
+                    <label class="form-label" for="refundStatusFilter">{{ __('cms.refunds.status_filter_label') }}</label>
+                    <select
+                        id="refundStatusFilter"
+                        name="status[]"
+                        class="form-select h-36"
+                        multiple
+                        aria-describedby="refundStatusHelp"
+                    >
+                        @foreach ($statusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(in_array($value, $filters['status'] ?? []))>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p id="refundStatusHelp" class="mt-2 text-xs text-gray-500">{{ __('cms.refunds.status_filter_help') }}</p>
+                </div>
+                <div>
+                    <label class="form-label" for="refundDateFrom">{{ __('cms.refunds.date_from_label') }}</label>
+                    <input
+                        id="refundDateFrom"
+                        type="date"
+                        name="date_from"
+                        class="form-control"
+                        value="{{ $filters['date_from'] ?? '' }}"
+                    >
+                </div>
+                <div>
+                    <label class="form-label" for="refundDateTo">{{ __('cms.refunds.date_to_label') }}</label>
+                    <input
+                        id="refundDateTo"
+                        type="date"
+                        name="date_to"
+                        class="form-control"
+                        value="{{ $filters['date_to'] ?? '' }}"
+                    >
+                </div>
+                <div class="md:col-span-4 flex flex-wrap gap-3 pt-2">
+                    <button type="submit" class="btn btn-primary">{{ __('cms.refunds.apply_filters') }}</button>
+                    <button type="button" class="btn btn-outline" id="resetRefundFilters">{{ __('cms.refunds.reset_filters') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
         <div class="px-6 py-5 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.list') }}</h2>
@@ -69,16 +136,45 @@
 
 @section('js')
 @php
-    $datatableLang = __('cms.datatables'); 
+    $datatableLang = __('cms.datatables');
 @endphp
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tableElement = $('#refunds-table');
+    const filterForm = document.getElementById('refundFilters');
+    const resetButton = document.getElementById('resetRefundFilters');
+    const statusSelect = document.getElementById('refundStatusFilter');
+
     const dataTable = tableElement.DataTable({
         processing: true,
         serverSide: true,
-        ajax: @json(route('admin.refunds.getData')),
+        ajax: {
+            url: @json(route('admin.refunds.getData')),
+            data: (params) => {
+                if (!filterForm) {
+                    return;
+                }
+
+                const formData = new FormData(filterForm);
+                const statuses = formData.getAll('status[]').filter(Boolean);
+
+                if (statuses.length) {
+                    params.status = statuses;
+                }
+
+                const dateFrom = formData.get('date_from');
+                const dateTo = formData.get('date_to');
+
+                if (dateFrom) {
+                    params.date_from = dateFrom;
+                }
+
+                if (dateTo) {
+                    params.date_to = dateTo;
+                }
+            },
+        },
         language: @json($datatableLang),
         columns: [
             { data: 'id', name: 'id' },
@@ -100,6 +196,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.classList.add('table-cell');
             });
         });
+    });
+
+    filterForm?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        dataTable.ajax.reload();
+    });
+
+    resetButton?.addEventListener('click', () => {
+        if (!filterForm) {
+            return;
+        }
+
+        filterForm.reset();
+
+        if (statusSelect) {
+            Array.from(statusSelect.options).forEach((option) => {
+                option.selected = false;
+            });
+        }
+
+        dataTable.ajax.reload();
     });
 
     let refundToDeleteId = null;

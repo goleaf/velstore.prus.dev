@@ -11,6 +11,17 @@
     />
 
     <x-admin.card>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div class="max-w-xs">
+                <label for="reviews-status-filter" class="form-label">{{ __('cms.product_reviews.status_filter_label') }}</label>
+                <select id="reviews-status-filter" class="form-select">
+                    <option value="">{{ __('cms.product_reviews.status_filter_all') }}</option>
+                    <option value="approved">{{ __('cms.product_reviews.approved') }}</option>
+                    <option value="pending">{{ __('cms.product_reviews.pending') }}</option>
+                </select>
+            </div>
+        </div>
+
         <x-admin.table
             id="reviews-table"
             :columns="[
@@ -64,12 +75,22 @@
                 successDelete: @json(__('cms.product_reviews.success_delete')),
                 errorTitle: @json(__('cms.product_reviews.error')),
                 errorDelete: @json(__('cms.product_reviews.error_delete')),
+                viewLabel: @json(__('cms.product_reviews.view')),
+                editLabel: @json(__('cms.product_reviews.edit')),
             };
 
             const statusTemplates = {
-                active: `<span class="badge badge-success">{{ __('cms.product_reviews.active') }}</span>`,
-                inactive: `<span class="badge badge-danger">{{ __('cms.product_reviews.inactive') }}</span>`,
+                approved: `<span class="badge badge-success">{{ __('cms.product_reviews.approved') }}</span>`,
+                pending: `<span class="badge badge-warning">{{ __('cms.product_reviews.pending') }}</span>`,
             };
+
+            const routes = {
+                show: @json(route('admin.reviews.show', ['review' => '__REVIEW__'])),
+                edit: @json(route('admin.reviews.edit', ['review' => '__REVIEW__'])),
+                destroy: @json(route('admin.reviews.destroy', ['review' => '__REVIEW__'])),
+            };
+
+            const statusFilter = document.getElementById('reviews-status-filter');
 
             const dataTable = $table.DataTable({
                 processing: true,
@@ -77,6 +98,9 @@
                 ajax: {
                     url: "{{ route('admin.reviews.data') }}",
                     type: 'GET',
+                    data: function(params) {
+                        params.status = statusFilter?.value ?? '';
+                    },
                 },
                 columns: [
                     { data: 'id', name: 'id' },
@@ -96,7 +120,13 @@
                         searchable: false,
                         render: function(id) {
                             return `
-                                <div class="flex items-center justify-end">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="${routes.show.replace('__REVIEW__', id)}" class="btn btn-outline btn-sm">
+                                        ${translations.viewLabel}
+                                    </a>
+                                    <a href="${routes.edit.replace('__REVIEW__', id)}" class="btn btn-outline-primary btn-sm">
+                                        ${translations.editLabel}
+                                    </a>
                                     <button type="button" class="btn btn-outline-danger btn-sm btn-delete-review" data-id="${id}">
                                         ${translations.deleteLabel}
                                     </button>
@@ -107,6 +137,10 @@
                 ],
                 pageLength: 10,
                 language: @json($datatableLang),
+            });
+
+            statusFilter?.addEventListener('change', () => {
+                dataTable.ajax.reload();
             });
 
             const dialog = document.getElementById('deleteReviewDialog');
@@ -135,7 +169,7 @@
                 confirmButton.disabled = true;
 
                 $.ajax({
-                    url: '{{ route('admin.reviews.destroy', ':id') }}'.replace(':id', reviewToDeleteId),
+                    url: routes.destroy.replace('__REVIEW__', reviewToDeleteId),
                     method: 'DELETE',
                     data: {
                         _token: '{{ csrf_token() }}',
