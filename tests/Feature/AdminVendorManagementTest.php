@@ -13,6 +13,42 @@ class AdminVendorManagementTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
+    public function admin_can_view_vendor_index_with_stats_and_filters(): void
+    {
+        Vendor::factory()->create(['status' => 'inactive']);
+
+        $response = $this->get(route('admin.vendors.index'));
+
+        $response->assertOk();
+        $response->assertViewIs('admin.vendors.index');
+        $response->assertViewHas('stats', function ($stats) {
+            return is_array($stats)
+                && array_key_exists('total', $stats)
+                && isset($stats['breakdown'])
+                && isset($stats['percentages'])
+                && array_key_exists('active', $stats['breakdown'])
+                && array_key_exists('inactive', $stats['breakdown'])
+                && array_key_exists('banned', $stats['breakdown'])
+                && array_key_exists('active', $stats['percentages'])
+                && array_key_exists('inactive', $stats['percentages'])
+                && array_key_exists('banned', $stats['percentages']);
+        });
+
+        $response->assertViewHas('statusOptions', function ($options) {
+            return is_array($options)
+                && array_key_exists('active', $options)
+                && array_key_exists('inactive', $options)
+                && array_key_exists('banned', $options);
+        });
+
+        $response->assertViewHas('filters', function ($filters) {
+            return is_array($filters)
+                && array_key_exists('status', $filters)
+                && array_key_exists('search', $filters);
+        });
+    }
+
+    /** @test */
     public function admin_can_view_vendor_create_form(): void
     {
         $response = $this->get(route('admin.vendors.create'));

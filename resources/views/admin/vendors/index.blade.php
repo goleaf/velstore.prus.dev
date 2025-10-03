@@ -2,12 +2,24 @@
 
 @php
     $datatableLang = __('cms.datatables');
-    $vendorStats = $stats ?? [
+
+    $stats = $stats ?? [
         'total' => 0,
-        'active' => 0,
-        'inactive' => 0,
-        'banned' => 0,
+        'breakdown' => [
+            'active' => 0,
+            'inactive' => 0,
+            'banned' => 0,
+        ],
+        'percentages' => [
+            'active' => 0,
+            'inactive' => 0,
+            'banned' => 0,
+        ],
     ];
+
+    $breakdown = $stats['breakdown'] ?? ['active' => 0, 'inactive' => 0, 'banned' => 0];
+    $percentages = $stats['percentages'] ?? ['active' => 0, 'inactive' => 0, 'banned' => 0];
+    $filters = $filters ?? ['status' => '', 'search' => ''];
 @endphp
 
 @section('content')
@@ -22,39 +34,69 @@
 
 <x-admin.card>
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
-            <p class="text-xs uppercase tracking-wide text-slate-600 mb-1">{{ __('cms.vendors.total_vendors') }}</p>
-            <p class="text-xl font-semibold text-slate-900">{{ number_format($vendorStats['total']) }}</p>
-        </div>
-        <div class="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
-            <p class="text-xs uppercase tracking-wide text-emerald-600 mb-1">{{ __('cms.vendors.active_vendors') }}</p>
-            <p class="text-xl font-semibold text-emerald-900">{{ number_format($vendorStats['active']) }}</p>
-        </div>
-        <div class="p-4 rounded-lg bg-amber-50 border border-amber-100">
-            <p class="text-xs uppercase tracking-wide text-amber-600 mb-1">{{ __('cms.vendors.inactive_vendors') }}</p>
-            <p class="text-xl font-semibold text-amber-900">{{ number_format($vendorStats['inactive']) }}</p>
-        </div>
-        <div class="p-4 rounded-lg bg-rose-50 border border-rose-100">
-            <p class="text-xs uppercase tracking-wide text-rose-600 mb-1">{{ __('cms.vendors.banned_vendors') }}</p>
-            <p class="text-xl font-semibold text-rose-900">{{ number_format($vendorStats['banned']) }}</p>
-        </div>
+        <x-admin.stat-card
+            :label="__('cms.vendors.total_vendors')"
+            :value="number_format($stats['total'] ?? 0)"
+            variant="slate"
+        />
+        <x-admin.stat-card
+            :label="__('cms.vendors.active_vendors')"
+            :value="number_format($breakdown['active'] ?? 0)"
+            variant="emerald"
+            :percentage="$percentages['active'] ?? null"
+        />
+        <x-admin.stat-card
+            :label="__('cms.vendors.inactive_vendors')"
+            :value="number_format($breakdown['inactive'] ?? 0)"
+            variant="amber"
+            :percentage="$percentages['inactive'] ?? null"
+        />
+        <x-admin.stat-card
+            :label="__('cms.vendors.banned_vendors')"
+            :value="number_format($breakdown['banned'] ?? 0)"
+            variant="rose"
+            :percentage="$percentages['banned'] ?? null"
+        />
     </div>
 </x-admin.card>
 
 <x-admin.card class="mt-6" :title="__('cms.vendors.table_title')">
-    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-        <div class="max-w-xs w-full">
-            <label for="statusFilter" class="form-label text-xs uppercase tracking-wide text-slate-600">
-                {{ __('cms.vendors.filter_status_label') }}
-            </label>
-            <select id="statusFilter" class="form-select">
-                <option value="">{{ __('cms.vendors.filter_status_all') }}</option>
-                @foreach ($statusOptions ?? [] as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </select>
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between mb-4">
+        <div class="grid gap-3 w-full lg:grid-cols-2">
+            <div class="w-full">
+                <label for="vendorSearch" class="form-label text-xs uppercase tracking-wide text-slate-600">
+                    {{ __('cms.messages.search') }}
+                </label>
+                <input
+                    type="search"
+                    id="vendorSearch"
+                    class="form-control"
+                    placeholder="{{ __('cms.sidebar.search_placeholder') }}"
+                    value="{{ $filters['search'] ?? '' }}"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="w-full lg:w-56">
+                <label for="statusFilter" class="form-label text-xs uppercase tracking-wide text-slate-600">
+                    {{ __('cms.vendors.filter_status_label') }}
+                </label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">{{ __('cms.vendors.filter_status_all') }}</option>
+                    @foreach ($statusOptions ?? [] as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="button" class="btn btn-outline-secondary" id="resetVendorFilters">
+                {{ __('cms.categories.reset_filters') }}
+            </button>
         </div>
     </div>
+
     <x-admin.table id="vendors-table" :columns="[
         __('cms.vendors.id'),
         __('cms.vendors.name'),
@@ -95,6 +137,17 @@
             };
 
             const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('vendorSearch');
+            const resetFiltersButton = document.getElementById('resetVendorFilters');
+
+            const createDebounce = (callback, wait = 300) => {
+                let timeoutId;
+                return (value) => {
+                    window.clearTimeout(timeoutId);
+                    timeoutId = window.setTimeout(() => callback(value), wait);
+                };
+            };
+
             const datatableLanguage = {
                 ...@json($datatableLang),
                 emptyTable: '{{ __('cms.vendors.empty_state') }}',
@@ -122,9 +175,40 @@
                 pageLength: 10,
                 order: [[0, 'desc']],
                 language: datatableLanguage,
+                search: {
+                    search: (searchInput?.value ?? '').trim(),
+                },
             });
 
+            const debouncedSearch = createDebounce((value) => {
+                table.search(value.trim()).draw();
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    debouncedSearch(searchInput.value);
+                });
+
+                searchInput.addEventListener('search', () => {
+                    searchInput.value = searchInput.value.trim();
+                    table.search(searchInput.value).draw();
+                });
+            }
+
             statusFilter?.addEventListener('change', () => {
+                table.ajax.reload();
+            });
+
+            resetFiltersButton?.addEventListener('click', () => {
+                if (statusFilter) {
+                    statusFilter.value = '';
+                }
+
+                if (searchInput) {
+                    searchInput.value = '';
+                    table.search('');
+                }
+
                 table.ajax.reload();
             });
 
