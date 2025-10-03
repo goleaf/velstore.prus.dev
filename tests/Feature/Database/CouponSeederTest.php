@@ -28,7 +28,15 @@ class CouponSeederTest extends TestCase
 
         $coupons = Coupon::orderBy('code')->get()->keyBy('code');
 
-        $this->assertCount(4, $coupons);
+        $this->assertCount(6, $coupons);
+
+        $this->assertSame('percentage', $coupons['FLASH24']->type);
+        $this->assertSame(30.0, (float) $coupons['FLASH24']->discount);
+        $this->assertSame(75.0, (float) $coupons['FLASH24']->minimum_spend);
+        $this->assertSame(100, $coupons['FLASH24']->usage_limit);
+        $this->assertTrue(
+            $coupons['FLASH24']->expires_at->eq($now->copy()->addDay())
+        );
 
         $this->assertSame('percentage', $coupons['FLASH50']->type);
         $this->assertSame(50.0, (float) $coupons['FLASH50']->discount);
@@ -38,10 +46,18 @@ class CouponSeederTest extends TestCase
         $this->assertTrue($coupons['FLASH50']->expires_at->lt($now));
 
         $this->assertSame('fixed', $coupons['FREESHIP']->type);
-        $this->assertSame(15.0, (float) $coupons['FREESHIP']->discount);
-        $this->assertNull($coupons['FREESHIP']->minimum_spend);
+        $this->assertSame(12.0, (float) $coupons['FREESHIP']->discount);
+        $this->assertSame(60.0, (float) $coupons['FREESHIP']->minimum_spend);
         $this->assertNull($coupons['FREESHIP']->usage_limit);
-        $this->assertNull($coupons['FREESHIP']->expires_at);
+        $this->assertTrue(
+            $coupons['FREESHIP']->expires_at->eq($now->copy()->addWeeks(2))
+        );
+
+        $this->assertSame('percentage', $coupons['LOYALTY15']->type);
+        $this->assertSame(15.0, (float) $coupons['LOYALTY15']->discount);
+        $this->assertSame(200.0, (float) $coupons['LOYALTY15']->minimum_spend);
+        $this->assertNull($coupons['LOYALTY15']->usage_limit);
+        $this->assertNull($coupons['LOYALTY15']->expires_at);
 
         $this->assertTrue(
             $coupons['SUMMER25']->expires_at->eq($now->copy()->addMonths(3))
@@ -63,6 +79,6 @@ class CouponSeederTest extends TestCase
         $this->seed(CouponSeeder::class);
         $this->seed(CouponSeeder::class);
 
-        $this->assertSame(4, Coupon::count());
+        $this->assertSame(6, Coupon::count());
     }
 }
