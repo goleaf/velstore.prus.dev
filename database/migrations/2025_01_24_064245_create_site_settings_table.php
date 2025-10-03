@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('site_settings', function (Blueprint $table) {
             $table->id();
             $table->string('site_name'); // The name of the site
-            $table->string('tagline'); // Tagline of the site
-            $table->string('meta_title'); // Meta title for SEO
-            $table->string('meta_description'); // Meta description for SEO
+            $table->string('tagline')->nullable(); // Tagline of the site
+            $table->string('meta_title')->nullable(); // Meta title for SEO
+            $table->text('meta_description')->nullable(); // Meta description for SEO
             $table->string('meta_keywords')->nullable(); // Meta keywords for SEO (optional)
             $table->string('logo')->nullable(); // Path to the site logo image (optional)
             $table->string('favicon')->nullable(); // Path to the favicon image (optional)

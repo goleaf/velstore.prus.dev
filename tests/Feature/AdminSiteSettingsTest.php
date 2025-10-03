@@ -108,4 +108,52 @@ class AdminSiteSettingsTest extends TestCase
         $response->assertRedirect(route('admin.site-settings.edit'));
         $response->assertSessionHasErrors('maintenance_message');
     }
+
+    public function test_invalid_branding_colors_return_validation_errors(): void
+    {
+        $admin = User::factory()->create();
+        SiteSetting::factory()->create([
+            'site_name' => 'Velstore',
+        ]);
+
+        $this->actingAs($admin);
+
+        $payload = [
+            'site_name' => 'Velstore',
+            'primary_color' => 'blue',
+            'secondary_color' => '#12ABZ9',
+        ];
+
+        $response = $this
+            ->from(route('admin.site-settings.edit'))
+            ->put(route('admin.site-settings.update'), $payload);
+
+        $response->assertRedirect(route('admin.site-settings.edit'));
+        $response->assertSessionHasErrors(['primary_color', 'secondary_color']);
+    }
+
+    public function test_invalid_support_contact_emails_are_rejected(): void
+    {
+        $admin = User::factory()->create();
+        SiteSetting::factory()->create([
+            'site_name' => 'Velstore',
+        ]);
+
+        $this->actingAs($admin);
+
+        $payload = [
+            'site_name' => 'Velstore',
+            'contact_email' => 'not-an-email',
+            'support_email' => 'definitely-not-an-email',
+            'primary_color' => '#123456',
+            'secondary_color' => '#abcdef',
+        ];
+
+        $response = $this
+            ->from(route('admin.site-settings.edit'))
+            ->put(route('admin.site-settings.update'), $payload);
+
+        $response->assertRedirect(route('admin.site-settings.edit'));
+        $response->assertSessionHasErrors(['contact_email', 'support_email']);
+    }
 }

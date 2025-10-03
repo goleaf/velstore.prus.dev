@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('support_hours')->nullable()->after('support_email');
             $table->boolean('maintenance_mode')->default(false)->after('support_hours');
             $table->text('maintenance_message')->nullable()->after('maintenance_mode');
-            $table->string('primary_color')->nullable()->after('maintenance_message');
-            $table->string('secondary_color')->nullable()->after('primary_color');
+            $table->string('primary_color', 7)->nullable()->after('maintenance_message');
+            $table->string('secondary_color', 7)->nullable()->after('primary_color');
             $table->string('facebook_url')->nullable()->after('secondary_color');
             $table->string('twitter_url')->nullable()->after('facebook_url');
             $table->string('instagram_url')->nullable()->after('twitter_url');
