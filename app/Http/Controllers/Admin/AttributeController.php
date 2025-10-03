@@ -7,7 +7,8 @@ use App\Models\Attribute;
 use App\Models\Language;
 use App\Services\Admin\AttributeService;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Http\Response;
+use Throwable;
 
 class AttributeController extends Controller
 {
@@ -23,26 +24,6 @@ class AttributeController extends Controller
         $attributes = $this->attributeService->getAllAttributes();
 
         return view('admin.attributes.index', compact('attributes'));
-    }
-
-    public function getAttributesData(Request $request)
-    {
-        if ($request->ajax()) {
-            $attributes = Attribute::with('values')->get();
-
-            return DataTables::of($attributes)
-                ->addColumn('values', function ($attribute) {
-                    return $attribute->values->map(function ($value) {
-                        return '<span class="badge bg-primary">'.e($value->value).'</span>';
-                    })->implode(' ');
-                })
-                ->addColumn('action', function ($attribute) {
-                    return '<a href="'.route('admin.attributes.edit', $attribute->id).'" class="btn btn-sm btn-warning">Edit</a>
-                            <button class="btn btn-sm btn-danger" onclick="deleteAttribute('.$attribute->id.')">Delete</button>';
-                })
-                ->rawColumns(['values', 'action'])
-                ->make(true);
-        }
     }
 
     public function create()
@@ -104,14 +85,32 @@ class AttributeController extends Controller
         return redirect()->route('admin.attributes.index')->with('success', __('cms.attributes.success_update'));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, Attribute $attribute)
     {
         try {
-            $this->attributeService->deleteAttribute($id);
+            $this->attributeService->deleteAttribute($attribute->id);
 
-            return response()->json(['success' => true, 'message' => __('cms.attributes.success_delete')]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error deleting attribute! Please try again.']);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('cms.attributes.success_delete'),
+                ]);
+            }
+
+            return redirect()
+                ->route('admin.attributes.index')
+                ->with('success', __('cms.attributes.success_delete'));
+        } catch (Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('cms.attributes.error_delete'),
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            return redirect()
+                ->route('admin.attributes.index')
+                ->with('error', __('cms.attributes.error_delete'));
         }
     }
 }
