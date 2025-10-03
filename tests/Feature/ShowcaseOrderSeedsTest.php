@@ -27,13 +27,18 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->seed(OrderSeeder::class);
 
         $orders = Order::orderBy('id')->get();
-        $this->assertCount(3, $orders);
-        $this->assertSame([1, 2, 3], $orders->pluck('id')->all());
+        $this->assertCount(4, $orders);
+        $this->assertSame([1, 2, 3, 4], $orders->pluck('id')->all());
 
-        $showcaseOrder = $orders->last();
+        $showcaseOrder = $orders->firstWhere('id', 3);
         $this->assertSame('showcase-order@example.com', $showcaseOrder->guest_email);
         $this->assertSame('processing', $showcaseOrder->status);
         $this->assertEquals(180.75, (float) $showcaseOrder->total_amount);
+
+        $cancelledOrder = $orders->firstWhere('status', 'canceled');
+        $this->assertNotNull($cancelledOrder);
+        $this->assertSame('cancelled-order@example.com', $cancelledOrder->guest_email);
+        $this->assertEquals(45.5, (float) $cancelledOrder->total_amount);
 
         $productIds = DB::table('products')->pluck('id')->take(2);
 
@@ -50,7 +55,7 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->assertSame(1, $secondItem->quantity);
         $this->assertEquals(60.00, (float) $secondItem->price);
 
-        $this->assertSame(5, OrderDetail::count());
+        $this->assertSame(6, OrderDetail::count());
     }
 
     public function test_payment_seeder_populates_demo_payments_for_showcase_order(): void
