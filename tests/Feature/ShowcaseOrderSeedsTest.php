@@ -27,13 +27,15 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->seed(OrderSeeder::class);
 
         $orders = Order::orderBy('id')->get();
-        $this->assertCount(3, $orders);
-        $this->assertSame([1, 2, 3], $orders->pluck('id')->all());
+        $this->assertCount(4, $orders);
+        $this->assertSame([1, 2, 3, 29], $orders->pluck('id')->all());
 
         $showcaseOrder = $orders->last();
         $this->assertSame('showcase-order@example.com', $showcaseOrder->guest_email);
         $this->assertSame('processing', $showcaseOrder->status);
-        $this->assertEquals(180.75, (float) $showcaseOrder->total_amount);
+        $this->assertSame('Express Courier', $showcaseOrder->shipping_method);
+        $this->assertEquals(202.50, (float) $showcaseOrder->total_amount);
+        $this->assertSame('USD', $showcaseOrder->currency);
 
         $productIds = DB::table('products')->pluck('id')->take(2);
 
@@ -50,7 +52,34 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->assertSame(1, $secondItem->quantity);
         $this->assertEquals(60.00, (float) $secondItem->price);
 
-        $this->assertSame(5, OrderDetail::count());
+        $this->assertSame(8, OrderDetail::count());
+    }
+
+    public function test_order_seeder_creates_featured_order_with_status_updates_and_notes(): void
+    {
+        $this->seedProducts();
+
+        $this->seed(OrderSeeder::class);
+
+        $featuredOrder = Order::findOrFail(29);
+
+        $this->assertSame('vip-shopper@example.com', $featuredOrder->guest_email);
+        $this->assertSame('Same Day Priority', $featuredOrder->shipping_method);
+        $this->assertEquals(24.95, (float) $featuredOrder->shipping_amount);
+        $this->assertEquals(-5.00, (float) $featuredOrder->adjustment_amount);
+        $this->assertSame('USD', $featuredOrder->currency);
+
+        $statusLabels = $featuredOrder->statusUpdates->pluck('label')->all();
+        $this->assertCount(4, $statusLabels);
+        $this->assertSame(
+            ['Order Placed', 'Payment Captured', 'Items Packed', 'Courier Picked Up'],
+            $statusLabels
+        );
+        $this->assertTrue($featuredOrder->statusUpdates->every(fn ($update) => $update->happened_at !== null));
+
+        $this->assertCount(2, $featuredOrder->notes);
+        $this->assertTrue($featuredOrder->notes->contains(fn ($note) => $note->is_internal === true));
+        $this->assertTrue($featuredOrder->notes->contains(fn ($note) => $note->is_internal === false));
     }
 
     public function test_payment_seeder_populates_demo_payments_for_showcase_order(): void

@@ -138,6 +138,7 @@ class PaymentSeeder extends Seeder
                 'transaction_id' => 'STRIPE-ORDER-0003',
                 'gateway' => $stripeGateway,
                 'status' => 'completed',
+                'amount' => 120.75,
                 'created_at' => Carbon::now()->subDays(2),
                 'response' => [
                     'message' => 'Payment captured successfully',
@@ -152,6 +153,7 @@ class PaymentSeeder extends Seeder
                 'transaction_id' => 'PAYPAL-ORDER-0003',
                 'gateway' => $paypalGateway,
                 'status' => 'pending',
+                'amount' => 60.00,
                 'created_at' => Carbon::now()->subDay(),
                 'response' => [
                     'message' => 'Awaiting capture from PayPal',
@@ -172,7 +174,7 @@ class PaymentSeeder extends Seeder
                 ],
                 [
                     'gateway_id' => $payload['gateway']->id,
-                    'amount' => $showcaseOrder->total_amount,
+                    'amount' => number_format($payload['amount'] ?? $showcaseOrder->total_amount, 2, '.', ''),
                     'currency' => $products[0]->currency ?? 'USD',
                     'status' => $payload['status'],
                     'response' => $payload['response'],
@@ -329,7 +331,17 @@ class PaymentSeeder extends Seeder
         }
 
         if ($total > 0) {
-            $order->total_amount = number_format($total, 2, '.', '');
+            $shippingAmount = (float) ($order->shipping_amount ?? 0);
+            $discountAmount = (float) ($order->discount_amount ?? 0);
+            $taxAmount = (float) ($order->tax_amount ?? 0);
+            $adjustmentAmount = (float) ($order->adjustment_amount ?? 0);
+
+            $order->total_amount = number_format(
+                $total + $shippingAmount - $discountAmount + $taxAmount + $adjustmentAmount,
+                2,
+                '.',
+                ''
+            );
             $order->save();
         }
     }
