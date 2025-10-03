@@ -274,6 +274,11 @@ return [
         'delete_confirm_accept' => 'Delete',
         'delete_success_message' => 'Product variant deleted successfully.',
         'delete_error_message' => 'Error deleting product variant.',
+        'create_success' => 'Product variant created successfully.',
+        'update_success' => 'Product variant updated successfully.',
+        'edit_button' => 'Edit',
+        'delete_button' => 'Delete',
+        'not_available' => 'N/A',
     ],
 
     'refunds' => [

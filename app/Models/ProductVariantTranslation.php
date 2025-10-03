@@ -13,6 +13,7 @@ class ProductVariantTranslation extends Model
         'product_variant_id',
         'language_code',
         'name',
+        'value',
     ];
 
     // Relationship with the ProductVariant model
