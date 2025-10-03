@@ -168,6 +168,28 @@ return [
         'completed' => '完了',
         'pending' => '保留中',
         'failed' => '失敗',
+        'status_labels' => [
+            'requested' => 'リクエスト済み',
+            'approved' => '承認済み',
+            'rejected' => '却下',
+            'pending' => '保留中',
+            'completed' => '完了',
+            'failed' => '失敗',
+        ],
+
+        // Filters
+        'filters_title' => '払い戻しを絞り込み',
+        'status_filter_label' => 'ステータス',
+        'status_filter_help' => 'このリストを絞り込むには、1 つ以上のステータスを選択してください。',
+        'date_from_label' => '開始日',
+        'date_to_label' => '終了日',
+        'apply_filters' => 'フィルターを適用',
+        'reset_filters' => 'フィルターをリセット',
+
+        // Summary Cards
+        'summary_total_count' => '払い戻し総数',
+        'summary_completed_count' => '完了した払い戻し',
+        'summary_total_amount' => '払い戻し総額',
 
         // Delete Modal
         'delete_confirm' => '削除の確認',

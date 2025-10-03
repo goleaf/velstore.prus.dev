@@ -168,6 +168,28 @@ return [
         'completed' => 'Завершено',
         'pending' => 'В ожидании',
         'failed' => 'Неудачно',
+        'status_labels' => [
+            'requested' => 'Запрошено',
+            'approved' => 'Одобрено',
+            'rejected' => 'Отклонено',
+            'pending' => 'В ожидании',
+            'completed' => 'Завершено',
+            'failed' => 'Неудачно',
+        ],
+
+        // Filters
+        'filters_title' => 'Фильтр возвратов',
+        'status_filter_label' => 'Статус',
+        'status_filter_help' => 'Выберите один или несколько статусов, чтобы сузить список.',
+        'date_from_label' => 'Дата с',
+        'date_to_label' => 'Дата по',
+        'apply_filters' => 'Применить фильтры',
+        'reset_filters' => 'Сбросить фильтры',
+
+        // Summary Cards
+        'summary_total_count' => 'Всего возвратов',
+        'summary_completed_count' => 'Завершенные возвраты',
+        'summary_total_amount' => 'Всего возвращено',
 
         // Delete Modal
         'delete_confirm' => 'Подтвердить удаление',

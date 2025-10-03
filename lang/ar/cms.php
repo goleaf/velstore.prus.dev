@@ -168,6 +168,28 @@ return [
         'completed' => 'مكتمل',
         'pending' => 'قيد الانتظار',
         'failed' => 'فشل',
+        'status_labels' => [
+            'requested' => 'مطلوب',
+            'approved' => 'موافق عليه',
+            'rejected' => 'مرفوض',
+            'pending' => 'قيد الانتظار',
+            'completed' => 'مكتمل',
+            'failed' => 'فشل',
+        ],
+
+        // Filters
+        'filters_title' => 'تصفية عمليات الاسترداد',
+        'status_filter_label' => 'الحالة',
+        'status_filter_help' => 'حدد حالة أو أكثر لتضييق هذه القائمة.',
+        'date_from_label' => 'من التاريخ',
+        'date_to_label' => 'إلى التاريخ',
+        'apply_filters' => 'تطبيق عوامل التصفية',
+        'reset_filters' => 'إعادة تعيين عوامل التصفية',
+
+        // Summary Cards
+        'summary_total_count' => 'إجمالي عمليات الاسترداد',
+        'summary_completed_count' => 'عمليات الاسترداد المكتملة',
+        'summary_total_amount' => 'إجمالي المبالغ المستردة',
 
         // Delete Modal
         'delete_confirm' => 'تأكيد الحذف',

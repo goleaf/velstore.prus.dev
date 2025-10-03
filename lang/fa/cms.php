@@ -168,6 +168,28 @@ return [
         'completed' => 'تکمیل شد',
         'pending' => 'در انتظار',
         'failed' => 'ناموفق',
+        'status_labels' => [
+            'requested' => 'درخواست‌شده',
+            'approved' => 'تأیید شده',
+            'rejected' => 'رد شده',
+            'pending' => 'در انتظار',
+            'completed' => 'تکمیل شد',
+            'failed' => 'ناموفق',
+        ],
+
+        // Filters
+        'filters_title' => 'فیلتر کردن بازپرداخت‌ها',
+        'status_filter_label' => 'وضعیت',
+        'status_filter_help' => 'یک یا چند وضعیت را برای محدود کردن این لیست انتخاب کنید.',
+        'date_from_label' => 'از تاریخ',
+        'date_to_label' => 'تا تاریخ',
+        'apply_filters' => 'اعمال فیلترها',
+        'reset_filters' => 'بازنشانی فیلترها',
+
+        // Summary Cards
+        'summary_total_count' => 'مجموع بازپرداخت‌ها',
+        'summary_completed_count' => 'بازپرداخت‌های تکمیل شده',
+        'summary_total_amount' => 'مجموع مبلغ بازپرداخت شده',
 
         // Delete Modal
         'delete_confirm' => 'تأیید حذف',

@@ -168,6 +168,28 @@ return [
         'completed' => 'Tamamlandı',
         'pending' => 'Beklemede',
         'failed' => 'Başarısız',
+        'status_labels' => [
+            'requested' => 'Talep edildi',
+            'approved' => 'Onaylandı',
+            'rejected' => 'Reddedildi',
+            'pending' => 'Beklemede',
+            'completed' => 'Tamamlandı',
+            'failed' => 'Başarısız',
+        ],
+
+        // Filters
+        'filters_title' => 'İadeleri filtrele',
+        'status_filter_label' => 'Durum',
+        'status_filter_help' => 'Bu listeyi daraltmak için bir veya daha fazla durum seçin.',
+        'date_from_label' => 'Başlangıç tarihi',
+        'date_to_label' => 'Bitiş tarihi',
+        'apply_filters' => 'Filtreleri uygula',
+        'reset_filters' => 'Filtreleri sıfırla',
+
+        // Summary Cards
+        'summary_total_count' => 'Toplam iadeler',
+        'summary_completed_count' => 'Tamamlanan iadeler',
+        'summary_total_amount' => 'Toplam iade tutarı',
 
         // Delete Modal
         'delete_confirm' => 'Silme Onayı',

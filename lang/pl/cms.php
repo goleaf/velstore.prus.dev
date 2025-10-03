@@ -168,6 +168,28 @@ return [
         'completed' => 'Zakończono',
         'pending' => 'Oczekujące',
         'failed' => 'Niepowodzenie',
+        'status_labels' => [
+            'requested' => 'Zgłoszono',
+            'approved' => 'Zatwierdzono',
+            'rejected' => 'Odrzucono',
+            'pending' => 'Oczekujące',
+            'completed' => 'Zakończono',
+            'failed' => 'Niepowodzenie',
+        ],
+
+        // Filters
+        'filters_title' => 'Filtruj zwroty',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Wybierz jeden lub więcej statusów, aby zawęzić tę listę.',
+        'date_from_label' => 'Data od',
+        'date_to_label' => 'Data do',
+        'apply_filters' => 'Zastosuj filtry',
+        'reset_filters' => 'Resetuj filtry',
+
+        // Summary Cards
+        'summary_total_count' => 'Łączna liczba zwrotów',
+        'summary_completed_count' => 'Zrealizowane zwroty',
+        'summary_total_amount' => 'Łączna kwota zwrotów',
 
         // Delete Modal
         'delete_confirm' => 'Potwierdź usunięcie',

@@ -168,6 +168,28 @@ return [
         'completed' => '已完成',
         'pending' => '待处理',
         'failed' => '失败',
+        'status_labels' => [
+            'requested' => '已申请',
+            'approved' => '已批准',
+            'rejected' => '已拒绝',
+            'pending' => '待处理',
+            'completed' => '已完成',
+            'failed' => '失败',
+        ],
+
+        // Filters
+        'filters_title' => '筛选退款',
+        'status_filter_label' => '状态',
+        'status_filter_help' => '选择一个或多个状态以缩小此列表。',
+        'date_from_label' => '起始日期',
+        'date_to_label' => '结束日期',
+        'apply_filters' => '应用筛选',
+        'reset_filters' => '重置筛选',
+
+        // Summary Cards
+        'summary_total_count' => '退款总数',
+        'summary_completed_count' => '已完成退款',
+        'summary_total_amount' => '退款总额',
 
         // Delete Modal
         'delete_confirm' => '确认删除',

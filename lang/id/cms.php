@@ -168,6 +168,28 @@ return [
         'completed' => 'Selesai',
         'pending' => 'Menunggu',
         'failed' => 'Gagal',
+        'status_labels' => [
+            'requested' => 'Diminta',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'pending' => 'Menunggu',
+            'completed' => 'Selesai',
+            'failed' => 'Gagal',
+        ],
+
+        // Filters
+        'filters_title' => 'Saring pengembalian dana',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Pilih satu atau lebih status untuk mempersempit daftar ini.',
+        'date_from_label' => 'Tanggal mulai',
+        'date_to_label' => 'Tanggal akhir',
+        'apply_filters' => 'Terapkan filter',
+        'reset_filters' => 'Atur ulang filter',
+
+        // Summary Cards
+        'summary_total_count' => 'Total pengembalian dana',
+        'summary_completed_count' => 'Pengembalian dana selesai',
+        'summary_total_amount' => 'Total yang dikembalikan',
 
         // Delete Modal
         'delete_confirm' => 'Konfirmasi Hapus',
