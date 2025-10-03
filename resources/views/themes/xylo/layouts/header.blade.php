@@ -2,7 +2,7 @@
 
     <div class="top-bar w-100 bg-light py-1 header-top-bar">
         <div class="text-center small">
-            {{ __('store.header.top_bar_message') }}
+            {{ $siteSettings?->top_bar_message ?? __('store.header.top_bar_message') }}
         </div>
     </div>
 
@@ -10,9 +10,12 @@
         <!-- Row 2: Logo Left / Search Right -->
         <div class="row align-items-center">
             <div class="col-md-4 col-6">
-                <a href="{{ route('xylo.home') }}" class="navbar-brand">
-                    <img src="https://i.ibb.co/dHx2ZR3/velstore.png" width="80" alt="Logo" />
+                <a href="{{ route('xylo.home') }}" class="navbar-brand d-inline-flex flex-column">
+                    <img src="{{ $siteSettings?->logo_url ?? asset('assets/images/logo-main.svg') }}" width="80" alt="{{ $siteSettings?->site_name ?? __('store.footer.footer_logo_alt') }}" />
                 </a>
+                @if (!empty($siteSettings?->tagline))
+                    <p class="small text-muted mb-0">{{ $siteSettings->tagline }}</p>
+                @endif
             </div>
             <div class="col-md-8 col-6 text-end">
                 <form class="d-flex justify-content-end" action="{{ url('/search') }}" method="GET">

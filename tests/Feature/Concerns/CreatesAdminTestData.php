@@ -299,13 +299,20 @@ trait CreatesAdminTestData
         SiteSetting::create([
             'site_name' => 'Velstore',
             'tagline' => 'Tagline',
+            'top_bar_message' => 'Free shipping over $50',
             'meta_title' => 'Meta Title',
             'meta_description' => 'Meta description',
             'meta_keywords' => 'shop,store',
+            'logo' => 'assets/images/logo-main.svg',
+            'favicon' => 'favicon.ico',
             'contact_email' => 'info@example.com',
             'contact_phone' => '+123456789',
             'address' => '123 Market Street',
             'footer_text' => 'Copyright',
+            'facebook_url' => 'https://facebook.com/velstore',
+            'instagram_url' => 'https://instagram.com/velstore',
+            'twitter_url' => 'https://x.com/velstore',
+            'linkedin_url' => 'https://www.linkedin.com/company/velstore',
         ]);
     }
 }

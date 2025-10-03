@@ -9,6 +9,7 @@ use App\Repositories\Admin\Banner\BannerRepositoryInterface;
 use App\Repositories\Admin\Brand\BrandRepository;
 use App\Repositories\Admin\Brand\BrandRepositoryInterface;
 use App\Repositories\Admin\Menu\MenuRepository;
+use App\Models\SiteSetting;
 use App\Repositories\Admin\Menu\MenuRepositoryInterface;
 use App\Repositories\Admin\MenuItem\MenuItemRepository;
 use App\Repositories\Admin\MenuItem\MenuItemRepositoryInterface;
@@ -18,6 +19,9 @@ use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepository;
 use App\Repositories\Admin\SocialMediaLink\SocialMediaLinkRepositoryInterface;
 use App\Services\Admin\ImageService;
 use App\Services\Admin\MenuService;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -60,5 +64,26 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void {}
+    public function boot(): void
+    {
+        if (! Schema::hasTable('site_settings')) {
+            View::share('siteSettings', null);
+
+            return;
+        }
+
+        $siteSettings = Cache::remember('site_settings', now()->addHour(), function () {
+            $settings = SiteSetting::query()->first();
+
+            return $settings ?? SiteSetting::make([
+                'site_name' => config('app.name'),
+            ]);
+        });
+
+        if ($siteSettings?->site_name) {
+            config(['app.name' => $siteSettings->site_name]);
+        }
+
+        View::share('siteSettings', $siteSettings);
+    }
 }

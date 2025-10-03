@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SiteSetting extends Model
 {
@@ -16,13 +18,20 @@ class SiteSetting extends Model
     protected $fillable = [
         'site_name',
         'tagline',
+        'top_bar_message',
         'meta_title',
         'meta_description',
         'meta_keywords',
+        'logo',
+        'favicon',
         'contact_email',
         'contact_phone',
         'address',
         'footer_text',
+        'facebook_url',
+        'instagram_url',
+        'twitter_url',
+        'linkedin_url',
     ];
 
     // The attributes that should be cast to native types
@@ -31,5 +40,39 @@ class SiteSetting extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Optional: You may want to include any relationships (e.g., translations, if necessary)
+    protected $appends = [
+        'logo_url',
+        'favicon_url',
+    ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->logo);
+    }
+
+    public function getFaviconUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->favicon);
+    }
+
+    protected function resolveMediaUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        if (Str::startsWith($path, ['assets/', 'images/', '/'])) {
+            return asset(ltrim($path, '/'));
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->url($path);
+        }
+
+        return asset($path);
+    }
 }
