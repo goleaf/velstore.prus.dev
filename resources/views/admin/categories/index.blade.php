@@ -28,8 +28,8 @@
 </x-admin.card>
 
 <x-admin.card class="mt-6">
-    <form method="GET" class="grid gap-4 md:grid-cols-4">
-        <div>
+    <form method="GET" class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-1 min-w-[200px]">
             <label class="form-label" for="search">{{ __('cms.categories.search_label') }}</label>
             <input
                 id="search"
@@ -40,7 +40,7 @@
                 class="form-control"
             >
         </div>
-        <div>
+        <div class="flex flex-col gap-1 min-w-[180px]">
             <label class="form-label" for="status">{{ __('cms.categories.status_filter_label') }}</label>
             <select id="status" name="status" class="form-select">
                 <option value="">{{ __('cms.categories.status_filter_all') }}</option>
@@ -48,7 +48,7 @@
                 <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('cms.categories.status_filter_inactive') }}</option>
             </select>
         </div>
-        <div>
+        <div class="flex flex-col gap-1 min-w-[200px]">
             <label class="form-label" for="parent">{{ __('cms.categories.parent_filter_label') }}</label>
             <select id="parent" name="parent" class="form-select">
                 <option value="">{{ __('cms.categories.parent_filter_all') }}</option>
@@ -59,7 +59,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="md:col-span-4 flex flex-wrap gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <button type="submit" class="btn btn-primary">
                 {{ __('cms.categories.apply_filters') }}
             </button>
