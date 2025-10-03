@@ -1194,16 +1194,24 @@ return [
 
     'coupons' => [
         'heading' => 'Coupons',
+        'list_description' => 'Monitor discount codes, their status, and expiry at a glance.',
         'add_new' => 'Add Coupon',
         'id' => 'ID',
+        'column_coupon' => 'Coupon',
         'code' => 'Code',
         'discount' => 'Discount',
         'type' => 'Type',
+        'status' => 'Status',
         'expires_at' => 'Expires At',
+        'created_at' => 'Created',
         'action' => 'Action',
+        'table_title' => 'Coupon overview',
+        'empty' => 'No coupons found.',
 
         'create_title' => 'Create Coupon',
         'edit_title' => 'Edit Coupon',
+        'form_title' => 'Coupon details',
+        'form_description' => 'Define coupon codes, discount amounts, and availability windows.',
         'back_to_list' => 'Back to Coupons',
         'save' => 'Save Coupon',
         'update' => 'Update Coupon',
@@ -1212,6 +1220,7 @@ return [
         'delete_confirm_message' => 'Are you sure you want to delete this coupon?',
         'delete_cancel' => 'Cancel',
         'delete_button' => 'Delete',
+        'modal_coupon_label' => 'Coupon code: :code',
 
         'discount_hint' => 'For percentage coupons the value must be between 0 and 100.',
         'expiry_hint' => 'Leave empty to keep the coupon active indefinitely or set a past date to expire immediately.',
@@ -1226,6 +1235,23 @@ return [
         'type_labels' => [
             'percentage' => 'Percentage',
             'fixed' => 'Fixed Amount',
+        ],
+
+        'status_labels' => [
+            'active' => 'Active',
+            'expired' => 'Expired',
+        ],
+
+        'filters' => [
+            'all' => 'All coupons',
+            'active' => 'Active',
+            'expired' => 'Expired',
+        ],
+
+        'stats' => [
+            'total' => 'Total coupons',
+            'active' => 'Active coupons',
+            'expired' => 'Expired coupons',
         ],
 
         'errors' => [

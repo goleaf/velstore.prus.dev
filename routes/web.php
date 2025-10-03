@@ -91,7 +91,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Coupons */
     Route::resource('coupons', CouponController::class);
-    Route::post('coupons/data', [CouponController::class, 'getData'])->name('coupons.data');
 
     /* Product Variants */
     Route::resource('product_variants', ProductVariantController::class);
