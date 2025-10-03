@@ -7,8 +7,8 @@ use App\Models\Payment;
 use App\Models\PaymentGateway;
 use App\Models\ShippingAddress;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class PaymentSeeder extends Seeder
 {
@@ -22,9 +22,13 @@ class PaymentSeeder extends Seeder
             ['name' => 'Test User', 'password' => bcrypt('password')]
         );
 
-        $gateway = PaymentGateway::firstOrCreate(
+        $stripeGateway = PaymentGateway::firstOrCreate(
             ['code' => 'stripe'],
-            ['name' => 'Stripe']
+            [
+                'name' => 'Stripe',
+                'description' => 'Stripe payment gateway',
+                'is_active' => true,
+            ]
         );
 
         $order = Order::updateOrCreate(

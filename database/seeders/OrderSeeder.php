@@ -14,7 +14,7 @@ class OrderSeeder extends Seeder
     {
         $productIds = Product::query()->orderBy('id')->limit(2)->pluck('id');
         if ($productIds->count() < 2) {
-            return;  // No products available; skip seeding orders to avoid FK errors
+            return; // No products available; skip seeding orders to avoid FK errors
         }
 
         $orders = [
