@@ -10,31 +10,173 @@
         :description="__('cms.product_reviews.index_description')"
     />
 
-    <x-admin.card>
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div class="max-w-xs">
-                <label for="reviews-status-filter" class="form-label">{{ __('cms.product_reviews.status_filter_label') }}</label>
-                <select id="reviews-status-filter" class="form-select">
-                    <option value="">{{ __('cms.product_reviews.status_filter_all') }}</option>
-                    <option value="approved">{{ __('cms.product_reviews.approved') }}</option>
-                    <option value="pending">{{ __('cms.product_reviews.pending') }}</option>
-                </select>
-            </div>
-        </div>
-
-        <x-admin.table
-            id="reviews-table"
-            :columns="[
-                __('cms.product_reviews.review_id'),
-                __('cms.product_reviews.customer_name'),
-                __('cms.product_reviews.product_name'),
-                __('cms.product_reviews.rating'),
-                __('cms.product_reviews.status'),
-                __('cms.product_reviews.actions'),
-            ]"
-            class="mt-4"
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <x-admin.stat-card
+            icon="fa-solid fa-star"
+            :value="number_format($metrics['average_rating'], 2)"
+            :label="__('cms.product_reviews.average_rating')"
+            metric-key="average-rating"
         />
-    </x-admin.card>
+        <x-admin.stat-card
+            icon="fa-solid fa-comments"
+            :value="$metrics['total']"
+            :label="__('cms.product_reviews.total_reviews')"
+            metric-key="total-reviews"
+        />
+        <x-admin.stat-card
+            icon="fa-solid fa-circle-check"
+            :value="$metrics['approved']"
+            :label="__('cms.product_reviews.approved_reviews')"
+            theme="success"
+            metric-key="approved-reviews"
+        />
+        <x-admin.stat-card
+            icon="fa-solid fa-hourglass-half"
+            :value="$metrics['pending']"
+            :label="__('cms.product_reviews.pending_reviews')"
+            theme="warning"
+            metric-key="pending-reviews"
+        />
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+        <x-admin.card class="lg:col-span-2">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div class="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div>
+                        <label for="reviews-status-filter" class="form-label">{{ __('cms.product_reviews.status_filter_label') }}</label>
+                        <select id="reviews-status-filter" class="form-select">
+                            <option value="">{{ __('cms.product_reviews.status_filter_all') }}</option>
+                            <option value="approved">{{ __('cms.product_reviews.approved') }}</option>
+                            <option value="pending">{{ __('cms.product_reviews.pending') }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reviews-rating-min" class="form-label">{{ __('cms.product_reviews.rating_min_label') }}</label>
+                        <input type="number" min="1" max="5" id="reviews-rating-min" class="form-input" placeholder="1">
+                    </div>
+                    <div>
+                        <label for="reviews-rating-max" class="form-label">{{ __('cms.product_reviews.rating_max_label') }}</label>
+                        <input type="number" min="1" max="5" id="reviews-rating-max" class="form-input" placeholder="5">
+                    </div>
+                    <div>
+                        <label for="reviews-product-name" class="form-label">{{ __('cms.product_reviews.product_filter_label') }}</label>
+                        <input type="text" id="reviews-product-name" class="form-input" placeholder="{{ __('cms.product_reviews.product_filter_placeholder') }}">
+                    </div>
+                    <div>
+                        <label for="reviews-date-from" class="form-label">{{ __('cms.product_reviews.date_from_label') }}</label>
+                        <input type="date" id="reviews-date-from" class="form-input">
+                    </div>
+                    <div>
+                        <label for="reviews-date-to" class="form-label">{{ __('cms.product_reviews.date_to_label') }}</label>
+                        <input type="date" id="reviews-date-to" class="form-input">
+                    </div>
+                    <label class="flex items-center gap-2 self-end text-sm">
+                        <input type="checkbox" id="reviews-has-text" class="form-checkbox">
+                        <span>{{ __('cms.product_reviews.with_comments_only') }}</span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" id="reviews-reset-filters" class="btn btn-outline">{{ __('cms.product_reviews.reset_filters') }}</button>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-primary" data-bulk-action="approve">{{ __('cms.product_reviews.bulk_approve') }}</button>
+                    <button type="button" class="btn btn-outline-primary" data-bulk-action="unapprove">{{ __('cms.product_reviews.bulk_unapprove') }}</button>
+                    <button type="button" class="btn btn-outline-danger" data-bulk-action="delete">{{ __('cms.product_reviews.bulk_delete') }}</button>
+                </div>
+                <div class="max-w-xs">
+                    <label for="reviews-search" class="form-label">{{ __('cms.product_reviews.search_label') }}</label>
+                    <input type="search" id="reviews-search" class="form-input" placeholder="{{ __('cms.product_reviews.search_placeholder') }}">
+                </div>
+            </div>
+
+            <x-admin.table
+                id="reviews-table"
+                :columns="[
+                    __('cms.product_reviews.select'),
+                    __('cms.product_reviews.review_id'),
+                    __('cms.product_reviews.customer_name'),
+                    __('cms.product_reviews.product_name'),
+                    __('cms.product_reviews.rating'),
+                    __('cms.product_reviews.status'),
+                    __('cms.product_reviews.review_excerpt'),
+                    __('cms.product_reviews.submitted_at'),
+                    __('cms.product_reviews.actions'),
+                ]"
+                class="mt-4"
+            />
+        </x-admin.card>
+
+        <div class="grid gap-6">
+            <x-admin.card>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('cms.product_reviews.rating_distribution_title') }}</h3>
+                <ul class="mt-4 space-y-3" id="rating-distribution">
+                    @foreach ($metrics['rating_distribution'] as $rating => $count)
+                        <li class="flex items-center gap-3">
+                            <span class="w-10 text-sm font-medium">{{ $rating }}★</span>
+                            <div class="relative h-2 flex-1 overflow-hidden rounded bg-gray-100">
+                                <div class="absolute inset-y-0 left-0 bg-primary-500" style="width: {{ $metrics['total'] > 0 ? ($count / max($metrics['total'], 1)) * 100 : 0 }}%"></div>
+                            </div>
+                            <span class="w-10 text-right text-sm text-gray-600">{{ $count }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-admin.card>
+
+            <x-admin.card>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('cms.product_reviews.top_products_title') }}</h3>
+                <ul class="mt-4 space-y-3" id="top-reviewed-products">
+                    @forelse ($topProducts as $product)
+                        <li class="rounded border border-gray-100 p-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ $product['product_name'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ __('cms.product_reviews.reviews_count_label', ['count' => $product['reviews_count']]) }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-gray-900">{{ $product['avg_rating'] }} ★</p>
+                                    <p class="text-xs text-gray-500">{{ __('cms.product_reviews.approved_percentage_label', ['percentage' => $product['approved_percentage']]) }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="text-sm text-gray-500">{{ __('cms.product_reviews.no_products_summary') }}</li>
+                    @endforelse
+                </ul>
+            </x-admin.card>
+
+            <x-admin.card>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('cms.product_reviews.recent_reviews_title') }}</h3>
+                <ul class="mt-4 space-y-4" id="recent-reviews">
+                    @forelse ($recentReviews as $recent)
+                        <li>
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">#{{ $recent['id'] }} · {{ $recent['customer'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ $recent['product'] }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-gray-900">{{ $recent['rating'] }} ★</p>
+                                    <p class="text-xs text-gray-500">{{ $recent['created_at_human'] }}</p>
+                                </div>
+                            </div>
+                            @php
+                                $badgeClass = $recent['status'] === 'approved' ? 'badge badge-success' : 'badge badge-warning';
+                            @endphp
+                            <span class="mt-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {{ $badgeClass }}" data-status="{{ $recent['status'] }}">
+                                {{ __('cms.product_reviews.status_badge_' . $recent['status']) }}
+                            </span>
+                        </li>
+                    @empty
+                        <li class="text-sm text-gray-500">{{ __('cms.product_reviews.no_recent_reviews') }}</li>
+                    @endforelse
+                </ul>
+            </x-admin.card>
+        </div>
+    </div>
 
     <div id="deleteReviewDialog" class="fixed inset-0 z-50 hidden bg-gray-900/60 p-4">
         <div class="mx-auto flex h-full max-w-md items-center justify-center">
@@ -77,32 +219,62 @@
                 errorDelete: @json(__('cms.product_reviews.error_delete')),
                 viewLabel: @json(__('cms.product_reviews.view')),
                 editLabel: @json(__('cms.product_reviews.edit')),
+                bulkSuccess: @json(__('cms.product_reviews.bulk_action_success', ['count' => ':count'])),
+                bulkEmpty: @json(__('cms.product_reviews.bulk_action_empty')),
+                bulkError: @json(__('cms.product_reviews.bulk_action_error')),
             };
 
-            const statusTemplates = {
-                approved: `<span class="badge badge-success">{{ __('cms.product_reviews.approved') }}</span>`,
-                pending: `<span class="badge badge-warning">{{ __('cms.product_reviews.pending') }}</span>`,
+            const statusLabels = {
+                approved: @json(__('cms.product_reviews.approved')),
+                pending: @json(__('cms.product_reviews.pending')),
             };
 
             const routes = {
                 show: @json(route('admin.reviews.show', ['review' => '__REVIEW__'])),
                 edit: @json(route('admin.reviews.edit', ['review' => '__REVIEW__'])),
                 destroy: @json(route('admin.reviews.destroy', ['review' => '__REVIEW__'])),
+                metrics: @json(route('admin.reviews.metrics')),
+                bulk: @json(route('admin.reviews.bulk-action')),
             };
 
             const statusFilter = document.getElementById('reviews-status-filter');
+            const ratingMin = document.getElementById('reviews-rating-min');
+            const ratingMax = document.getElementById('reviews-rating-max');
+            const productName = document.getElementById('reviews-product-name');
+            const dateFrom = document.getElementById('reviews-date-from');
+            const dateTo = document.getElementById('reviews-date-to');
+            const hasText = document.getElementById('reviews-has-text');
+            const resetFilters = document.getElementById('reviews-reset-filters');
+            const searchInput = document.getElementById('reviews-search');
+
+            const bulkButtons = document.querySelectorAll('[data-bulk-action]');
 
             const dataTable = $table.DataTable({
                 processing: true,
                 serverSide: true,
+                order: [[7, 'desc']],
                 ajax: {
                     url: "{{ route('admin.reviews.data') }}",
                     type: 'GET',
                     data: function(params) {
                         params.status = statusFilter?.value ?? '';
+                        params.rating_min = ratingMin?.value ?? '';
+                        params.rating_max = ratingMax?.value ?? '';
+                        params.product_name = productName?.value ?? '';
+                        params.date_from = dateFrom?.value ?? '';
+                        params.date_to = dateTo?.value ?? '';
+                        params.has_review = hasText?.checked ? 1 : '';
                     },
                 },
                 columns: [
+                    {
+                        data: 'id',
+                        orderable: false,
+                        searchable: false,
+                        render: function(id) {
+                            return `<input type="checkbox" class="form-checkbox" data-review-checkbox value="${id}">`;
+                        },
+                    },
                     { data: 'id', name: 'id' },
                     { data: 'customer_name', name: 'customer_name' },
                     { data: 'product_name', name: 'product_name' },
@@ -111,9 +283,18 @@
                         data: 'status',
                         name: 'status',
                         render: function(data) {
-                            return statusTemplates[data] ?? data;
+                            const badgeClass = data === 'approved' ? 'badge badge-success' : 'badge badge-warning';
+
+                            return `<span class="${badgeClass}">${statusLabels[data] ?? data}</span>`;
                         },
                     },
+                    {
+                        data: 'review_excerpt',
+                        name: 'review',
+                        orderable: false,
+                        searchable: false,
+                    },
+                    { data: 'created_at', name: 'created_at' },
                     {
                         data: 'id',
                         orderable: false,
@@ -141,6 +322,72 @@
 
             statusFilter?.addEventListener('change', () => {
                 dataTable.ajax.reload();
+            });
+
+            [ratingMin, ratingMax, productName, dateFrom, dateTo].forEach((element) => {
+                element?.addEventListener('change', () => dataTable.ajax.reload());
+            });
+
+            hasText?.addEventListener('change', () => dataTable.ajax.reload());
+
+            resetFilters?.addEventListener('click', () => {
+                statusFilter.value = '';
+                ratingMin.value = '';
+                ratingMax.value = '';
+                productName.value = '';
+                dateFrom.value = '';
+                dateTo.value = '';
+                if (hasText) {
+                    hasText.checked = false;
+                }
+
+                dataTable.search('').draw();
+                dataTable.ajax.reload();
+            });
+
+            searchInput?.addEventListener('input', (event) => {
+                dataTable.search(event.target.value).draw();
+            });
+
+            bulkButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const action = button.getAttribute('data-bulk-action');
+                    const selected = Array.from(document.querySelectorAll('[data-review-checkbox]:checked'))
+                        .map((checkbox) => checkbox.value);
+
+                    if (! selected.length) {
+                        toastr.info(translations.bulkEmpty, translations.errorTitle);
+
+                        return;
+                    }
+
+                    button.disabled = true;
+
+                    $.ajax({
+                        url: routes.bulk,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            action,
+                            review_ids: selected,
+                        },
+                        success: (response) => {
+                            if (response.success) {
+                                dataTable.ajax.reload(null, false);
+                                updateMetrics();
+                                toastr.success(translations.bulkSuccess.replace(':count', response.updated), translations.successTitle);
+                            } else {
+                                toastr.error(translations.bulkError, translations.errorTitle);
+                            }
+                        },
+                        error: () => {
+                            toastr.error(translations.bulkError, translations.errorTitle);
+                        },
+                        complete: () => {
+                            button.disabled = false;
+                        },
+                    });
+                });
             });
 
             const dialog = document.getElementById('deleteReviewDialog');
@@ -177,6 +424,7 @@
                     success: (response) => {
                         if (response.success) {
                             dataTable.ajax.reload(null, false);
+                            updateMetrics();
                             toastr.success(response.message ?? translations.successDelete, translations.successTitle);
                             closeDialog();
                         } else {
@@ -209,6 +457,137 @@
                 dialog.classList.add('hidden');
                 dialog.classList.remove('flex');
                 reviewToDeleteId = null;
+            }
+
+            function updateMetrics() {
+                fetch(routes.metrics, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                    .then((response) => response.json())
+                    .then((payload) => {
+                        if (! payload.metrics) {
+                            return;
+                        }
+
+                        updateStatCards(payload.metrics);
+                        refreshDistribution(payload.metrics);
+                        refreshTopProducts(payload.top_products ?? []);
+                        refreshRecentReviews(payload.recent_reviews ?? []);
+                    })
+                    .catch(() => {});
+            }
+
+            function updateStatCards(metrics) {
+                const average = document.querySelector('[data-metric="average-rating"]');
+                const total = document.querySelector('[data-metric="total-reviews"]');
+                const approved = document.querySelector('[data-metric="approved-reviews"]');
+                const pending = document.querySelector('[data-metric="pending-reviews"]');
+
+                if (average) average.textContent = Number(metrics.average_rating ?? 0).toFixed(2);
+                if (total) total.textContent = metrics.total ?? '0';
+                if (approved) approved.textContent = metrics.approved ?? '0';
+                if (pending) pending.textContent = metrics.pending ?? '0';
+            }
+
+            function refreshDistribution(metrics) {
+                const container = document.getElementById('rating-distribution');
+
+                if (! container) {
+                    return;
+                }
+
+                container.querySelectorAll('li').forEach((item, index) => {
+                    const rating = index + 1;
+                    const total = metrics.rating_distribution?.[rating] ?? 0;
+                    const width = metrics.total ? (total / metrics.total) * 100 : 0;
+                    const bar = item.querySelector('.bg-primary-500');
+                    const count = item.querySelector('span:last-child');
+
+                    if (bar) {
+                        bar.style.width = `${width}%`;
+                    }
+
+                    if (count) {
+                        count.textContent = total;
+                    }
+                });
+            }
+
+            function refreshTopProducts(products) {
+                const container = document.getElementById('top-reviewed-products');
+
+                if (! container) {
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                if (! products.length) {
+                    container.innerHTML = `<li class="text-sm text-gray-500">{{ __('cms.product_reviews.no_products_summary') }}</li>`;
+
+                    return;
+                }
+
+                products.forEach((product) => {
+                    const element = document.createElement('li');
+                    element.className = 'rounded border border-gray-100 p-3';
+                    element.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">${product.product_name}</p>
+                                <p class="text-xs text-gray-500">{{ __('cms.product_reviews.reviews_count_label', ['count' => ':count']) }}
+                                    `.replace(':count', product.reviews_count ?? 0) + `</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-900">${product.avg_rating} ★</p>
+                                <p class="text-xs text-gray-500">{{ __('cms.product_reviews.approved_percentage_label', ['percentage' => ':percentage']) }}
+                                    `.replace(':percentage', product.approved_percentage ?? 0) + `</p>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(element);
+                });
+            }
+
+            function refreshRecentReviews(reviews) {
+                const container = document.getElementById('recent-reviews');
+
+                if (! container) {
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                if (! reviews.length) {
+                    container.innerHTML = `<li class="text-sm text-gray-500">{{ __('cms.product_reviews.no_recent_reviews') }}</li>`;
+
+                    return;
+                }
+
+                reviews.forEach((review) => {
+                    const element = document.createElement('li');
+                    const badgeClass = review.status === 'approved' ? 'badge badge-success' : 'badge badge-warning';
+                    const statusLabel = statusLabels[review.status] ?? review.status;
+
+                    element.innerHTML = `
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">#${review.id} · ${review.customer}</p>
+                                <p class="text-xs text-gray-500">${review.product}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-900">${review.rating} ★</p>
+                                <p class="text-xs text-gray-500">${review.created_at_human ?? ''}</p>
+                            </div>
+                        </div>
+                        <span class="mt-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${badgeClass}" data-status="${review.status}">
+                            ${statusLabel}
+                        </span>
+                    `;
+                    container.appendChild(element);
+                });
             }
         });
     </script>

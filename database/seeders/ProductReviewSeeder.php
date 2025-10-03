@@ -24,9 +24,11 @@ class ProductReviewSeeder extends Seeder
             return;
         }
 
+        $faker = fake();
+
         foreach ($products as $product) {
             $existingCount = ProductReview::where('product_id', $product->id)->count();
-            $targetCount = 3;
+            $targetCount = max(5, $existingCount);
 
             if ($existingCount >= $targetCount) {
                 continue;
@@ -37,7 +39,7 @@ class ProductReviewSeeder extends Seeder
 
             ProductReview::factory()
                 ->count($missing)
-                ->state(function () use ($product, $customerIds, &$assignedCustomerIds) {
+                ->state(function () use ($product, $customerIds, &$assignedCustomerIds, $faker) {
                     $available = collect($customerIds)->diff($assignedCustomerIds);
 
                     if ($available->isEmpty()) {
@@ -50,6 +52,11 @@ class ProductReviewSeeder extends Seeder
                     return [
                         'product_id' => $product->id,
                         'customer_id' => $customerId,
+                        'is_approved' => $faker->boolean(70),
+                        'rating' => $faker->numberBetween(1, 5),
+                        'review' => $faker->boolean(80) ? $faker->sentences(asText: true) : null,
+                        'created_at' => now()->subDays($faker->numberBetween(0, 90)),
+                        'updated_at' => now(),
                     ];
                 })
                 ->create();
