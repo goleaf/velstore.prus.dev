@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attribute;
+use App\Models\AttributeValue;
+use App\Models\AttributeValueTranslation;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -12,54 +15,68 @@ class AttributeSeeder extends Seeder
      */
     public function run(): void
     {
-        $sizeAttributeId = DB::table('attributes')->insertGetId([
-            'name' => 'Size',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::transaction(function () {
+            $sizeAttribute = Attribute::firstOrCreate(
+                ['name' => 'Size'],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
 
-        $sizes = ['Small', 'Medium', 'Large'];
-        foreach ($sizes as $size) {
-            $valueId = DB::table('attribute_values')->insertGetId([
-                'attribute_id' => $sizeAttributeId,
-                'value' => $size,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $sizes = ['Small', 'Medium', 'Large'];
 
-            // Add a default translation (English)
-            DB::table('attribute_value_translations')->insert([
-                'attribute_value_id' => $valueId,
-                'language_code' => 'en',
-                'translated_value' => $size,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+            foreach ($sizes as $size) {
+                $value = AttributeValue::firstOrCreate(
+                    [
+                        'attribute_id' => $sizeAttribute->id,
+                        'value' => $size,
+                    ],
+                    [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
 
-        // Insert 'Color' attribute
-        $colorAttributeId = DB::table('attributes')->insertGetId([
-            'name' => 'Color',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+                AttributeValueTranslation::updateOrCreate(
+                    [
+                        'attribute_value_id' => $value->id,
+                        'language_code' => 'en',
+                    ],
+                    [
+                        'translated_value' => $size,
+                        'updated_at' => now(),
+                    ]
+                );
+            }
 
-        $colors = ['Red', 'Green', 'Blue', 'Black', 'White', 'Yellow'];
-        foreach ($colors as $color) {
-            $valueId = DB::table('attribute_values')->insertGetId([
-                'attribute_id' => $colorAttributeId,
-                'value' => $color,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $colorAttribute = Attribute::firstOrCreate(
+                ['name' => 'Color'],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
 
-            DB::table('attribute_value_translations')->insert([
-                'attribute_value_id' => $valueId,
-                'language_code' => 'en',
-                'translated_value' => $color,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+            $colors = ['Red', 'Green', 'Blue', 'Black', 'White', 'Yellow'];
+
+            foreach ($colors as $color) {
+                $value = AttributeValue::firstOrCreate(
+                    [
+                        'attribute_id' => $colorAttribute->id,
+                        'value' => $color,
+                    ],
+                    [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+
+                AttributeValueTranslation::updateOrCreate(
+                    [
+                        'attribute_value_id' => $value->id,
+                        'language_code' => 'en',
+                    ],
+                    [
+                        'translated_value' => $color,
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+        });
     }
 }

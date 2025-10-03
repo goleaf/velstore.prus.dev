@@ -4,7 +4,9 @@ namespace App\Services\Admin;
 
 use App\Models\Brand;
 use App\Repositories\Admin\Brand\BrandRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -22,9 +24,61 @@ class BrandService
         return $this->brandRepository->getAll();
     }
 
-    public function getBrandsForDataTable()
+    public function paginateWithFilters(array $filters, int $perPage = 12): LengthAwarePaginator
     {
-        return Brand::with('translations')->select('brands.*');
+        $locale = app()->getLocale();
+        $fallback = config('app.fallback_locale');
+
+        $translationLocales = collect([$locale, $fallback])
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $query = Brand::query()
+            ->select('brands.*')
+            ->with([
+                'translations' => fn ($relation) => $relation->whereIn('locale', $translationLocales),
+            ])
+            ->withCount([
+                'products',
+                'translations as translations_count',
+            ]);
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function (Builder $builder) use ($search) {
+                $builder
+                    ->where('slug', 'like', "%{$search}%")
+                    ->orWhereHas('translations', function (Builder $translationQuery) use ($search) {
+                        $translationQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $this->applySort($query, $filters['sort'] ?? 'latest', $locale, $fallback);
+
+        $perPage = (int) ($filters['per_page'] ?? $perPage);
+
+        if ($perPage < 1) {
+            $perPage = 12;
+        }
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function stats(): array
+    {
+        return [
+            'total' => Brand::count(),
+            'active' => Brand::where('status', 'active')->count(),
+            'inactive' => Brand::where('status', 'inactive')->count(),
+            'discontinued' => Brand::where('status', 'discontinued')->count(),
+        ];
     }
 
     public function store(array $data)
@@ -88,6 +142,47 @@ class BrandService
         $brand->translations()->delete();
 
         return $brand->delete();
+    }
+
+    protected function applySort(Builder $query, string $sort, string $locale, ?string $fallback): void
+    {
+        if (in_array($sort, ['name_asc', 'name_desc'], true)) {
+            $direction = $sort === 'name_asc' ? 'asc' : 'desc';
+
+            $query->leftJoin('brand_translations as primary_translation', function ($join) use ($locale) {
+                $join->on('brands.id', '=', 'primary_translation.brand_id')
+                    ->where('primary_translation.locale', '=', $locale);
+            });
+
+            $orderExpression = 'COALESCE(primary_translation.name, brands.slug)';
+
+            if ($fallback && $fallback !== $locale) {
+                $query->leftJoin('brand_translations as fallback_translation', function ($join) use ($fallback) {
+                    $join->on('brands.id', '=', 'fallback_translation.brand_id')
+                        ->where('fallback_translation.locale', '=', $fallback);
+                });
+
+                $orderExpression = 'COALESCE(primary_translation.name, fallback_translation.name, brands.slug)';
+            }
+
+            $query->orderByRaw($orderExpression.' '.$direction);
+
+            return;
+        }
+
+        if ($sort === 'oldest') {
+            $query->orderBy('brands.created_at', 'asc');
+
+            return;
+        }
+
+        if ($sort === 'products_desc') {
+            $query->orderBy('products_count', 'desc');
+
+            return;
+        }
+
+        $query->orderBy('brands.created_at', 'desc');
     }
 
     public function getBrandById(int $id)

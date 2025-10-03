@@ -10,7 +10,6 @@ use App\Models\Brand;
 use App\Models\Language;
 use App\Services\Admin\BrandService;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 
 class BrandController extends Controller
 {
@@ -21,25 +20,48 @@ class BrandController extends Controller
         $this->brandService = $brandService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.brands.index');
-    }
+        $statusLabels = [
+            'active' => __('cms.brands.status_active'),
+            'inactive' => __('cms.brands.status_inactive'),
+            'discontinued' => __('cms.brands.status_discontinued'),
+        ];
 
-    public function getData(Request $request)
-    {
-        $brands = $this->brandService->getBrandsForDataTable();
+        $sortOptions = [
+            'latest' => __('cms.brands.sort_latest'),
+            'oldest' => __('cms.brands.sort_oldest'),
+            'name_asc' => __('cms.brands.sort_name_asc'),
+            'name_desc' => __('cms.brands.sort_name_desc'),
+            'products_desc' => __('cms.brands.sort_products_desc'),
+        ];
 
-        return DataTables::of($brands)
-            ->addColumn('name', fn (Brand $brand) => $this->resolveLocalizedName($brand))
-            ->editColumn('status', fn (Brand $brand) => $brand->status)
-            ->addColumn('action', fn () => '')
-            ->filterColumn('name', function ($query, $keyword) {
-                $query->whereHas('translations', function ($relation) use ($keyword) {
-                    $relation->where('name', 'like', "%{$keyword}%");
-                });
-            })
-            ->toJson();
+        $filters = [
+            'search' => trim((string) $request->query('search', '')),
+            'status' => $request->filled('status') ? (string) $request->query('status') : '',
+            'sort' => (string) $request->query('sort', 'latest'),
+        ];
+
+        if (! array_key_exists($filters['status'], $statusLabels) && $filters['status'] !== '') {
+            $filters['status'] = '';
+        }
+
+        if (! array_key_exists($filters['sort'], $sortOptions)) {
+            $filters['sort'] = 'latest';
+        }
+
+        $brands = $this->brandService->paginateWithFilters($filters);
+
+        return view('admin.brands.index', [
+            'brands' => $brands,
+            'stats' => $this->brandService->stats(),
+            'filters' => $filters,
+            'statusFilters' => array_merge([
+                '' => __('cms.brands.status_filter_all'),
+            ], $statusLabels),
+            'statusLabels' => $statusLabels,
+            'sortOptions' => $sortOptions,
+        ]);
     }
 
     public function create()
@@ -84,21 +106,27 @@ class BrandController extends Controller
         return redirect()->route('admin.brands.index')->with('success', __('cms.brands.updated'));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $result = $this->brandService->deleteBrand($id);
 
-        if ($result) {
-            return response()->json([
-                'success' => true,
-                'message' => __('cms.brands.deleted'),
-            ]);
-        } else {
+        if ($request->expectsJson()) {
+            if ($result) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('cms.brands.deleted'),
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting brand.',
+                'message' => __('cms.brands.error_delete'),
             ]);
         }
+
+        return redirect()
+            ->route('admin.brands.index')
+            ->with($result ? 'success' : 'error', $result ? __('cms.brands.deleted') : __('cms.brands.error_delete'));
     }
 
     public function updateStatus(BrandStatusUpdateRequest $request)
@@ -107,11 +135,17 @@ class BrandController extends Controller
         $brand->status = $request->input('status');
         $brand->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => __('cms.brands.status_updated'),
-            'status' => $brand->status,
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('cms.brands.status_updated'),
+                'status' => $brand->status,
+            ]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', __('cms.brands.status_updated'));
     }
 
     protected function resolveLocalizedName(Brand $brand): string
