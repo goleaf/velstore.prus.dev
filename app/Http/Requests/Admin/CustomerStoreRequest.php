@@ -21,6 +21,8 @@ class CustomerStoreRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
+            'shop_ids' => ['nullable', 'array'],
+            'shop_ids.*' => ['integer', Rule::exists('shops', 'id')],
         ];
     }
 

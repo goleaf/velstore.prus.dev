@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Customer;
+use App\Models\Shop;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -53,7 +54,31 @@ class CustomerSeeder extends Seeder
             );
         }
 
-        Customer::factory()->count(12)->create();
-        Customer::factory()->inactive()->count(4)->create();
+        $customersCollection = Customer::factory()->count(12)->create();
+        $inactiveCustomers = Customer::factory()->inactive()->count(4)->create();
+
+        $allCustomers = Customer::whereIn('email', collect($customers)->pluck('email'))
+            ->get()
+            ->merge($customersCollection)
+            ->merge($inactiveCustomers);
+
+        $shopIds = Shop::pluck('id');
+
+        if ($shopIds->isNotEmpty()) {
+            $allCustomers->each(function (Customer $customer) use ($shopIds): void {
+                if ($customer->shops()->exists()) {
+                    return;
+                }
+
+                $count = min(3, $shopIds->count());
+                $selected = $shopIds->random($count === 1 ? 1 : random_int(1, $count));
+                $customer->shops()->sync(
+                    collect($selected)
+                        ->unique()
+                        ->values()
+                        ->all()
+                );
+            });
+        }
     }
 }

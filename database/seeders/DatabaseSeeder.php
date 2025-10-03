@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ProductVariantLocaleSeeder::class,
             CurrencySeeder::class,
             VendorSeeder::class,
+            ShopSeeder::class,
             ProductSeeder::class,
             ProductReviewSeeder::class,
             CouponSeeder::class,
@@ -28,6 +29,7 @@ class DatabaseSeeder extends Seeder
             RefundSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
+            CustomerShopSeeder::class,
             ProductVariantDemoSeeder::class,
         ]);
     }

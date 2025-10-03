@@ -15,6 +15,12 @@
                 @csrf
                 @method('PUT')
 
+                @php
+                    $selectedShopIds = collect(old('shop_ids', $customer->shops->pluck('id')->all()))
+                        ->map(fn ($id) => (int) $id)
+                        ->all();
+                @endphp
+
                 <div class="col-md-6">
                     <label for="name" class="form-label">{{ __('cms.customers.name') }}</label>
                     <input type="text" name="name" id="name"
@@ -76,6 +82,42 @@
                     </select>
                     @error('status')
                         <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-12">
+                    <p class="form-label mb-2">{{ __('cms.customers.form_section_shops') }}</p>
+                    <div class="row g-2">
+                        @forelse ($shops as $shop)
+                            <div class="col-md-4">
+                                <div class="form-check border rounded p-3 h-100">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        name="shop_ids[]"
+                                        value="{{ $shop->id }}"
+                                        id="shop-{{ $shop->id }}"
+                                        {{ in_array($shop->id, $selectedShopIds, true) ? 'checked' : '' }}
+                                    >
+                                    <label class="form-check-label ms-2" for="shop-{{ $shop->id }}">
+                                        <span class="d-block fw-semibold">{{ $shop->name }}</span>
+                                        <span class="badge {{ $shop->status === 'active' ? 'bg-success' : 'bg-secondary' }} mt-2">
+                                            {{ $shop->status === 'active' ? __('cms.customers.shop_status_active') : __('cms.customers.shop_status_inactive') }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">{{ __('cms.customers.no_shops_available') }}</div>
+                            </div>
+                        @endforelse
+                    </div>
+                    @error('shop_ids')
+                        <div class="text-danger small mt-2">{{ $message }}</div>
+                    @enderror
+                    @error('shop_ids.*')
+                        <div class="text-danger small mt-2">{{ $message }}</div>
                     @enderror
                 </div>
 

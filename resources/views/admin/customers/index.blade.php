@@ -19,7 +19,7 @@
 
     <x-admin.card class="mt-6">
         <div class="grid gap-6">
-            <form method="GET" action="{{ route('admin.customers.index') }}" class="grid gap-4 lg:grid-cols-[2fr,1fr,auto]">
+            <form method="GET" action="{{ route('admin.customers.index') }}" class="grid gap-4 lg:grid-cols-[2fr,1fr,1fr,auto]">
                 <div>
                     <label for="search" class="form-label">{{ __('cms.customers.search_label') }}</label>
                     <input
@@ -38,6 +38,18 @@
                         @foreach ($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>
                                 {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="shop_id" class="form-label">{{ __('cms.customers.filter_shop_label') }}</label>
+                    <select id="shop_id" name="shop_id" class="form-select">
+                        <option value="0">{{ __('cms.customers.filter_shop_all') }}</option>
+                        @foreach ($shops as $shop)
+                            <option value="{{ $shop->id }}" @selected($filters['shop_id'] === $shop->id)>
+                                {{ $shop->name }}
                             </option>
                         @endforeach
                     </select>
@@ -73,13 +85,14 @@
 
             <x-admin.table
                 data-customers-table
-                data-column-count="6"
+                data-column-count="7"
                 data-empty-message="{{ __('cms.customers.empty_state_message') }}"
                 :columns="[
                     __('cms.customers.id'),
                     __('cms.customers.name'),
                     __('cms.customers.email'),
                     __('cms.customers.phone'),
+                    __('cms.customers.shops_column'),
                     __('cms.customers.status'),
                     __('cms.customers.actions'),
                 ]"
@@ -100,6 +113,25 @@
                         </td>
                         <td class="table-cell">
                             {{ $customer->phone ?: __('cms.customers.not_available') }}
+                        </td>
+                        <td class="table-cell">
+                            @php
+                                $shopNames = $customer->shops->pluck('name');
+                            @endphp
+                            @if ($shopNames->isEmpty())
+                                <span class="text-sm text-gray-500">{{ __('cms.customers.no_shops_assigned') }}</span>
+                            @else
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach ($shopNames->take(3) as $name)
+                                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+                                            {{ $name }}
+                                        </span>
+                                    @endforeach
+                                    @if ($shopNames->count() > 3)
+                                        <span class="text-xs text-gray-500">{{ trans_choice('cms.customers.additional_shops_count', $shopNames->count() - 3, ['count' => $shopNames->count() - 3]) }}</span>
+                                    @endif
+                                </div>
+                            @endif
                         </td>
                         <td class="table-cell">
                             @php
@@ -129,7 +161,7 @@
                     </tr>
                 @empty
                     <tr data-customers-empty-row>
-                        <td colspan="6" class="table-cell py-6 text-center text-sm text-gray-500">
+                        <td colspan="7" class="table-cell py-6 text-center text-sm text-gray-500">
                             {{ __('cms.customers.empty_state_message') }}
                         </td>
                     </tr>

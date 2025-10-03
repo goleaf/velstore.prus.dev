@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -31,6 +32,11 @@ class Customer extends Authenticatable
     protected $appends = [
         'primary_address_line',
     ];
+
+    public function shops(): BelongsToMany
+    {
+        return $this->belongsToMany(Shop::class)->withTimestamps();
+    }
 
     public function wishlists()
     {

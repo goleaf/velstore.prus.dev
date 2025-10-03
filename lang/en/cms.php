@@ -411,7 +411,7 @@ return [
 
         // Create form
         'create_title' => 'Create Customer',
-        'create_description' => 'Add a new customer by providing their basic information.',
+        'create_description' => 'Add a new customer, assign them to the right shops, and define their onboarding details.',
         'create_button' => 'Create Customer',
         'create_button_short' => 'New Customer',
         'password' => 'Password',
@@ -419,6 +419,12 @@ return [
         'form_section_profile_hint' => 'Basic information used to identify the customer across the platform.',
         'form_section_account' => 'Account settings',
         'form_section_account_hint' => 'Credentials and status that control access to the storefront.',
+        'form_section_shops' => 'Shop access',
+        'form_section_shops_hint' => 'Choose which shops this customer belongs to for product availability and promotions.',
+        'shop_assignment_hint' => 'Grants this customer visibility over the selected shop’s catalog and campaigns.',
+        'shop_status_active' => 'Active shop',
+        'shop_status_inactive' => 'Inactive shop',
+        'no_shops_available' => 'No shops available yet. Create a shop to assign customers.',
         'address_placeholder' => 'Street, city, postal code, country…',
 
         // Table columns
@@ -427,6 +433,7 @@ return [
         'email' => 'Email',
         'phone' => 'Phone',
         'address' => 'Address',
+        'shops_column' => 'Shops',
         'status' => 'Status',
         'actions' => 'Actions',
 
@@ -435,6 +442,8 @@ return [
         'search_placeholder' => 'Search by name, email, or phone',
         'filter_status_label' => 'Status',
         'filter_status_all' => 'All statuses',
+        'filter_shop_label' => 'Shop',
+        'filter_shop_all' => 'All shops',
         'apply_filters' => 'Apply filters',
         'reset_filters' => 'Reset',
 
@@ -471,6 +480,9 @@ return [
         'back_to_list' => 'Back to Customers',
         'details_title' => 'Customer Details',
         'not_available' => 'Not available',
+        'shop_affiliations' => 'Shop affiliations',
+        'no_shops_assigned' => 'No shops assigned yet.',
+        'additional_shops_count' => '{1} +:count more shop|[2,*] +:count more shops',
         'orders_count' => 'Orders',
         'total_spent' => 'Total Spent',
         'wishlist_count' => 'Wishlist Items',

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CustomerStoreRequest;
 use App\Http\Requests\Admin\CustomerUpdateRequest;
 use App\Models\Customer;
+use App\Models\Shop;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,8 +25,13 @@ class CustomerController extends Controller
             'inactive' => __('cms.customers.inactive'),
         ];
 
+        $shops = Shop::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+
         return view('admin.customers.create', [
             'statusOptions' => $statusOptions,
+            'shops' => $shops,
         ]);
     }
 
@@ -34,14 +40,21 @@ class CustomerController extends Controller
      */
     public function store(CustomerStoreRequest $request)
     {
-        Customer::create([
-            'name' => $request->string('name'),
-            'email' => $request->string('email'),
-            'password' => Hash::make($request->input('password')),
-            'phone' => $request->input('phone'),
-            'address' => $request->input('address'),
-            'status' => $request->string('status'),
+        $data = $request->validated();
+        $shopIds = $this->sanitizeShopIds($data['shop_ids'] ?? []);
+
+        $customer = Customer::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
+            'status' => $data['status'],
         ]);
+
+        if (! empty($shopIds)) {
+            $customer->shops()->sync($shopIds);
+        }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
     }
@@ -64,13 +77,19 @@ class CustomerController extends Controller
             $status = '';
         }
 
+        $shops = Shop::query()->orderBy('name')->get(['id', 'name']);
+
+        $shopId = (int) $request->query('shop_id', 0);
+        $shopId = $shops->firstWhere('id', $shopId)?->id ?? 0;
+
         $filters = [
             'search' => $search,
             'status' => $status,
+            'shop_id' => $shopId,
         ];
 
         $query = Customer::query()
-            ->with('defaultAddress')
+            ->with(['defaultAddress', 'shops'])
             ->when($filters['search'] !== '', function (Builder $builder) use ($filters): void {
                 $builder->where(function (Builder $nested) use ($filters): void {
                     $term = '%' . $filters['search'] . '%';
@@ -82,6 +101,11 @@ class CustomerController extends Controller
             })
             ->when(in_array($filters['status'], ['active', 'inactive'], true), function (Builder $builder) use ($filters): void {
                 $builder->where('status', $filters['status']);
+            })
+            ->when($filters['shop_id'] > 0, function (Builder $builder) use ($filters): void {
+                $builder->whereHas('shops', function (Builder $relation) use ($filters): void {
+                    $relation->where('shops.id', $filters['shop_id']);
+                });
             })
             ->latest();
 
@@ -100,6 +124,7 @@ class CustomerController extends Controller
                 'active' => (int) ($statusCounts['active'] ?? 0),
                 'inactive' => (int) ($statusCounts['inactive'] ?? 0),
             ],
+            'shops' => $shops,
         ]);
     }
 
@@ -155,7 +180,16 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        return view('admin.customers.edit', compact('customer'));
+        $shops = Shop::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+
+        $customer->load('shops');
+
+        return view('admin.customers.edit', [
+            'customer' => $customer,
+            'shops' => $shops,
+        ]);
     }
 
     /**
@@ -180,6 +214,7 @@ class CustomerController extends Controller
             },
             'addresses',
             'defaultAddress',
+            'shops',
         ]);
 
         return view('admin.customers.show', compact('customer'));
@@ -191,12 +226,19 @@ class CustomerController extends Controller
     public function update(CustomerUpdateRequest $request, Customer $customer)
     {
         $data = $request->only(['name', 'email', 'phone', 'address', 'status']);
+        $shopIds = $this->sanitizeShopIds($request->input('shop_ids', []));
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->input('password'));
         }
 
         $customer->update($data);
+
+        if (! empty($shopIds)) {
+            $customer->shops()->sync($shopIds);
+        } else {
+            $customer->shops()->detach();
+        }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer updated successfully.');
     }
@@ -213,5 +255,28 @@ class CustomerController extends Controller
             'success' => true,
             'message' => __('cms.customers.delete_success_message'),
         ]);
+}
+
+    private function sanitizeShopIds($shopIds): array
+    {
+        $shopIds = collect($shopIds)
+            ->flatten()
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($shopIds->isEmpty()) {
+            return [];
+        }
+
+        return Shop::query()
+            ->whereIn('id', $shopIds->all())
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

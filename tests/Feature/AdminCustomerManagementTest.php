@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,11 +23,13 @@ class AdminCustomerManagementTest extends TestCase
     public function test_admin_can_view_customer_index_with_filters(): void
     {
         $admin = User::factory()->create();
+        $shop = Shop::factory()->create();
         $matchingCustomer = Customer::factory()->create([
             'name' => 'Alice Active',
             'email' => 'alice@example.com',
             'status' => 'active',
         ]);
+        $matchingCustomer->shops()->sync([$shop->id]);
         Customer::factory()->inactive()->create([
             'name' => 'Ivan Idle',
             'email' => 'ivan@example.com',
@@ -37,6 +40,7 @@ class AdminCustomerManagementTest extends TestCase
         $response = $this->get(route('admin.customers.index', [
             'search' => 'Alice',
             'status' => 'active',
+            'shop_id' => $shop->id,
         ]));
 
         $response->assertOk();
@@ -45,6 +49,7 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertDontSee('Ivan Idle');
         $response->assertSeeText(__('cms.customers.metric_active'));
         $response->assertSeeText((string) $matchingCustomer->id);
+        $response->assertSee($shop->name);
     }
 
     public function test_admin_can_view_create_form(): void
@@ -58,12 +63,15 @@ class AdminCustomerManagementTest extends TestCase
         $response->assertViewIs('admin.customers.create');
         $response->assertSeeText(__('cms.customers.create_title'));
         $response->assertSeeText(__('cms.customers.form_section_profile'));
+        $response->assertSeeText(__('cms.customers.form_section_shops'));
     }
 
     public function test_admin_can_create_customer(): void
     {
         $admin = User::factory()->create();
         $this->actingAs($admin);
+
+        $shop = Shop::factory()->create();
 
         $payload = [
             'name' => 'Test Customer',
@@ -72,6 +80,7 @@ class AdminCustomerManagementTest extends TestCase
             'phone' => '+1 555 0200',
             'address' => '100 Demo Street, Test City',
             'status' => 'active',
+            'shop_ids' => [$shop->id],
         ];
 
         $response = $this->post(route('admin.customers.store'), $payload);
@@ -80,6 +89,14 @@ class AdminCustomerManagementTest extends TestCase
         $this->assertDatabaseHas('customers', [
             'email' => 'test.customer@example.com',
             'status' => 'active',
+        ]);
+
+        $createdCustomer = Customer::where('email', 'test.customer@example.com')->first();
+        $this->assertNotNull($createdCustomer);
+
+        $this->assertDatabaseHas('customer_shop', [
+            'customer_id' => $createdCustomer->id,
+            'shop_id' => $shop->id,
         ]);
     }
 

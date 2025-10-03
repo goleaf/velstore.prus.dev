@@ -270,6 +270,18 @@ class DemoDataSeeder extends Seeder
                 ]);
             }
 
+            if ($shops->isNotEmpty()) {
+                $customers->each(function (Customer $customer) use ($shops): void {
+                    $assignable = min(3, $shops->count());
+                    $selectedShopIds = $shops
+                        ->random(random_int(1, $assignable))
+                        ->pluck('id')
+                        ->all();
+
+                    $customer->shops()->sync($selectedShopIds);
+                });
+            }
+
             $products = collect();
             foreach (range(1, 20) as $_) {
                 $category = $allCategories->random();
