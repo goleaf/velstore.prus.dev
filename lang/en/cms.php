@@ -247,6 +247,28 @@ return [
         'completed' => 'Completed',
         'pending' => 'Pending',
         'failed' => 'Failed',
+        'status_labels' => [
+            'requested' => 'Requested',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'failed' => 'Failed',
+        ],
+
+        // Filters
+        'filters_title' => 'Filter refunds',
+        'status_filter_label' => 'Status',
+        'status_filter_help' => 'Select one or more statuses to narrow this list.',
+        'date_from_label' => 'From date',
+        'date_to_label' => 'To date',
+        'apply_filters' => 'Apply filters',
+        'reset_filters' => 'Reset filters',
+
+        // Summary Cards
+        'summary_total_count' => 'Total refunds',
+        'summary_completed_count' => 'Completed refunds',
+        'summary_total_amount' => 'Total refunded',
 
         // Delete Modal
         'delete_confirm' => 'Confirm Delete',
@@ -312,34 +334,74 @@ return [
     'pages' => [
         // General
         'title' => 'Pages',
-        'choose_file' => 'Choose File',
+        'index_description' => 'Manage the static content that powers your storefront.',
+        'create_button' => 'New page',
+        'choose_file' => 'Choose file',
 
-        // Create Page
-        'create' => 'Create Page',
-        'form_title' => 'Title (:code)',
-        'form_content' => 'Content (:code)',
-        'form_image' => 'Image (:code)',
-        'form_save' => 'Save',
+        // Dashboard stats
+        'stat_total' => 'Total pages',
+        'stat_active' => 'Published',
+        'stat_inactive' => 'Drafts',
+        'stat_last_updated' => 'Last updated',
+        'stat_last_updated_never' => 'Not available yet',
 
-        // Edit Page
-        'edit' => 'Edit Page',
-        'form_update' => 'Update',
-
-        // Pages Table
+        // Table
+        'table_heading' => 'All pages',
+        'table_description' => 'Review translations, visibility, and update history for each page.',
         'table_title' => 'Title',
         'table_slug' => 'Slug',
-        'table_status' => 'Status',
+        'table_languages' => 'Languages',
+        'table_status' => 'Visibility',
+        'table_last_updated' => 'Last updated',
         'table_actions' => 'Actions',
 
+        // Create Page
+        'create' => 'Create page',
+        'create_description' => 'Build a localized page for your customers and control how it appears in the storefront.',
+        'back_to_index' => 'Back to pages',
+        'validation_error_title' => 'Please review the highlighted fields.',
+        'form_section_overview' => 'Page settings',
+        'form_section_overview_help' => 'Configure visibility and metadata before adding translations.',
+        'form_status_label' => 'Publish page',
+        'form_status_help_active' => 'Visible to customers once linked from the storefront.',
+        'form_status_help_inactive' => 'Hidden from the storefront but available for editing.',
+        'slug_preview_label' => 'Slug preview',
+        'slug_preview_hint' => 'Generated from the default language title. You can adjust it after saving if needed.',
+        'slug_preview_placeholder' => 'page-slug',
+        'form_tips_title' => 'Helpful tips',
+        'form_tip_primary_language' => 'Start with the :code version to generate a clean slug.',
+        'form_tip_media' => 'Upload language-specific imagery whenever possible.',
+        'form_section_translations' => 'Localized content',
+        'form_section_translations_help' => 'Provide copy, imagery, and assets for each active language.',
+        'form_default_badge' => 'Default',
+        'form_title' => 'Title (:code)',
+        'form_content' => 'Content (:code)',
+        'form_image' => 'Featured image (:code)',
+        'form_image_help' => 'PNG, JPG or WEBP up to 2 MB.',
+        'form_save' => 'Save page',
+
+        // Edit Page
+        'edit' => 'Edit page',
+        'form_update' => 'Update page',
+
+        // Data helpers
+        'untitled' => 'Untitled page',
+        'no_translations' => 'No translations yet',
+        'last_updated_on' => 'Updated :date',
+        'status_active' => 'Published',
+        'status_inactive' => 'Draft',
+
         // Delete Modal
-        'delete_modal_title' => 'Confirm Deletion',
+        'delete_modal_title' => 'Confirm deletion',
         'delete_modal_text' => 'Are you sure you want to delete this page?',
         'delete_modal_cancel' => 'Cancel',
         'delete_modal_delete' => 'Delete',
 
         // Toastr messages
-        'toastr_success' => 'Success',
+        'toastr_success' => 'Page deleted successfully.',
         'toastr_error' => 'Error deleting page',
+        'toastr_status_updated' => 'Page status updated.',
+        'toastr_status_error' => 'Unable to update page status.',
     ],
 
     'customers' => [
@@ -460,6 +522,7 @@ return [
         'name' => 'Vendor',
         'email' => 'Email',
         'phone' => 'Phone',
+        'registered_at' => 'Registered',
         'status' => 'Status',
         'actions' => 'Actions',
         'empty_state' => 'No vendors found yet.',
@@ -480,6 +543,9 @@ return [
         'confirm_password' => 'Confirm password',
         'status_label' => 'Status',
         'status_placeholder' => 'Select status',
+        'password_requirements' => 'Use at least 8 characters, including one symbol.',
+        'phone_format_hint' => 'Include the country code, e.g. +1 555 123 4567.',
+        'password_symbol_validation' => 'The password must include at least one symbol character.',
 
         // Buttons
         'add_vendor' => 'Add Vendor',
@@ -498,6 +564,10 @@ return [
         'success_create' => 'Vendor registered successfully!',
         'success_delete' => 'Vendor deleted successfully!',
         'error_delete' => 'Error deleting vendor! Please try again.',
+
+        // Filters
+        'filter_status_label' => 'Filter by status',
+        'filter_status_all' => 'All statuses',
 
         // Legacy keys kept for backwards compatibility
         'title_list' => 'Vendor List',
@@ -918,9 +988,13 @@ return [
         'save' => 'Save',
         'languages' => 'Languages',
         'status' => 'Status',
+        'status_help' => 'Control whether the banner is visible on the storefront.',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
         'image' => 'Image',
         'image_title' => 'Image Title',
         'title' => 'Title',
+        'untitled' => 'Untitled banner',
         'select_language' => 'Select Language',
         'file_upload' => 'Upload Image',
         'choose_file' => 'Choose File',
@@ -1150,26 +1224,48 @@ return [
 
     'coupons' => [
         'heading' => 'Coupons',
+        'list_description' => 'Monitor discount codes, their status, and expiry at a glance.',
         'add_new' => 'Add Coupon',
         'id' => 'ID',
+        'column_coupon' => 'Coupon',
         'code' => 'Code',
         'discount' => 'Discount',
         'type' => 'Type',
+        'status' => 'Status',
         'expires_at' => 'Expires At',
+        'created_at' => 'Created',
         'action' => 'Action',
+        'table_title' => 'Coupon overview',
+        'empty' => 'No coupons found.',
 
         'create_title' => 'Create Coupon',
         'edit_title' => 'Edit Coupon',
+        'form_title' => 'Coupon details',
+        'form_description' => 'Define coupon codes, discount amounts, and availability windows.',
         'back_to_list' => 'Back to Coupons',
         'save' => 'Save Coupon',
         'update' => 'Update Coupon',
+
+        'form_title' => 'Coupon details',
+        'form_description' => 'Define how the coupon should behave before saving it.',
+        'generate_code' => 'Generate code',
+        'generate_code_hint' => 'Need inspiration? Generate a code or type your own.',
 
         'delete_confirm_title' => 'Confirm Delete',
         'delete_confirm_message' => 'Are you sure you want to delete this coupon?',
         'delete_cancel' => 'Cancel',
         'delete_button' => 'Delete',
+        'modal_coupon_label' => 'Coupon code: :code',
 
+        'discount_hint_percentage' => 'The value will be applied as a percentage discount (0-100).',
+        'discount_hint_fixed' => 'The amount will be subtracted from the order total in your store currency.',
+        'discount_fixed_suffix' => 'Amount',
         'discount_hint' => 'For percentage coupons the value must be between 0 and 100.',
+        'expiry_section_title' => 'Expiration settings',
+        'expiry_section_description' => 'Decide whether the coupon should stop working after a specific date.',
+        'expiry_toggle_label' => 'Set an expiration date',
+        'expiry_toggle_hint' => 'Disable the toggle to keep the coupon active indefinitely.',
+        'expiry_timezone_hint' => 'All times are shown in :timezone.',
         'expiry_hint' => 'Leave empty to keep the coupon active indefinitely or set a past date to expire immediately.',
         'no_expiry' => 'No expiry',
 
@@ -1182,6 +1278,23 @@ return [
         'type_labels' => [
             'percentage' => 'Percentage',
             'fixed' => 'Fixed Amount',
+        ],
+
+        'status_labels' => [
+            'active' => 'Active',
+            'expired' => 'Expired',
+        ],
+
+        'filters' => [
+            'all' => 'All coupons',
+            'active' => 'Active',
+            'expired' => 'Expired',
+        ],
+
+        'stats' => [
+            'total' => 'Total coupons',
+            'active' => 'Active coupons',
+            'expired' => 'Expired coupons',
         ],
 
         'errors' => [
@@ -1236,6 +1349,8 @@ return [
         'status' => 'Status',
         'actions' => 'Actions',
         'review' => 'Review',
+        'view' => 'View',
+        'edit' => 'Edit',
 
         'active' => 'Active',
         'inactive' => 'Inactive',
@@ -1244,6 +1359,17 @@ return [
         'missing_customer' => 'Unknown customer',
         'missing_product' => 'Unknown product',
         'no_review_provided' => 'No review was provided for this submission.',
+
+        'status_filter_label' => 'Filter by status',
+        'status_filter_all' => 'All statuses',
+
+        'submitted_at' => 'Submitted at',
+        'updated_at' => 'Last updated',
+
+        'edit_title' => 'Edit review #:id',
+        'edit_form_title' => 'Update review',
+        'edit_description' => 'Adjust the rating or approval status for this review.',
+        'update_button' => 'Save changes',
 
         'confirm_delete' => 'Confirm Delete',
         'delete_message' => 'Are you sure you want to delete this product review?',

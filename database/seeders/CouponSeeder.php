@@ -34,6 +34,12 @@ class CouponSeeder extends Seeder
                 'type' => 'fixed',
                 'expires_at' => null,
             ],
+            [
+                'code' => 'FLASH50',
+                'discount' => 50,
+                'type' => 'percentage',
+                'expires_at' => $now->copy()->subDay(),
+            ],
         ];
 
         foreach ($coupons as $coupon) {

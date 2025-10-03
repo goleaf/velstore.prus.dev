@@ -14,9 +14,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             LanguageSeeder::class,
-            ProductVariantLocaleSeeder::class,
+            PageSeeder::class,
             CurrencySeeder::class,
+            VendorSeeder::class,
             ProductSeeder::class,
+            ProductReviewSeeder::class,
             CouponSeeder::class,
             OrderSeeder::class,
             PaymentGatewaySeeder::class,
@@ -24,6 +26,7 @@ class DatabaseSeeder extends Seeder
             RefundSeeder::class,
             CustomerSeeder::class,
             CustomerAddressSeeder::class,
+            ProductVariantDemoSeeder::class,
         ]);
     }
 }

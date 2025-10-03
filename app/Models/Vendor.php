@@ -10,6 +10,8 @@ class Vendor extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const STATUSES = ['active', 'inactive', 'banned'];
+
     protected $guard = 'vendor';
 
     protected $fillable = ['name', 'email', 'password', 'phone', 'status', 'avatar'];

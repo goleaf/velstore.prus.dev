@@ -168,6 +168,28 @@ return [
         'completed' => 'Hoàn tất',
         'pending' => 'Đang chờ',
         'failed' => 'Thất bại',
+        'status_labels' => [
+            'requested' => 'Đã yêu cầu',
+            'approved' => 'Đã phê duyệt',
+            'rejected' => 'Bị từ chối',
+            'pending' => 'Đang chờ',
+            'completed' => 'Hoàn tất',
+            'failed' => 'Thất bại',
+        ],
+
+        // Filters
+        'filters_title' => 'Lọc hoàn tiền',
+        'status_filter_label' => 'Trạng thái',
+        'status_filter_help' => 'Chọn một hoặc nhiều trạng thái để thu hẹp danh sách này.',
+        'date_from_label' => 'Từ ngày',
+        'date_to_label' => 'Đến ngày',
+        'apply_filters' => 'Áp dụng bộ lọc',
+        'reset_filters' => 'Đặt lại bộ lọc',
+
+        // Summary Cards
+        'summary_total_count' => 'Tổng số hoàn tiền',
+        'summary_completed_count' => 'Hoàn tiền đã hoàn tất',
+        'summary_total_amount' => 'Tổng số tiền đã hoàn',
 
         // Delete Modal
         'delete_confirm' => 'Xác nhận xóa',

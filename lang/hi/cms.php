@@ -168,6 +168,28 @@ return [
         'completed' => 'पूर्ण',
         'pending' => 'प्रतीक्षारत',
         'failed' => 'विफल',
+        'status_labels' => [
+            'requested' => 'अनुरोधित',
+            'approved' => 'स्वीकृत',
+            'rejected' => 'अस्वीकृत',
+            'pending' => 'प्रतीक्षारत',
+            'completed' => 'पूर्ण',
+            'failed' => 'विफल',
+        ],
+
+        // Filters
+        'filters_title' => 'रिफंड छांटें',
+        'status_filter_label' => 'स्थिति',
+        'status_filter_help' => 'इस सूची को सीमित करने के लिए एक या अधिक स्थितियाँ चुनें।',
+        'date_from_label' => 'दिनांक से',
+        'date_to_label' => 'दिनांक तक',
+        'apply_filters' => 'फ़िल्टर लागू करें',
+        'reset_filters' => 'फ़िल्टर रीसेट करें',
+
+        // Summary Cards
+        'summary_total_count' => 'कुल रिफंड',
+        'summary_completed_count' => 'पूर्ण हुए रिफंड',
+        'summary_total_amount' => 'कुल लौटाई गई राशि',
 
         // Delete Modal
         'delete_confirm' => 'हटाने की पुष्टि करें',
