@@ -10,70 +10,121 @@ class PaymentGatewaySeeder extends Seeder
 {
     public function run(): void
     {
-        $paypal = PaymentGateway::updateOrCreate(
-            ['code' => 'paypal'],
+        $gateways = [
             [
+                'code' => 'paypal',
                 'name' => 'PayPal',
-                'description' => 'PayPal payment gateway',
+                'description' => 'Accept PayPal payments via Express Checkout.',
                 'is_active' => true,
-            ]
-        );
-
-        PaymentGatewayConfig::updateOrCreate(
-            [
-                'gateway_id' => $paypal->id,
-                'key_name' => 'client_id',
-                'environment' => 'sandbox',
+                'configs' => [
+                    [
+                        'key_name' => 'client_id',
+                        'key_value' => 'your-paypal-sandbox-client-id',
+                        'environment' => 'sandbox',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'client_secret',
+                        'key_value' => 'your-paypal-sandbox-secret',
+                        'environment' => 'sandbox',
+                        'is_encrypted' => true,
+                    ],
+                    [
+                        'key_name' => 'client_id',
+                        'key_value' => 'your-paypal-live-client-id',
+                        'environment' => 'production',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'client_secret',
+                        'key_value' => 'your-paypal-live-secret',
+                        'environment' => 'production',
+                        'is_encrypted' => true,
+                    ],
+                ],
             ],
             [
-                'key_value' => 'your-paypal-client-id',
-                'is_encrypted' => true,
-            ]
-        );
-
-        PaymentGatewayConfig::updateOrCreate(
-            [
-                'gateway_id' => $paypal->id,
-                'key_name' => 'client_secret',
-                'environment' => 'sandbox',
-            ],
-            [
-                'key_value' => 'your-paypal-client-secret',
-                'is_encrypted' => true,
-            ]
-        );
-
-        $stripe = PaymentGateway::updateOrCreate(
-            ['code' => 'stripe'],
-            [
+                'code' => 'stripe',
                 'name' => 'Stripe',
-                'description' => 'Stripe payment gateway',
+                'description' => 'Card payments and wallets powered by Stripe.',
                 'is_active' => true,
-            ]
-        );
-
-        PaymentGatewayConfig::updateOrCreate(
-            [
-                'gateway_id' => $stripe->id,
-                'key_name' => 'public_key',
-                'environment' => 'sandbox',
+                'configs' => [
+                    [
+                        'key_name' => 'public_key',
+                        'key_value' => 'pk_test_replace_me',
+                        'environment' => 'sandbox',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'secret_key',
+                        'key_value' => 'sk_test_replace_me',
+                        'environment' => 'sandbox',
+                        'is_encrypted' => true,
+                    ],
+                    [
+                        'key_name' => 'public_key',
+                        'key_value' => 'pk_live_replace_me',
+                        'environment' => 'production',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'secret_key',
+                        'key_value' => 'sk_live_replace_me',
+                        'environment' => 'production',
+                        'is_encrypted' => true,
+                    ],
+                ],
             ],
             [
-                'key_value' => 'your-stripe-public-key',
-                'is_encrypted' => false,
-            ]
-        );
-
-        PaymentGatewayConfig::updateOrCreate(
-            [
-                'gateway_id' => $stripe->id,
-                'key_name' => 'secret_key',
-                'environment' => 'sandbox',
+                'code' => 'manual_bank_transfer',
+                'name' => 'Manual Bank Transfer',
+                'description' => 'Provide customers with bank transfer instructions.',
+                'is_active' => false,
+                'configs' => [
+                    [
+                        'key_name' => 'account_name',
+                        'key_value' => 'Velstore LLC',
+                        'environment' => 'production',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'account_number',
+                        'key_value' => '000111222333',
+                        'environment' => 'production',
+                        'is_encrypted' => false,
+                    ],
+                    [
+                        'key_name' => 'routing_number',
+                        'key_value' => '123456789',
+                        'environment' => 'production',
+                        'is_encrypted' => false,
+                    ],
+                ],
             ],
-            [
-                'key_value' => 'your-stripe-secret-key',
-                'is_encrypted' => true,
-            ]
-        );
+        ];
+
+        foreach ($gateways as $gatewayData) {
+            $configs = $gatewayData['configs'];
+            unset($gatewayData['configs']);
+
+            $gateway = PaymentGateway::updateOrCreate(
+                ['code' => $gatewayData['code']],
+                $gatewayData
+            );
+
+            foreach ($configs as $config) {
+                PaymentGatewayConfig::updateOrCreate(
+                    [
+                        'gateway_id' => $gateway->id,
+                        'key_name' => $config['key_name'],
+                        'environment' => $config['environment'],
+                    ],
+                    [
+                        'key_value' => $config['key_value'],
+                        'is_encrypted' => $config['is_encrypted'],
+                    ]
+                );
+            }
+        }
     }
 }

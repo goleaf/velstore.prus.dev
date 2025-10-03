@@ -146,11 +146,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('refunds/{refund}', [RefundController::class, 'show'])->name('refunds.show');
 
     /* Payment Gateways */
-    Route::get('payment-gateways', [PaymentGatewayController::class, 'index'])->name('payment-gateways.index');
     Route::get('payment-gateways/data', [PaymentGatewayController::class, 'getData'])->name('payment-gateways.getData');
-    Route::get('payment-gateways/{paymentGateway}/edit', [PaymentGatewayController::class, 'edit'])->name('payment-gateways.edit');
-    Route::put('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'update'])->name('payment-gateways.update');
-    Route::delete('payment-gateways/{paymentGateway}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateways.destroy');
+    Route::patch('payment-gateways/{paymentGateway}/toggle', [PaymentGatewayController::class, 'toggle'])->name('payment-gateways.toggle');
+    Route::resource('payment-gateways', PaymentGatewayController::class)->except(['show']);
 
     /* Site Settings */
     Route::prefix('site-settings')->name('site-settings.')->controller(SiteSettingController::class)->group(function () {

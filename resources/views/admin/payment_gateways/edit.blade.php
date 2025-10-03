@@ -1,100 +1,79 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-<div class="card mt-4">
-    <div class="card-header card-header-bg text-white">
-        <h6 class="d-flex align-items-center mb-0 dt-heading">{{ __('cms.payment_gateways.edit_title') }}</h6>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="h4 mb-0">{{ __('cms.payment_gateways.edit_title', ['name' => $paymentGateway->name ?? __('cms.payment_gateways.not_available')]) }}</h1>
+        <p class="text-muted mb-0">{{ __('cms.payment_gateways.edit_description') }}</p>
     </div>
-
-    <div class="card-body">
-        {{-- Validation Errors --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>{{ __('cms.errors.whoops') }}</strong> {{ __('cms.errors.input_problem') }}<br><br>
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        {{-- Edit Form --}}
-        <form action="{{ route('admin.payment-gateways.update', $paymentGateway->id) }}" method="POST">
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.payment-gateways.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> {{ __('cms.payment_gateways.back_to_index') }}
+        </a>
+        <form action="{{ route('admin.payment-gateways.destroy', $paymentGateway) }}" method="POST" class="d-inline" id="delete-gateway-form">
             @csrf
-            @method('PUT')
-
-            {{-- Gateway Info --}}
-            <div class="mb-3">
-                <label for="name" class="form-label">{{ __('cms.payment_gateways.gateway_name') }}</label>
-                <input type="text" name="name" id="name" 
-                       value="{{ old('name', $paymentGateway->name) }}" 
-                       class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="code" class="form-label">{{ __('cms.payment_gateways.code') }} ({{ __('cms.payment_gateways.unique') }})</label>
-                <input type="text" name="code" id="code" 
-                       value="{{ old('code', $paymentGateway->code) }}" 
-                       class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">{{ __('cms.payment_gateways.description') }}</label>
-                <textarea name="description" id="description" class="form-control">{{ old('description', $paymentGateway->description) }}</textarea>
-            </div>
-
-            <div class="form-check mb-4">
-                <input type="hidden" name="is_active" value="0">
-                <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1"
-                       {{ $paymentGateway->is_active ? 'checked' : '' }}>
-                <label class="form-check-label" for="is_active">{{ __('cms.payment_gateways.active_label') }}</label>
-            </div>
-
-            {{-- Configurations --}}
-            <h5 class="mb-3">{{ __('cms.payment_gateways.configurations') }}</h5>
-            @forelse ($paymentGateway->configs as $config)
-                <div class="border rounded p-3 mb-3">
-                    <input type="hidden" name="configs[{{ $config->id }}][id]" value="{{ $config->id }}">
-
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('cms.payment_gateways.key_name') }}</label>
-                        <input type="text" name="configs[{{ $config->id }}][key_name]" 
-                               value="{{ old("configs.$config->id.key_name", $config->key_name) }}" 
-                               class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('cms.payment_gateways.key_value') }}</label>
-                        <input type="text" name="configs[{{ $config->id }}][key_value]" 
-                               value="{{ old("configs.$config->id.key_value", $config->key_value) }}" 
-                               class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('cms.payment_gateways.environment') }}</label>
-                        <select name="configs[{{ $config->id }}][environment]" class="form-select">
-                            <option value="sandbox" {{ $config->environment === 'sandbox' ? 'selected' : '' }}>{{ __('cms.payment_gateways.sandbox') }}</option>
-                            <option value="production" {{ $config->environment === 'production' ? 'selected' : '' }}>{{ __('cms.payment_gateways.production') }}</option>
-                        </select>
-                    </div>
-
-                    <div class="form-check">
-                        <input type="hidden" name="configs[{{ $config->id }}][is_encrypted]" value="0">
-                        <input type="checkbox" class="form-check-input" 
-                               name="configs[{{ $config->id }}][is_encrypted]" value="1" 
-                               {{ $config->is_encrypted ? 'checked' : '' }}>
-                        <label class="form-check-label">{{ __('cms.payment_gateways.encrypted') }}</label>
-                    </div>
-                </div>
-            @empty
-                <p class="text-muted">{{ __('cms.payment_gateways.no_configurations') }}</p>
-            @endforelse
-
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">{{ __('cms.payment_gateways.update_button') }}</button>
-            </div>
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger" data-confirm="true">
+                <i class="bi bi-trash"></i> {{ __('cms.payment_gateways.delete') }}
+            </button>
         </form>
     </div>
 </div>
+
+@include('admin.payment_gateways.partials.form', [
+    'paymentGateway' => $paymentGateway,
+    'action' => route('admin.payment-gateways.update', $paymentGateway),
+    'method' => 'PUT',
+    'submitLabel' => __('cms.payment_gateways.update_button'),
+])
 @endsection
+
+@push('scripts')
+    @include('admin.payment_gateways.partials.scripts')
+    <script>
+        (function () {
+            'use strict';
+
+            const deleteForm = document.getElementById('delete-gateway-form');
+
+            if (!deleteForm) {
+                return;
+            }
+
+            deleteForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                if (!confirm(@json(__('cms.payment_gateways.delete_message')))) {
+                    return;
+                }
+
+                const formData = new FormData(deleteForm);
+
+                fetch(deleteForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': formData.get('_token'),
+                        'Accept': 'application/json',
+                    },
+                    body: new URLSearchParams({
+                        '_method': 'DELETE',
+                        '_token': formData.get('_token'),
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data && data.success) {
+                            toastr.success(data.message, @json(__('cms.payment_gateways.success')));
+                            window.location.href = @json(route('admin.payment-gateways.index'));
+                        } else {
+                            toastr.error(data?.message || @json(__('cms.payment_gateways.delete_error')), @json(__('cms.payment_gateways.error')));
+                        }
+                    })
+                    .catch(() => {
+                        toastr.error(@json(__('cms.payment_gateways.delete_error')), @json(__('cms.payment_gateways.error')));
+                    });
+            });
+        })();
+    </script>
+@endpush
