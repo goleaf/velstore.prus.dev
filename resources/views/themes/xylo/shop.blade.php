@@ -3,7 +3,17 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"> 
 @endsection
 @section('content')
-    @php $currency = activeCurrency(); @endphp
+    @php
+        $currency = activeCurrency();
+        $filters = $filters ?? [
+            'category' => [],
+            'brand' => [],
+            'price_min' => 0,
+            'price_max' => 1000,
+            'color' => [],
+            'size' => [],
+        ];
+    @endphp
     <section class="products-home py-5 mb-5 main-shop">
     <div class="container">
         <div class="row">
@@ -12,7 +22,7 @@
                     <h5 class="mb-3">BRANDS</h5>
                     @foreach($brands as $brand)
                     <div class="form-check mb-3">
-                        <input class="form-check-input filter-input" type="checkbox" name="brand[]" value="{{ $brand->id }}">
+                        <input class="form-check-input filter-input" type="checkbox" name="brand[]" value="{{ $brand->id }}" @checked(in_array($brand->id, $filters['brand']))>
                         <label class="form-check-label">{{ mb_convert_case($brand->translation->title ?? $brand->slug, MB_CASE_TITLE, "UTF-8") }}</label>
                         <span class="text-muted">({{ $brand->products_count }})</span>
                     </div>
@@ -21,7 +31,7 @@
                     <h5 class="mb-3">CATEGORIES</h5>
                     @foreach($categories as $category)
                     <div class="form-check mb-3">
-                        <input class="form-check-input filter-input" type="checkbox" name="category[]" value="{{ $category->id }}">
+                        <input class="form-check-input filter-input" type="checkbox" name="category[]" value="{{ $category->id }}" @checked(in_array($category->id, $filters['category']))>
                         <label class="form-check-label">{{ mb_convert_case($category->translation->title ?? $category->slug, MB_CASE_TITLE, "UTF-8") }}</label>
                         <span class="text-muted">({{ $category->products_count }})</span>
                     </div>
@@ -31,15 +41,15 @@
                     <div class="price-filter mb-3">
                         <p id="priceRange" class="text-center">{{ $currency->symbol }}<span id="minPriceText">0</span> - {{ $currency->symbol }}<span id="maxPriceText">1000</span></p>
                         <div class="range-slider">
-                            <input type="range" name="price_min" id="minPrice" min="0" max="1000" value="0" step="10">
-                            <input type="range" name="price_max" id="maxPrice" min="0" max="1000" value="1000" step="10">
+                            <input type="range" name="price_min" id="minPrice" min="0" max="1000" value="{{ $filters['price_min'] }}" step="10">
+                            <input type="range" name="price_max" id="maxPrice" min="0" max="1000" value="{{ $filters['price_max'] }}" step="10">
                         </div>
                     </div>
 
                     <h5 class="mb-3">COLORS</h5>
                     @foreach(['Red', 'Black'] as $color)
                     <div class="form-check mb-3">
-                        <input class="form-check-input filter-input" type="checkbox" name="color[]" value="{{ strtolower($color) }}">
+                        <input class="form-check-input filter-input" type="checkbox" name="color[]" value="{{ strtolower($color) }}" @checked(in_array(strtolower($color), $filters['color']))>
                         <label class="form-check-label">{{ $color }}</label>
                     </div>
                     @endforeach
@@ -47,13 +57,21 @@
                     <h5 class="mt-4">SIZE</h5>
                     @foreach(['M' => 'Medium', 'L' => 'Large'] as $key => $size)
                     <div class="form-check">
-                        <input class="form-check-input filter-input" type="checkbox" name="size[]" value="{{ $key }}">
+                        <input class="form-check-input filter-input" type="checkbox" name="size[]" value="{{ $key }}" @checked(in_array($key, $filters['size']))>
                         <label class="form-check-label">{{ $size }}</label>
                     </div>
                     @endforeach
                 </div>
             </aside>
             <div class="col-md-9">
+                @if(isset($currentCategory))
+                    <div class="mb-4">
+                        <h2 class="h4 mb-1">{{ $currentCategory->translation->title ?? ucfirst(str_replace('-', ' ', $currentCategory->slug)) }}</h2>
+                        @if($currentCategory->translation && $currentCategory->translation->description)
+                            <p class="text-muted mb-0">{{ $currentCategory->translation->description }}</p>
+                        @endif
+                    </div>
+                @endif
                 <div class="row" id="productList">
                     @include('themes.xylo.partials.product-list')
                 </div>

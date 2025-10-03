@@ -7,20 +7,37 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $locale = app()->getLocale();
+        return $this->renderShopPage($request);
+    }
 
+    public function showCategory(Request $request, string $slug)
+    {
+        $category = Category::with('translation')->where('slug', $slug)->firstOrFail();
+
+        $categoryFilter = $request->input('category', []);
+        $categoryIds = is_array($categoryFilter) ? $categoryFilter : [$categoryFilter];
+        $categoryIds[] = $category->id;
+
+        $request->merge(['category' => array_unique(array_filter($categoryIds))]);
+
+        return $this->renderShopPage($request, $category);
+    }
+
+    protected function renderShopPage(Request $request, ?Category $currentCategory = null): View|string
+    {
         $filters = [
-            'category' => $request->input('category', []),
-            'brand' => $request->input('brand', []),
-            'price_min' => $request->input('price_min', 0),
-            'price_max' => $request->input('price_max', 1000),
-            'color' => $request->input('color', []),
-            'size' => $request->input('size', []),
+            'category' => array_filter((array) $request->input('category', [])),
+            'brand' => array_filter((array) $request->input('brand', [])),
+            'price_min' => (int) $request->input('price_min', 0),
+            'price_max' => (int) $request->input('price_max', 1000),
+            'color' => array_filter((array) $request->input('color', [])),
+            'size' => array_filter((array) $request->input('size', [])),
         ];
 
         $products = Product::with(['translation', 'variants.attributeValues'])
@@ -55,7 +72,8 @@ class ShopController extends Controller
                         });
                     });
             })
-            ->paginate(12);
+            ->paginate(12)
+            ->appends($request->query());
 
         $brands = Brand::with('translation')->withCount('products')->get();
         $categories = Category::with('translation')->withCount('products')->get();
@@ -64,6 +82,12 @@ class ShopController extends Controller
             return view('themes.xylo.partials.product-list', compact('products'))->render();
         }
 
-        return view('themes.xylo.shop', compact('products', 'categories', 'brands'));
+        return view('themes.xylo.shop', [
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands,
+            'filters' => $filters,
+            'currentCategory' => $currentCategory,
+        ]);
     }
 }

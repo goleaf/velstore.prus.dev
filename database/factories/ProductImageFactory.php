@@ -18,7 +18,7 @@ class ProductImageFactory extends Factory
         return [
             'name' => $this->faker->words(2, true),
             'image_url' => $this->faker->imageUrl(),
-            'type' => $this->faker->randomElement(['thumb', 'gallery']),
+            'type' => $this->faker->randomElement(['thumb', 'slide']),
             'product_id' => Product::factory(),
         ];
     }

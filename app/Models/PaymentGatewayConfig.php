@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
 class PaymentGatewayConfig extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['gateway_id', 'key_name', 'key_value', 'is_encrypted', 'environment'];
 
     public function gateway()

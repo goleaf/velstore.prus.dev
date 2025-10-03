@@ -41,16 +41,12 @@ class Velstore extends Command
 
         $availableLocales = ['en' => 'English', 'es' => 'Spanish', 'fr' => 'French', 'de' => 'German'];
 
-        $locale = $this->choice(
-            'Please select a locale to set for the application',
-            array_keys($availableLocales),
-            'en'
-        );
+        $locale = strtolower((string) ($this->option('locale') ?: 'en'));
 
-        if (!array_key_exists($locale, $availableLocales)) {
+        if (! array_key_exists($locale, $availableLocales)) {
             $this->error("Invalid locale '{$locale}'. Supported locales are: " . implode(', ', array_keys($availableLocales)));
 
-            return 1;
+            return Command::FAILURE;
         }
 
         $withImport = $this->option('with-import');

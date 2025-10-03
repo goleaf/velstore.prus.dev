@@ -2,73 +2,78 @@
 
 namespace Database\Seeders;
 
+use App\Models\PaymentGateway;
+use App\Models\PaymentGatewayConfig;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class PaymentGatewaySeeder extends Seeder
 {
     public function run(): void
     {
-        // ---- PayPal ----
-        $paypalId = DB::table('payment_gateways')->insertGetId([
-            'name' => 'PayPal',
-            'code' => 'paypal',
-            'description' => 'PayPal payment gateway',
-            'is_active' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('payment_gateway_configs')->insert([
+        $paypal = PaymentGateway::updateOrCreate(
+            ['code' => 'paypal'],
             [
-                'gateway_id' => $paypalId,
+                'name' => 'PayPal',
+                'description' => 'PayPal payment gateway',
+                'is_active' => true,
+            ]
+        );
+
+        PaymentGatewayConfig::updateOrCreate(
+            [
+                'gateway_id' => $paypal->id,
                 'key_name' => 'client_id',
+                'environment' => 'sandbox',
+            ],
+            [
                 'key_value' => 'your-paypal-client-id',
                 'is_encrypted' => true,
+            ]
+        );
+
+        PaymentGatewayConfig::updateOrCreate(
+            [
+                'gateway_id' => $paypal->id,
+                'key_name' => 'client_secret',
                 'environment' => 'sandbox',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
-                'gateway_id' => $paypalId,
-                'key_name' => 'client_secret',
                 'key_value' => 'your-paypal-client-secret',
                 'is_encrypted' => true,
-                'environment' => 'sandbox',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+            ]
+        );
 
-        // ---- Stripe ----
-        $stripeId = DB::table('payment_gateways')->insertGetId([
-            'name' => 'Stripe',
-            'code' => 'stripe',
-            'description' => 'Stripe payment gateway',
-            'is_active' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('payment_gateway_configs')->insert([
+        $stripe = PaymentGateway::updateOrCreate(
+            ['code' => 'stripe'],
             [
-                'gateway_id' => $stripeId,
+                'name' => 'Stripe',
+                'description' => 'Stripe payment gateway',
+                'is_active' => true,
+            ]
+        );
+
+        PaymentGatewayConfig::updateOrCreate(
+            [
+                'gateway_id' => $stripe->id,
                 'key_name' => 'public_key',
+                'environment' => 'sandbox',
+            ],
+            [
                 'key_value' => 'your-stripe-public-key',
                 'is_encrypted' => false,
+            ]
+        );
+
+        PaymentGatewayConfig::updateOrCreate(
+            [
+                'gateway_id' => $stripe->id,
+                'key_name' => 'secret_key',
                 'environment' => 'sandbox',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
-                'gateway_id' => $stripeId,
-                'key_name' => 'secret_key',
                 'key_value' => 'your-stripe-secret-key',
                 'is_encrypted' => true,
-                'environment' => 'sandbox',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+            ]
+        );
     }
 }

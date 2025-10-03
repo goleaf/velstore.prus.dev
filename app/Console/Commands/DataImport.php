@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\DemoDataSeeder;
 
 class DataImport extends Command
 {
@@ -27,18 +29,26 @@ class DataImport extends Command
     public function handle()
     {
         $this->info('Starting data import...');
-        $this->info('Seeding comprehensive multilingual demo data...');
 
-        try {
-            $this->call('db:seed', ['--class' => 'DemoDataSeeder']);
-        } catch (BindingResolutionException $exception) {
-            $this->error('Unable to resolve DemoDataSeeder. Please run composer dump-autoload and try again.');
-            $this->error($exception->getMessage());
+        $seeders = [
+            DatabaseSeeder::class => 'Base application seeders',
+            DemoDataSeeder::class => 'Comprehensive multilingual demo data',
+        ];
 
-            return Command::FAILURE;
+        foreach ($seeders as $seeder => $description) {
+            $this->info("Seeding: {$description}...");
+
+            try {
+                $this->call('db:seed', ['--class' => $seeder]);
+            } catch (BindingResolutionException $exception) {
+                $this->error("Unable to resolve {$seeder}. Please run composer dump-autoload and try again.");
+                $this->error($exception->getMessage());
+
+                return Command::FAILURE;
+            }
         }
 
-        $this->info('Demo data seeded successfully!');
+        $this->info('All seeders executed successfully!');
         $this->info('Data import completed successfully!');
     }
 

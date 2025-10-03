@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [StoreController::class, 'index'])->name('xylo.home');
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
 Route::post('/change-currency', [CurrencyController::class, 'changeCurrency'])->name('change.currency');
+Route::get('/category/{slug}', [ShopController::class, 'showCategory'])->name('category.show');
 
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');

@@ -246,12 +246,14 @@ class DemoDataSeeder extends Seeder
                 ['name' => 'PayPal', 'code' => 'paypal', 'description' => 'PayPal payment gateway'],
                 ['name' => 'Bank Transfer', 'code' => 'bank-transfer', 'description' => 'Manual bank transfer'],
             ])->map(function (array $gatewayData) {
-                return PaymentGateway::factory()->create([
-                    'name' => $gatewayData['name'],
-                    'code' => $gatewayData['code'],
-                    'description' => $gatewayData['description'],
-                    'is_active' => true,
-                ]);
+                return PaymentGateway::updateOrCreate(
+                    ['code' => $gatewayData['code']],
+                    [
+                        'name' => $gatewayData['name'],
+                        'description' => $gatewayData['description'],
+                        'is_active' => true,
+                    ]
+                );
             });
 
             foreach ($paymentGateways as $gateway) {
@@ -281,7 +283,7 @@ class DemoDataSeeder extends Seeder
                         'brand_id' => $brand->id,
                         'vendor_id' => $vendor->id,
                         'shop_id' => $shop->id,
-                        'status' => 'published',
+                        'status' => 1,
                         'product_type' => Arr::random(['simple', 'variable']),
                     ])
                 );
@@ -400,7 +402,6 @@ class DemoDataSeeder extends Seeder
                 $payment = Payment::factory()->create([
                     'order_id' => $order->id,
                     'gateway_id' => $paymentGateway->id,
-                    'user_id' => $adminUser->id,
                     'amount' => $orderTotal,
                     'currency' => Currency::inRandomOrder()->value('code') ?? 'USD',
                     'status' => $paymentStatus,
