@@ -87,52 +87,55 @@
                         </button>
                     </div>
 
-                    <div class="translation-section">
-                        <ul class="nav nav-tabs attribute-language-tabs" id="{{ $rowId }}-tabs" role="tablist">
+                    <div class="translation-section space-y-3" data-language-tabs>
+                        <div class="flex flex-wrap gap-2" role="tablist">
                             @foreach ($languages as $language)
                                 @php
                                     $code = $language->code;
                                 @endphp
-                                <li class="nav-item" role="presentation">
-                                    <button
-                                        class="nav-link {{ $loop->first ? 'active' : '' }}"
-                                        id="{{ $rowId }}-{{ $code }}-tab"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#{{ $rowId }}-{{ $code }}-panel"
-                                        type="button"
-                                        role="tab"
-                                        aria-controls="{{ $rowId }}-{{ $code }}-panel"
-                                        aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                                    >
-                                        {{ ucwords($language->name) }}
-                                    </button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="tab-content mt-3" id="{{ $rowId }}-tab-content">
-                            @foreach ($languages as $language)
-                                @php
-                                    $code = $language->code;
-                                    $translationValue = $translations[$code][$index] ?? '';
-                                @endphp
-                                <div
-                                    class="tab-pane fade show {{ $loop->first ? 'active' : '' }}"
-                                    id="{{ $rowId }}-{{ $code }}-panel"
-                                    role="tabpanel"
-                                    aria-labelledby="{{ $rowId }}-{{ $code }}-tab"
+                                <button
+                                    type="button"
+                                    id="{{ $rowId }}-{{ $code }}-tab"
+                                    class="nav-tab {{ $loop->first ? 'nav-tab-active' : 'nav-tab-inactive' }}"
+                                    data-language-tab-target="{{ $code }}"
+                                    aria-controls="{{ $rowId }}-{{ $code }}-panel"
+                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}"
                                 >
-                                    <input
-                                        type="text"
-                                        name="translations[{{ $code }}][]"
-                                        value="{{ $translationValue }}"
-                                        class="form-control @error('translations.' . $code . '.' . $index) is-invalid @enderror"
-                                    >
-                                    @error('translations.' . $code . '.' . $index)
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                    <span class="inline-flex items-center gap-2">
+                                        <span class="text-xs font-semibold uppercase text-gray-500">{{ strtoupper($code) }}</span>
+                                        <span class="text-sm font-medium text-gray-700">{{ ucwords($language->name) }}</span>
+                                    </span>
+                                </button>
                             @endforeach
                         </div>
+                        @foreach ($languages as $language)
+                            @php
+                                $code = $language->code;
+                                $translationValue = $translations[$code][$index] ?? '';
+                            @endphp
+                            <div
+                                class="space-y-2 {{ $loop->first ? '' : 'hidden' }}"
+                                id="{{ $rowId }}-{{ $code }}-panel"
+                                role="tabpanel"
+                                aria-labelledby="{{ $rowId }}-{{ $code }}-tab"
+                                aria-hidden="{{ $loop->first ? 'false' : 'true' }}"
+                                data-language-panel="{{ $code }}"
+                            >
+                                <label for="{{ $rowId }}-{{ $code }}-input" class="form-label sr-only">
+                                    {{ __('cms.attributes.translated_value') }} ({{ ucwords($language->name) }})
+                                </label>
+                                <input
+                                    type="text"
+                                    name="translations[{{ $code }}][]"
+                                    id="{{ $rowId }}-{{ $code }}-input"
+                                    value="{{ $translationValue }}"
+                                    class="form-control @error('translations.' . $code . '.' . $index) is-invalid @enderror"
+                                >
+                                @error('translations.' . $code . '.' . $index)
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endforeach
