@@ -3,6 +3,7 @@ import './admin/sidebar';
 import './admin/orders/index';
 import './admin/coupons/index';
 import './admin/customers/index';
+import './admin/payments/index';
 
 document.addEventListener('click', function (event) {
     const target = event.target;

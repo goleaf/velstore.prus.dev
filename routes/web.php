@@ -134,7 +134,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('pages/data', [PageController::class, 'data'])->name('pages.data');
 
     /* payments */
-    Route::get('payments/get-data', [PaymentController::class, 'getData'])->name('payments.getData');
     Route::resource('payments', PaymentController::class)->only(['index', 'destroy', 'show']);
 
     /* Refunds */
