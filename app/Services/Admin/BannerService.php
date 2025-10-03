@@ -30,12 +30,18 @@ class BannerService
 
         $rules = [
             'type' => 'required|in:promotion,sale,seasonal,featured,announcement',
+            'display_location' => 'required|in:home,shop,category,product,global',
+            'priority' => 'nullable|integer|min:0|max:1000',
             'status' => 'required|boolean',
+            'starts_at' => 'nullable|date',
+            'ends_at' => 'nullable|date|after_or_equal:starts_at',
         ];
 
         foreach ($activeLanguages as $code) {
             $rules["languages.$code.title"] = 'required|string|max:255';
             $rules["languages.$code.description"] = 'required|string|min:3';
+            $rules["languages.$code.button_text"] = 'nullable|string|max:255';
+            $rules["languages.$code.button_url"] = 'nullable|string|max:2048';
 
             $rules["languages.$code.image"] = ($code === $defaultLocale ? 'required' : 'nullable')
                 .'|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000';
@@ -48,6 +54,10 @@ class BannerService
         $banner = $this->bannerRepository->createBanner([
             'type' => $validated['type'],
             'status' => (int) $validated['status'],
+            'display_location' => $validated['display_location'],
+            'priority' => isset($validated['priority']) ? (int) $validated['priority'] : 0,
+            'starts_at' => $validated['starts_at'] ?? null,
+            'ends_at' => $validated['ends_at'] ?? null,
             'title' => $defaultTranslation['title'] ?? null,
         ]);
 
@@ -78,6 +88,8 @@ class BannerService
                 'language_code' => $code,
                 'title' => $langInput['title'],
                 'description' => $langInput['description'],
+                'button_text' => $langInput['button_text'] ?? null,
+                'button_url' => $langInput['button_url'] ?? null,
                 'image_url' => $imagePath,
             ]);
         }
@@ -89,10 +101,16 @@ class BannerService
     {
         $validated = $request->validate([
             'type' => 'required|in:promotion,sale,seasonal,featured,announcement',
+            'display_location' => 'required|in:home,shop,category,product,global',
+            'priority' => 'nullable|integer|min:0|max:1000',
             'status' => 'required|boolean',
+            'starts_at' => 'nullable|date',
+            'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'languages.*.language_code' => 'required|string',
             'languages.*.title' => 'required|string|max:255',
             'languages.*.description' => 'required|string|min:3',
+            'languages.*.button_text' => 'nullable|string|max:255',
+            'languages.*.button_url' => 'nullable|string|max:2048',
             'languages.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000',
         ]);
 
@@ -105,6 +123,10 @@ class BannerService
         $this->bannerRepository->updateBanner($banner, [
             'type' => $validated['type'],
             'status' => (int) $request->boolean('status'),
+            'display_location' => $validated['display_location'],
+            'priority' => isset($validated['priority']) ? (int) $validated['priority'] : $banner->priority,
+            'starts_at' => $validated['starts_at'] ?? null,
+            'ends_at' => $validated['ends_at'] ?? null,
             'title' => $defaultLanguageData['title'] ?? $banner->title,
         ]);
 
@@ -132,6 +154,8 @@ class BannerService
 
                 $translation->title = $languageData['title'];
                 $translation->description = $languageData['description'];
+                $translation->button_text = $languageData['button_text'] ?? null;
+                $translation->button_url = $languageData['button_url'] ?? null;
                 $translation->save();
 
                 if ($languageCode === $defaultLocale) {
@@ -158,6 +182,8 @@ class BannerService
                 'language_code' => $languageCode,
                 'title' => $languageData['title'],
                 'description' => $languageData['description'],
+                'button_text' => $languageData['button_text'] ?? null,
+                'button_url' => $languageData['button_url'] ?? null,
                 'image_url' => $imagePath,
             ]);
 

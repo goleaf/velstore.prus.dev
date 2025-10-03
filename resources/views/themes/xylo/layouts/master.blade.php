@@ -32,6 +32,9 @@
 
 <body>
     @include('themes.xylo.layouts.header')
+    @includeWhen(isset($globalBanners) && $globalBanners->isNotEmpty(), 'themes.xylo.layouts.partials.global-banners', [
+        'banners' => $globalBanners,
+    ])
     @yield('content')
     @include('themes.xylo.layouts.footer')
     @if (!App::environment('testing'))
@@ -85,6 +88,16 @@
                 autoplaySpeed: 5000,
                 dots: true,
                 arrows: false,
+            });
+            $('.global-banner-slider').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 8000,
+                adaptiveHeight: true,
+                arrows: false,
+                dots: false,
+                pauseOnHover: true,
             });
             $('.product-slider').slick({
                 slidesToShow: 4,

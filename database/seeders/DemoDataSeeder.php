@@ -233,6 +233,8 @@ class DemoDataSeeder extends Seeder
                         [
                             'title' => Str::title($this->fakerFor($languageCode)->sentence(4)),
                             'description' => $this->fakerFor($languageCode)->paragraph(),
+                            'button_text' => $this->fakerFor($languageCode)->optional()->words(2, true),
+                            'button_url' => fake()->optional(0.6)->url(),
                             'image_url' => fake()->imageUrl(1200, 400, true),
                         ]
                     );

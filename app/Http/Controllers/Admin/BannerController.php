@@ -50,6 +50,14 @@ class BannerController extends Controller
             'announcement' => __('cms.banners.announcement'),
         ];
 
+        $locationLabels = [
+            'home' => __('cms.banners.location_home'),
+            'shop' => __('cms.banners.location_shop'),
+            'category' => __('cms.banners.location_category'),
+            'product' => __('cms.banners.location_product'),
+            'global' => __('cms.banners.location_global'),
+        ];
+
         $banners = Banner::with('translations')->select('banners.*');
 
         return DataTables::of($banners)
@@ -64,6 +72,32 @@ class BannerController extends Controller
                 $label = $typeLabels[$banner->type] ?? Str::title($banner->type);
 
                 return '<span class="badge badge-soft-primary">'.e($label).'</span>';
+            })
+            ->addColumn('location_label', function (Banner $banner) use ($locationLabels) {
+                $label = $locationLabels[$banner->display_location] ?? Str::title($banner->display_location);
+
+                return '<span class="badge badge-soft-secondary">'.e($label).'</span>';
+            })
+            ->addColumn('priority', fn (Banner $banner) => (int) $banner->priority)
+            ->addColumn('schedule_label', function (Banner $banner) {
+                $startsAt = $banner->starts_at;
+                $endsAt = $banner->ends_at;
+
+                if (! $startsAt && ! $endsAt) {
+                    return '';
+                }
+
+                $segments = [];
+
+                if ($startsAt) {
+                    $segments[] = '<span class="block"><span class="font-medium">'.e(__('cms.banners.starts_at')).':</span> '.e($startsAt->format('Y-m-d H:i')).'</span>';
+                }
+
+                if ($endsAt) {
+                    $segments[] = '<span class="block"><span class="font-medium">'.e(__('cms.banners.ends_at')).':</span> '.e($endsAt->format('Y-m-d H:i')).'</span>';
+                }
+
+                return implode('', $segments);
             })
             ->addColumn('image', function (Banner $banner) use ($locale, $fallbackLocale) {
                 $translation = $banner->translations->firstWhere('language_code', $locale)
@@ -86,7 +120,7 @@ class BannerController extends Controller
             })
             ->addColumn('status', fn (Banner $banner) => (int) $banner->status)
             ->addColumn('action', fn () => '')
-            ->rawColumns(['image', 'type_badge'])
+            ->rawColumns(['image', 'type_badge', 'location_label', 'schedule_label'])
             ->make(true);
     }
 

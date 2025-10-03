@@ -10,12 +10,12 @@ class StoreController extends Controller
 {
     public function index()
     {
-        $locale = app()->getLocale();
-
-        $banners = Banner::where('status', 1)
-            ->with('translation')
-            ->orderBy('id', 'desc')
-            ->take(3)
+        $banners = Banner::query()
+            ->active()
+            ->forLocation('home', false)
+            ->with('translations')
+            ->ordered()
+            ->take(5)
             ->get();
 
         $categories = Category::where('status', 1)

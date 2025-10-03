@@ -2,6 +2,7 @@
 
 namespace App\View\Composers;
 
+use App\Models\Banner;
 use App\Models\Menu;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -25,6 +26,27 @@ class StoreMenuComposer
                 ->first();
 
             $view->with('headerMenu', $headerMenu);
+        }
+
+        if (Schema::hasTable('banners')) {
+            $globalBanners = Banner::query()
+                ->active()
+                ->forLocation('global', false)
+                ->with('translations')
+                ->ordered()
+                ->take(5)
+                ->get();
+
+            $shopBanners = Banner::query()
+                ->active()
+                ->forLocation('shop', false)
+                ->with('translations')
+                ->ordered()
+                ->take(5)
+                ->get();
+
+            $view->with('globalBanners', $globalBanners);
+            $view->with('shopBanners', $shopBanners);
         }
     }
 }
