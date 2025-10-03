@@ -3,40 +3,69 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\VendorStoreRequest;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Yajra\DataTables\Facades\DataTables;
 
 class VendorController extends Controller
 {
     public function index()
     {
+        $statusCounts = Vendor::query()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
         $stats = [
-            'total' => Vendor::count(),
-            'active' => Vendor::where('status', 'active')->count(),
-            'inactive' => Vendor::where('status', 'inactive')->count(),
-            'banned' => Vendor::where('status', 'banned')->count(),
+            'total' => $statusCounts->sum(),
+            'active' => (int) ($statusCounts['active'] ?? 0),
+            'inactive' => (int) ($statusCounts['inactive'] ?? 0),
+            'banned' => (int) ($statusCounts['banned'] ?? 0),
         ];
 
-        return view('admin.vendors.index', compact('stats'));
+        $statusOptions = $this->statusOptions();
+
+        return view('admin.vendors.index', compact('stats', 'statusOptions'));
     }
 
-    public function getVendorData()
+    public function getVendorData(Request $request)
     {
-        $vendors = Vendor::select(['id', 'name', 'email', 'phone', 'status']);
+        $status = strtolower((string) $request->get('status'));
+
+        $vendors = Vendor::query()
+            ->select(['id', 'name', 'email', 'phone', 'status', 'created_at'])
+            ->when(
+                in_array($status, Vendor::STATUSES, true),
+                fn ($query) => $query->where('status', $status)
+            )
+            ->latest('id');
+
+        $statusOptions = $this->statusOptions();
 
         return DataTables::of($vendors)
-            ->editColumn('status', function ($vendor) {
+            ->editColumn('phone', fn ($vendor) => $vendor->phone ?: '—')
+            ->addColumn('registered_at', function ($vendor) {
+                if (! $vendor->created_at) {
+                    return '—';
+                }
+
+                return $vendor->created_at
+                    ->timezone(config('app.timezone'))
+                    ->format('M j, Y');
+            })
+            ->editColumn('status', function ($vendor) use ($statusOptions) {
                 $status = strtolower((string) $vendor->status);
 
-                return match ($status) {
-                    'active' => '<span class="badge badge-success">' . e(__('cms.vendors.status_active')) . '</span>',
-                    'inactive' => '<span class="badge badge-warning">' . e(__('cms.vendors.status_inactive')) . '</span>',
-                    'banned' => '<span class="badge badge-danger">' . e(__('cms.vendors.status_banned')) . '</span>',
-                    default => '<span class="badge badge-secondary">' . e(__('cms.vendors.status_unknown')) . '</span>',
+                $label = $statusOptions[$status] ?? __('cms.vendors.status_unknown');
+                $badgeClass = match ($status) {
+                    'active' => 'badge-success',
+                    'inactive' => 'badge-warning',
+                    'banned' => 'badge-danger',
+                    default => 'badge-secondary',
                 };
+
+                return '<span class="badge ' . $badgeClass . '">' . e($label) . '</span>';
             })
             ->addColumn('action', function ($vendor) {
                 $deleteLabel = e(__('cms.vendors.delete_button'));
@@ -59,34 +88,14 @@ class VendorController extends Controller
 
     public function create()
     {
-        return view('admin.vendors.create');
+        $statusOptions = $this->statusOptions();
+
+        return view('admin.vendors.create', compact('statusOptions'));
     }
 
-    public function store(Request $request)
+    public function store(VendorStoreRequest $request)
     {
-        $validatedData = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:vendors,email'],
-            'password' => [
-                'required',
-                'confirmed',
-                Password::min(8)
-                    ->symbols(),
-            ],
-            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9\s\-]+$/'],
-            'status' => ['required', 'in:active,inactive,banned'],
-        ], [
-            'password.confirmed' => 'Password confirmation does not match.',
-            'phone.regex' => 'Phone number can only contain numbers, spaces, dashes and optional +.',
-        ]);
-
-        Vendor::create([
-            'name' => trim($validatedData['name']),
-            'email' => strtolower(trim($validatedData['email'])),
-            'password' => Hash::make($validatedData['password']),
-            'phone' => $validatedData['phone'] ?? null,
-            'status' => $validatedData['status'],
-        ]);
+        Vendor::create($request->validated());
 
         return redirect()->route('admin.vendors.index')
             ->with('success', __('cms.vendors.success_create'));
@@ -101,5 +110,14 @@ class VendorController extends Controller
             'success' => true,
             'message' => __('cms.vendors.success_delete'),
         ]);
+    }
+
+    private function statusOptions(): array
+    {
+        return collect(Vendor::STATUSES)
+            ->mapWithKeys(fn ($status) => [
+                $status => __('cms.vendors.status_' . $status),
+            ])
+            ->all();
     }
 }
