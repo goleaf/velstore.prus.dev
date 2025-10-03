@@ -277,7 +277,7 @@
                                 $langCode = $language->code;
                                 $languageName = ucwords($language->name ?? $langCode);
                                 $existingTranslation = $isEdit && $productVariant
-                                    ? $productVariant->translations->firstWhere('locale', $langCode)
+                                    ? $productVariant->translations->firstWhere('language_code', $langCode)
                                     : null;
                                 $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
                                 $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
