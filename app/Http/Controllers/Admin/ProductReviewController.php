@@ -3,19 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkUpdateProductReviewRequest;
+use App\Http\Requests\Admin\ProductReviewDataRequest;
 use App\Http\Requests\Admin\UpdateProductReviewRequest;
 use App\Models\ProductReview;
+use App\Services\Admin\ProductReviewMetricsService;
+use App\Support\Filters\ProductReviewFilters;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class ProductReviewController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(private readonly ProductReviewMetricsService $metricsService)
     {
-        return view('admin.reviews.index');
     }
 
-    public function getData(Request $request)
+    public function index(Request $request)
+    {
+        return view('admin.reviews.index', [
+            'metrics' => $this->metricsService->getOverview(),
+            'topProducts' => $this->metricsService->topProducts(),
+            'recentReviews' => $this->metricsService->recentReviews(),
+        ]);
+    }
+
+    public function getData(ProductReviewDataRequest $request, ProductReviewFilters $filters)
     {
         $reviews = ProductReview::query()
             ->with([
@@ -25,21 +39,45 @@ class ProductReviewController extends Controller
                     $query->select('id', 'product_id', 'language_code', 'name');
                 },
             ])
-            ->select('product_reviews.*')
-            ->latest();
+            ->select('product_reviews.*');
 
-        $status = $request->query('status');
-
-        if (in_array($status, ['approved', 'pending'], true)) {
-            $reviews->where('is_approved', $status === 'approved');
-        }
+        $filters->apply($reviews, $request->filters());
 
         return DataTables::of($reviews)
+            ->filter(function ($query) use ($request) {
+                $search = (string) $request->input('search.value');
+
+                if (! $search) {
+                    return;
+                }
+
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery
+                        ->where('product_reviews.review', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($relation) use ($search) {
+                            $relation->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('product.translations', function ($relation) use ($search) {
+                            $relation->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->order(function ($query) use ($request) {
+                if ($request->input('order.0.column') === null) {
+                    $query->latest();
+
+                    return;
+                }
+            })
             ->addColumn('customer_name', function (ProductReview $review) {
                 return $review->customer_display_name;
             })
             ->addColumn('product_name', function (ProductReview $review) {
                 return $review->product_display_name;
+            })
+            ->addColumn('review_excerpt', function (ProductReview $review) {
+                return Str::limit((string) $review->review, 60);
             })
             ->editColumn('rating', function (ProductReview $review) {
                 return number_format((float) $review->rating, 1);
@@ -47,7 +85,19 @@ class ProductReviewController extends Controller
             ->addColumn('status', function (ProductReview $review) {
                 return $review->status_label;
             })
+            ->editColumn('created_at', function (ProductReview $review) {
+                return optional($review->created_at)->format('Y-m-d H:i');
+            })
             ->toJson();
+    }
+
+    public function metrics(): JsonResponse
+    {
+        return response()->json([
+            'metrics' => $this->metricsService->getOverview(),
+            'top_products' => $this->metricsService->topProducts(),
+            'recent_reviews' => $this->metricsService->recentReviews(),
+        ]);
     }
 
     public function show(ProductReview $review)
@@ -77,6 +127,28 @@ class ProductReviewController extends Controller
         return redirect()
             ->route('admin.reviews.show', $review)
             ->with('success', __('cms.product_reviews.success_update'));
+    }
+
+    public function bulkAction(BulkUpdateProductReviewRequest $request): JsonResponse
+    {
+        $ids = $request->reviewIds();
+        $action = $request->action();
+
+        $query = ProductReview::query()->whereIn('id', $ids);
+
+        $updated = match ($action) {
+            'approve' => $query->update(['is_approved' => true]),
+            'unapprove' => $query->update(['is_approved' => false]),
+            'delete' => ProductReview::destroy($ids),
+            default => 0,
+        };
+
+        return response()->json([
+            'success' => true,
+            'updated' => (int) $updated,
+            'action' => $action,
+            'message' => __('cms.product_reviews.bulk_action_success', ['count' => (int) $updated]),
+        ]);
     }
 
     public function destroy(ProductReview $review)

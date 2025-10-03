@@ -107,6 +107,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Reviews */
     Route::get('/reviews/data', [ProductReviewController::class, 'getData'])->name('reviews.data');
+    Route::get('/reviews/metrics', [ProductReviewController::class, 'metrics'])->name('reviews.metrics');
+    Route::post('/reviews/bulk-action', [ProductReviewController::class, 'bulkAction'])->name('reviews.bulk-action');
     Route::resource('reviews', ProductReviewController::class)->except(['create', 'store']);
 
     /* Attributes */
