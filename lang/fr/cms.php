@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Filtrer les remboursements',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Statut',
         'status_filter_help' => 'Sélectionnez un ou plusieurs statuts pour restreindre cette liste.',
         'date_from_label' => 'Date de début',
         'date_to_label' => 'Date de fin',
         'apply_filters' => 'Appliquer les filtres',
         'reset_filters' => 'Réinitialiser les filtres',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Nombre total de remboursements',

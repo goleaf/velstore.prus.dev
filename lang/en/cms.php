@@ -261,16 +261,21 @@ return [
 
         // Filters
         'filters_title' => 'Filter refunds',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Select one or more statuses to narrow this list.',
         'date_from_label' => 'From date',
         'date_to_label' => 'To date',
         'apply_filters' => 'Apply filters',
         'reset_filters' => 'Reset filters',
+        'download_csv' => 'Download CSV',
         'shop_filter_label' => 'Shop',
         'shop_filter_placeholder' => 'All shops',
         'gateway_filter_label' => 'Payment gateway',
         'gateway_filter_placeholder' => 'All gateways',
+        'amount_min_label' => 'Minimum amount',
+        'amount_max_label' => 'Maximum amount',
+        'amount_filter_placeholder' => 'Enter amount',
         'search_filter_label' => 'Search',
         'search_filter_placeholder' => 'Search by refund ID, order, payment, or customer',
 
@@ -280,12 +285,25 @@ return [
         'summary_total_amount' => 'Total refunded',
         'summary_pending_count' => 'Open refunds',
         'summary_average_amount' => 'Average refund value',
+        'summary_shops_impacted' => 'Shops impacted',
+        'summary_highest_amount' => 'Largest single refund',
+        'summary_latest_refund' => 'Latest refund',
 
         // Shop Insights
         'shop_breakdown_title' => 'Refunds by shop',
         'shop_breakdown_help' => 'Top shops ranked by completed refund amount.',
         'shop_breakdown_empty' => 'No shops have recorded refunds yet.',
         'shop_breakdown_count' => '{0} No refunds|{1} :count refund|[2,*] :count refunds',
+
+        // Status Distribution
+        'status_distribution_title' => 'Status distribution',
+        'status_distribution_help' => 'See how refunds spread across workflow statuses.',
+        'status_distribution_empty' => 'No refunds available for these filters.',
+
+        // Recent Activity
+        'recent_activity_title' => 'Recent refund activity',
+        'recent_activity_help' => 'Latest refunds with context on status and payments.',
+        'recent_activity_empty' => 'No recent refunds to display.',
 
         // Delete Modal
         'delete_confirm' => 'Confirm Delete',

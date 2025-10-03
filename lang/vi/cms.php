@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Lọc hoàn tiền',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Trạng thái',
         'status_filter_help' => 'Chọn một hoặc nhiều trạng thái để thu hẹp danh sách này.',
         'date_from_label' => 'Từ ngày',
         'date_to_label' => 'Đến ngày',
         'apply_filters' => 'Áp dụng bộ lọc',
         'reset_filters' => 'Đặt lại bộ lọc',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Tổng số hoàn tiền',

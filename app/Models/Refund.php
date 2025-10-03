@@ -182,6 +182,19 @@ class Refund extends Model
         });
     }
 
+    public function scopeAmountBetween(Builder $query, ?float $min, ?float $max): Builder
+    {
+        if ($min !== null) {
+            $query->where('amount', '>=', $min);
+        }
+
+        if ($max !== null) {
+            $query->where('amount', '<=', $max);
+        }
+
+        return $query;
+    }
+
     public function payment()
     {
         return $this->belongsTo(Payment::class);

@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'فیلتر کردن بازپرداخت‌ها',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'وضعیت',
         'status_filter_help' => 'یک یا چند وضعیت را برای محدود کردن این لیست انتخاب کنید.',
         'date_from_label' => 'از تاریخ',
         'date_to_label' => 'تا تاریخ',
         'apply_filters' => 'اعمال فیلترها',
         'reset_filters' => 'بازنشانی فیلترها',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'مجموع بازپرداخت‌ها',

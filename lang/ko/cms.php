@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => '환불 필터',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => '상태',
         'status_filter_help' => '이 목록을 좁히려면 하나 이상의 상태를 선택하세요.',
         'date_from_label' => '시작 날짜',
         'date_to_label' => '종료 날짜',
         'apply_filters' => '필터 적용',
         'reset_filters' => '필터 초기화',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => '총 환불 건수',

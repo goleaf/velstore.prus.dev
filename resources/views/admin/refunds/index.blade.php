@@ -1,5 +1,9 @@
 @extends('admin.layouts.admin')
 
+@php
+    use App\Models\Refund;
+@endphp
+
 @section('content')
 <div class="max-w-7xl mx-auto mt-4 space-y-6">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -9,33 +13,62 @@
         </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-6">
         <div class="rounded-2xl border border-primary-100 bg-primary-50 px-6 py-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-primary-600">{{ __('cms.refunds.summary_total_count') }}</p>
-            <p class="mt-2 text-2xl font-semibold text-primary-900">{{ number_format($stats['total'] ?? 0) }}</p>
+            <p class="mt-2 text-2xl font-semibold text-primary-900">{{ number_format($summary['total'] ?? 0) }}</p>
         </div>
         <div class="rounded-2xl border border-success-100 bg-success-50 px-6 py-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-success-600">{{ __('cms.refunds.summary_completed_count') }}</p>
-            <p class="mt-2 text-2xl font-semibold text-success-900">{{ number_format($stats['completed'] ?? 0) }}</p>
+            <p class="mt-2 text-2xl font-semibold text-success-900">{{ number_format($summary['completed'] ?? 0) }}</p>
         </div>
         <div class="rounded-2xl border border-amber-100 bg-amber-50 px-6 py-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">{{ __('cms.refunds.summary_total_amount') }}</p>
-            <p class="mt-2 text-2xl font-semibold text-amber-900">{{ number_format($stats['refunded_amount'] ?? 0, 2) }}</p>
+            <p class="mt-2 text-2xl font-semibold text-amber-900">{{ number_format($summary['refunded_amount'] ?? 0, 2) }}</p>
         </div>
         <div class="rounded-2xl border border-indigo-100 bg-indigo-50 px-6 py-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-indigo-600">{{ __('cms.refunds.summary_pending_count') }}</p>
-            <p class="mt-2 text-2xl font-semibold text-indigo-900">{{ number_format($stats['pending'] ?? 0) }}</p>
+            <p class="mt-2 text-2xl font-semibold text-indigo-900">{{ number_format($summary['pending'] ?? 0) }}</p>
         </div>
         <div class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('cms.refunds.summary_average_amount') }}</p>
-            <p class="mt-2 text-2xl font-semibold text-slate-900">{{ number_format($stats['average_amount'] ?? 0, 2) }}</p>
+            <p class="mt-2 text-2xl font-semibold text-slate-900">{{ number_format($summary['average_amount'] ?? 0, 2) }}</p>
+        </div>
+        <div class="rounded-2xl border border-cyan-100 bg-cyan-50 px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-cyan-600">{{ __('cms.refunds.summary_shops_impacted') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-cyan-900">{{ number_format($summary['shops_impacted'] ?? 0) }}</p>
+        </div>
+        <div class="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">{{ __('cms.refunds.summary_highest_amount') }}</p>
+            @php
+                $highestAmount = $summary['highest_amount'] !== null
+                    ? number_format($summary['highest_amount'], 2) . ' ' . strtoupper($summary['highest_amount_currency'] ?? '')
+                    : __('cms.refunds.not_available');
+            @endphp
+            <p class="mt-2 text-2xl font-semibold text-rose-900">{{ $highestAmount }}</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('cms.refunds.summary_latest_refund') }}</p>
+            @php
+                $latestReference = $summary['latest_reference'] ?? __('cms.refunds.not_available');
+                $latestTimestamp = optional($summary['latest_refund_at'])->timezone(config('app.timezone'));
+                $latestLabel = $latestTimestamp ? $latestTimestamp->format('M d, Y H:i') : __('cms.refunds.not_available');
+            @endphp
+            <p class="mt-2 text-lg font-semibold text-slate-900">{{ $latestReference }}</p>
+            <p class="text-xs text-slate-500">{{ $latestLabel }}</p>
         </div>
     </div>
 
     <div class="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.filters_title') }}</h2>
+            <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.filters_title') }}</h2>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('cms.refunds.filters_description') }}</p>
+                </div>
+                <button type="button" class="btn btn-outline" id="exportRefunds" data-url="{{ route('admin.refunds.export') }}">
+                    {{ __('cms.refunds.download_csv') }}
+                </button>
             </div>
 
             <div class="px-6 py-6">
@@ -99,6 +132,32 @@
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <label class="form-label" for="refundAmountMin">{{ __('cms.refunds.amount_min_label') }}</label>
+                        <input
+                            id="refundAmountMin"
+                            type="number"
+                            name="amount_min"
+                            step="0.01"
+                            min="0"
+                            class="form-control"
+                            value="{{ $filters['amount_min'] ?? '' }}"
+                            placeholder="{{ __('cms.refunds.amount_filter_placeholder') }}"
+                        >
+                    </div>
+                    <div>
+                        <label class="form-label" for="refundAmountMax">{{ __('cms.refunds.amount_max_label') }}</label>
+                        <input
+                            id="refundAmountMax"
+                            type="number"
+                            name="amount_max"
+                            step="0.01"
+                            min="0"
+                            class="form-control"
+                            value="{{ $filters['amount_max'] ?? '' }}"
+                            placeholder="{{ __('cms.refunds.amount_filter_placeholder') }}"
+                        >
+                    </div>
                     <div class="lg:col-span-3">
                         <label class="form-label" for="refundSearch">{{ __('cms.refunds.search_filter_label') }}</label>
                         <input
@@ -118,25 +177,86 @@
             </div>
         </div>
 
-        <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
-            <div class="px-6 py-5 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.shop_breakdown_title') }}</h2>
-                <p class="mt-1 text-sm text-gray-500">{{ __('cms.refunds.shop_breakdown_help') }}</p>
-            </div>
-            <div class="px-6 py-6">
-                <div class="space-y-4">
-                    @forelse ($shopBreakdown as $shop)
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900">{{ $shop->shop_name }}</p>
-                                <p class="text-xs text-gray-500">
-                                    {{ trans_choice('cms.refunds.shop_breakdown_count', $shop->refund_count ?? 0, ['count' => $shop->refund_count ?? 0]) }}
-                                </p>
+        <div class="space-y-6">
+            <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.shop_breakdown_title') }}</h2>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('cms.refunds.shop_breakdown_help') }}</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="space-y-4">
+                        @forelse ($shopBreakdown as $shop)
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ $shop->shop_name }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ trans_choice('cms.refunds.shop_breakdown_count', $shop->refund_count ?? 0, ['count' => $shop->refund_count ?? 0]) }}
+                                    </p>
+                                </div>
+                                <span class="text-sm font-semibold text-primary-600">{{ number_format((float) ($shop->total_amount ?? 0), 2) }}</span>
                             </div>
-                            <span class="text-sm font-semibold text-primary-600">{{ number_format((float) ($shop->total_amount ?? 0), 2) }}</span>
+                        @empty
+                            <p class="text-sm text-gray-500">{{ __('cms.refunds.shop_breakdown_empty') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.status_distribution_title') }}</h2>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('cms.refunds.status_distribution_help') }}</p>
+                </div>
+                <div class="px-6 py-6 space-y-4">
+                    @forelse ($statusDistribution as $status)
+                        <div>
+                            <div class="flex items-center justify-between text-sm text-gray-700">
+                                <span>{{ $status['label'] }}</span>
+                                <span class="font-medium">{{ number_format($status['percentage'], 1) }}% · {{ number_format($status['count']) }}</span>
+                            </div>
+                            <div class="mt-2 h-2 rounded-full bg-gray-100">
+                                @php($width = min(100, $status['percentage']))
+                                <div class="h-full rounded-full bg-primary-500" style="width: {{ $width }}%"></div>
+                            </div>
                         </div>
                     @empty
-                        <p class="text-sm text-gray-500">{{ __('cms.refunds.shop_breakdown_empty') }}</p>
+                        <p class="text-sm text-gray-500">{{ __('cms.refunds.status_distribution_empty') }}</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-5 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">{{ __('cms.refunds.recent_activity_title') }}</h2>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('cms.refunds.recent_activity_help') }}</p>
+                </div>
+                <div class="px-6 py-6 space-y-4">
+                    @forelse ($recentRefunds as $recent)
+                        @php
+                            $recentBadge = Refund::badgeClassForStatus($recent->status);
+                            $recentLabel = Refund::labelForStatus($recent->status);
+                            $recentCreatedAt = $recent->created_at
+                                ? $recent->created_at->copy()->timezone(config('app.timezone'))->format('M d, Y H:i')
+                                : __('cms.refunds.not_available');
+                        @endphp
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">{{ $recent->refund_id ?? __('cms.refunds.not_available') }}</p>
+                                <p class="text-xs text-gray-500">{{ $recentCreatedAt }}</p>
+                                <p class="text-xs text-gray-500">{{ $recent->payment?->gateway?->name ?? __('cms.refunds.not_available') }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-semibold text-primary-600">{{ number_format((float) $recent->amount, 2) }} {{ strtoupper($recent->currency ?? '') }}</span>
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 {{ $recentBadge }}">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                        {{ $recentLabel }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">{{ __('cms.refunds.recent_activity_empty') }}</p>
                     @endforelse
                 </div>
             </div>
@@ -160,6 +280,7 @@
                             <th scope="col" class="table-header-cell">{{ __('cms.refunds.customer_column') }}</th>
                             <th scope="col" class="table-header-cell">{{ __('cms.refunds.amount') }}</th>
                             <th scope="col" class="table-header-cell">{{ __('cms.refunds.status') }}</th>
+                            <th scope="col" class="table-header-cell">{{ __('cms.refunds.created_at') }}</th>
                             <th scope="col" class="table-header-cell">{{ __('cms.refunds.reason') }}</th>
                             <th scope="col" class="table-header-cell">{{ __('cms.refunds.action') }}</th>
                         </tr>
@@ -218,6 +339,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const shopSelect = document.getElementById('refundShopFilter');
     const gatewaySelect = document.getElementById('refundGatewayFilter');
     const searchInput = document.getElementById('refundSearch');
+    const amountMinInput = document.getElementById('refundAmountMin');
+    const amountMaxInput = document.getElementById('refundAmountMax');
+    const exportButton = document.getElementById('exportRefunds');
 
     const dataTable = tableElement.DataTable({
         processing: true,
@@ -257,6 +381,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     params.gateway_id = gatewayId;
                 }
 
+                const amountMin = formData.get('amount_min');
+                if (amountMin) {
+                    params.amount_min = amountMin;
+                }
+
+                const amountMax = formData.get('amount_max');
+                if (amountMax) {
+                    params.amount_max = amountMax;
+                }
+
                 const searchTerm = formData.get('search_term');
                 if (searchTerm) {
                     params.search_term = searchTerm;
@@ -272,12 +406,13 @@ document.addEventListener('DOMContentLoaded', () => {
             { data: 'customer', name: 'customer_name', orderable: false, searchable: false },
             { data: 'amount', name: 'amount' },
             { data: 'status', name: 'status' },
+            { data: 'created_at', name: 'created_at' },
             { data: 'reason', name: 'reason' },
             { data: 'action', orderable: false, searchable: false },
         ],
         pageLength: 10,
         responsive: true,
-        order: [[0, 'desc']],
+        order: [[7, 'desc']],
     });
 
     tableElement.on('draw.dt', () => {
@@ -319,7 +454,43 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.value = '';
         }
 
+        if (amountMinInput) {
+            amountMinInput.value = '';
+        }
+
+        if (amountMaxInput) {
+            amountMaxInput.value = '';
+        }
+
         dataTable.ajax.reload();
+    });
+
+    exportButton?.addEventListener('click', () => {
+        if (!filterForm || !(exportButton instanceof HTMLElement)) {
+            return;
+        }
+
+        const url = exportButton.dataset.url;
+        if (!url) {
+            return;
+        }
+
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams();
+
+        formData.getAll('status[]').filter(Boolean).forEach((value) => {
+            params.append('status[]', value.toString());
+        });
+
+        ['date_from', 'date_to', 'shop_id', 'gateway_id', 'amount_min', 'amount_max', 'search_term'].forEach((key) => {
+            const value = formData.get(key);
+            if (value) {
+                params.append(key, value.toString());
+            }
+        });
+
+        const finalUrl = params.toString() ? `${url}?${params.toString()}` : url;
+        window.location.href = finalUrl;
     });
 
     let refundToDeleteId = null;

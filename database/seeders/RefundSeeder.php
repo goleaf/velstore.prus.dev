@@ -174,6 +174,75 @@ class RefundSeeder extends Seeder
             }
         }
 
+        $highValuePayment = $paymentsPool->sortByDesc(fn ($payment) => (float) $payment->amount)->first();
+
+        if ($highValuePayment) {
+            $highValueDefinitions = [
+                [
+                    'refund_id' => 'RFND-HIGH-' . $highValuePayment->id,
+                    'amount' => min(round((float) $highValuePayment->amount * 0.75, 2), (float) $highValuePayment->amount),
+                    'status' => Refund::STATUS_COMPLETED,
+                    'reason' => 'High-value refund issued after escalated support case.',
+                    'created_at' => now()->subDays(4),
+                ],
+                [
+                    'refund_id' => 'RFND-OPEN-' . $highValuePayment->id,
+                    'amount' => min(round((float) $highValuePayment->amount * 0.42, 2), (float) $highValuePayment->amount),
+                    'status' => Refund::STATUS_PENDING,
+                    'reason' => 'Pending finance approval for bulk product return.',
+                    'created_at' => now()->subDays(1),
+                ],
+            ];
+
+            foreach ($highValueDefinitions as $definition) {
+                $refund = Refund::updateOrCreate(
+                    [
+                        'payment_id' => $highValuePayment->id,
+                        'refund_id' => $definition['refund_id'],
+                    ],
+                    [
+                        'amount' => $definition['amount'],
+                        'currency' => $highValuePayment->currency ?? 'USD',
+                        'status' => $definition['status'],
+                        'reason' => $definition['reason'],
+                        'response' => ['message' => $definition['reason']],
+                    ]
+                );
+
+                $createdAt = $definition['created_at'] instanceof Carbon
+                    ? $definition['created_at']
+                    : Carbon::parse($definition['created_at']);
+
+                $refund->created_at = $createdAt;
+                $refund->updated_at = $createdAt->copy()->addMinutes(10);
+                $refund->save();
+            }
+        }
+
+        $nonUsdPayment = $paymentsPool->first(function ($payment) {
+            return $payment->currency && strtoupper($payment->currency) !== 'USD';
+        });
+
+        if ($nonUsdPayment) {
+            $refund = Refund::updateOrCreate(
+                [
+                    'payment_id' => $nonUsdPayment->id,
+                    'refund_id' => 'RFND-INT-' . $nonUsdPayment->id,
+                ],
+                [
+                    'amount' => min(round((float) $nonUsdPayment->amount * 0.3, 2), (float) $nonUsdPayment->amount),
+                    'currency' => $nonUsdPayment->currency,
+                    'status' => Refund::STATUS_APPROVED,
+                    'reason' => 'International refund awaiting local settlement.',
+                    'response' => ['message' => 'Exchange rate will be applied upon completion.'],
+                ]
+            );
+
+            $refund->created_at = now()->subDays(6);
+            $refund->updated_at = now()->subDays(6)->addHour();
+            $refund->save();
+        }
+
         if (! $showcasePayment) {
             return;
         }
