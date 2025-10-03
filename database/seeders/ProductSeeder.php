@@ -93,7 +93,7 @@ class ProductSeeder extends Seeder
                 'email' => 'vendor@example.com',
                 'password' => Hash::make('password'),
                 'phone' => '0000000000',
-                'status' => 1,
+                'status' => 'active',
             ]);
             $category = Category::first() ?? Category::create([
                 'slug' => 'default-category',

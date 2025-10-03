@@ -1,13 +1,5 @@
 @extends('admin.layouts.admin')
 
-@php
-    $statusOptions = [
-        'active' => __('cms.vendors.status_active'),
-        'inactive' => __('cms.vendors.status_inactive'),
-        'banned' => __('cms.vendors.status_banned'),
-    ];
-@endphp
-
 @section('content')
 <x-admin.page-header
     :title="__('cms.vendors.title_create')"
@@ -71,8 +63,13 @@
                             maxlength="20"
                             class="form-control @error('phone') is-invalid @enderror"
                             autocomplete="tel"
+                            inputmode="tel"
                             placeholder="+1 555 123 4567"
+                            aria-describedby="phone-help"
                         >
+                        <p id="phone-help" class="form-text text-xs text-gray-500 mt-1">
+                            {{ __('cms.vendors.phone_format_hint') }}
+                        </p>
                         @error('phone')
                             <p class="text-sm text-danger mt-1">{{ $message }}</p>
                         @enderror
@@ -93,7 +90,11 @@
                             class="form-control @error('password') is-invalid @enderror"
                             autocomplete="new-password"
                             required
+                            aria-describedby="password-help"
                         >
+                        <p id="password-help" class="form-text text-xs text-gray-500 mt-1">
+                            {{ __('cms.vendors.password_requirements') }}
+                        </p>
                         @error('password')
                             <p class="text-sm text-danger mt-1">{{ $message }}</p>
                         @enderror
