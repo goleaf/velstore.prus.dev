@@ -4,6 +4,7 @@ namespace App\Services\Store;
 
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Product;
 use App\Models\ShippingAddress;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,16 +22,29 @@ class OrderService
         $purchaseUnit = $paypalResult['purchase_units'][0] ?? [];
         $amount = $purchaseUnit['payments']['captures'][0]['amount']['value'] ?? 0;
 
+        $cart = session('cart', []);
+        $productIds = array_map('intval', array_keys($cart));
+        $products = Product::query()->whereIn('id', $productIds)->get()->keyBy('id');
+        $shopIds = collect($cart)
+            ->map(function ($item, $productId) use ($products) {
+                $product = $products[(int) $productId] ?? null;
+
+                return $product?->shop_id;
+            })
+            ->filter()
+            ->unique();
+        $shopId = $shopIds->count() === 1 ? $shopIds->first() : null;
+
         // Create Order
         $order = Order::create([
             'customer_id' => Auth::check() ? Auth::id() : null,
             'guest_email' => $payer['email_address'] ?? null,
+            'shop_id' => $shopId,
             'total_amount' => $amount,
             'status' => 'completed',
         ]);
 
         // Create Order Details from cart session
-        $cart = session('cart', []);
         foreach ($cart as $productId => $item) {
             OrderDetail::create([
                 'order_id' => $order->id,

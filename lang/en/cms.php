@@ -1431,13 +1431,20 @@ return [
     ],
 
     'orders' => [
-
-        // Page Title
+        // Page Titles & Actions
         'title' => 'Orders List',
+        'create_title' => 'Create Order',
+        'create_description' => 'Manually create an order for any shop and customer.',
+        'create_button' => 'Create Order',
+        'save_button' => 'Save Order',
+        'cancel_button' => 'Cancel',
+        'view_button' => 'View',
 
         // Table Headings
         'id' => 'Order ID',
         'order_date' => 'Order Date',
+        'shop' => 'Shop',
+        'customer' => 'Customer',
         'status' => 'Status',
         'total_price' => 'Total Price',
         'action' => 'Actions',
@@ -1448,17 +1455,35 @@ return [
         'processing_orders' => 'Processing Orders',
         'completed_orders' => 'Completed Orders',
         'cancelled_orders' => 'Cancelled Orders',
+        'filters' => [
+            'status_all' => 'All statuses',
+            'search_label' => 'Search',
+            'search_placeholder' => 'Search by order ID or customer email',
+            'shop_all' => 'All shops',
+            'apply' => 'Apply filters',
+            'reset' => 'Reset',
+        ],
 
-        // Delete Modal
+        // Form helpers
+        'shop_select_placeholder' => 'Select a shop',
+        'customer_select_placeholder' => 'Select a customer (optional)',
+        'guest_email' => 'Guest Email',
+        'guest_email_hint' => 'Provide an email for guest orders when no customer is selected.',
+        'form_section_basics' => 'Order information',
+        'form_section_basics_hint' => 'Choose the shop, customer, status, and other essentials.',
+        'form_section_shipping' => 'Shipping details',
+        'form_section_shipping_hint' => 'Optionally store where the order should be delivered.',
+
+        // Delete Modal & Flash Messages
+>>>>>>> origin/codex/refactor-admin-orders-and-add-features
         'delete_confirm_title' => 'Confirm Delete',
         'delete_confirm_message' => 'Are you sure you want to delete this order?',
         'delete_cancel' => 'Cancel',
         'delete_button' => 'Delete',
-
-        // Toastr / Flash Messages
         'deleted_success' => 'Order deleted successfully.',
         'deleted_error' => 'Failed to delete the order.',
         'deleted' => 'Deleted',
+        'created_success' => 'Order created successfully.',
 
         // Overview Stats
         'overview_title' => 'Orders Overview',
@@ -1481,7 +1506,6 @@ return [
         'customer_name' => 'Name',
         'customer_email' => 'Email',
         'customer_phone' => 'Phone',
-        'guest_email' => 'Guest Email',
         'shipping' => 'Shipping Address',
         'shipping_method' => 'Shipping method',
         'shipping_tracking' => 'Tracking number',
@@ -1521,6 +1545,40 @@ return [
         'notes_customer_visible' => 'Customer visible',
         'notes_empty' => 'No notes added for this order.',
         'notes_unknown_author' => 'System',
+        'shop_unassigned' => 'Unassigned shop',
+
+        // Items section copy
+        'items_section_title' => 'Order items',
+        'items_section_hint' => 'Add one or more products from the selected shop.',
+        'items_add' => 'Add item',
+        'items_remove' => 'Remove',
+        'items_empty_hint' => 'Add at least one product to create the order.',
+        'items_select_shop_hint' => 'Select a shop to start adding products.',
+        'items_no_products_hint' => 'This shop has no products available.',
+        'items_product_placeholder' => 'Choose a product',
+
+        // Status labels
+        'status_labels' => [
+            'pending' => 'Pending',
+            'processing' => 'Processing',
+            'completed' => 'Completed',
+            'canceled' => 'Canceled',
+        ],
+
+        // Validation messages
+        'validation' => [
+            'error_heading' => 'We found some issues with your submission.',
+            'shop_required' => 'Please select a valid shop.',
+            'items_required' => 'Add at least one product to the order.',
+            'items_invalid' => 'One or more order items are invalid.',
+            'product_not_in_shop' => '":product" is not available in :shop.',
+            'unknown_product' => 'Unknown product',
+            'total_must_be_positive' => 'The order total must be greater than zero.',
+            'guest_or_customer_required' => 'Select a customer or provide a guest email address.',
+            'product_required' => 'Choose a product for each order line.',
+            'quantity_min' => 'Item quantities must be at least 1.',
+        ],
+>>>>>>> origin/codex/refactor-admin-orders-and-add-features
     ],
 
     'coupons' => [

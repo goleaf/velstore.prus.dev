@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Shop;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,6 +25,7 @@ class OrderFactory extends Factory
         $grandTotal = round($itemsTotal + $shippingAmount - $discountAmount + $taxAmount + $adjustmentAmount, 2);
 
         return [
+            'shop_id' => Shop::factory(),
             'customer_id' => Customer::factory(),
             'guest_email' => null,
             'total_amount' => max($grandTotal, 0.01),

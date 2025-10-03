@@ -43,6 +43,13 @@ class OrderSeederTest extends TestCase
             'name' => 'Guest Three',
             'address' => '321 Sample Parkway',
         ]);
+
+        $singleShopOrder = Order::with('details.product')->findOrFail(2);
+        $this->assertNotNull($singleShopOrder->shop_id);
+        $this->assertSame(
+            $singleShopOrder->details->pluck('product.shop_id')->filter()->unique()->first(),
+            $singleShopOrder->shop_id
+        );
     }
 
     public function test_order_seeder_is_idempotent(): void

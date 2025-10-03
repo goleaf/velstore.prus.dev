@@ -23,6 +23,7 @@
         $adjustmentAmount = (float) $order->adjustment_amount;
         $calculatedTotal = $itemsTotal + $shippingAmount - $discountAmount + $taxAmount + $adjustmentAmount;
         $formatAmount = fn (float $value): string => number_format($value, 2) . ' ' . $currency;
+        $statusLabel = __('cms.orders.status_labels.' . $order->status);
     @endphp
 
     <x-admin.card class="mt-6" :title="__('cms.orders.summary')">
@@ -34,9 +35,15 @@
                 </dd>
             </div>
             <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.shop') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    {{ $order->shop?->name ?? __('cms.orders.shop_unassigned') }}
+                </dd>
+            </div>
+            <div>
                 <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.status') }}</dt>
                 <dd class="mt-1">
-                    <span class="{{ $statusClass }}">{{ ucfirst($order->status) }}</span>
+                    <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
                 </dd>
             </div>
             <div>

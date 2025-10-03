@@ -374,14 +374,18 @@ class DemoDataSeeder extends Seeder
 
             foreach (range(1, 15) as $_) {
                 $customer = $customers->random();
-                $order = Order::factory()->create([
-                    'customer_id' => $customer->id,
-                    'status' => Arr::random(['pending', 'processing', 'completed', 'canceled']),
-                ]);
-                $orders->push($order);
 
                 $items = $products->random(rand(1, 3));
                 $items = $items instanceof \Illuminate\Support\Collection ? $items : collect([$items]);
+                $shopIds = $items->pluck('shop_id')->filter()->unique();
+                $shopId = $shopIds->count() === 1 ? $shopIds->first() : null;
+
+                $order = Order::factory()->create([
+                    'customer_id' => $customer->id,
+                    'shop_id' => $shopId,
+                    'status' => Arr::random(['pending', 'processing', 'completed', 'canceled']),
+                ]);
+                $orders->push($order);
 
                 $orderTotal = 0;
                 foreach ($items as $item) {

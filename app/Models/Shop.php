@@ -36,4 +36,9 @@ class Shop extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 }

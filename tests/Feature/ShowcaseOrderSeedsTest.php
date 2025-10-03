@@ -41,6 +41,7 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->assertNotNull($cancelledOrder);
         $this->assertSame('cancelled-order@example.com', $cancelledOrder->guest_email);
         $this->assertEquals(45.5, (float) $cancelledOrder->total_amount);
+        $this->assertNull($showcaseOrder->shop_id);
 
         $productIds = DB::table('products')->pluck('id')->take(2);
 

@@ -112,6 +112,7 @@ class PaymentSeeder extends Seeder
 
         $showcaseItems = [
             [
+<<<<<<< HEAD
                 'product' => $products[0],
                 'quantity' => 1,
                 'price' => $products[0]->price ?: 120.75,
@@ -122,6 +123,14 @@ class PaymentSeeder extends Seeder
                 'price' => $products[1]->price ?? 60.00,
             ],
         ];
+=======
+                'customer_id' => null,
+                'shop_id' => $defaultShopId,
+                'total_amount' => 180.75,
+                'status' => 'processing',
+            ]
+        );
+>>>>>>> origin/codex/refactor-admin-orders-and-add-features
 
         $showcaseOrder = $this->upsertOrder('showcase-order@example.com', 'processing', $showcaseItems, Carbon::now()->subDays(2));
         $this->ensureShippingAddress($showcaseOrder, [

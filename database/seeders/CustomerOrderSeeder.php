@@ -36,15 +36,21 @@ class CustomerOrderSeeder extends Seeder
                         continue;
                     }
 
+                    $lineCount = rand(2, 4);
+                    $picked = $products->shuffle()->take($lineCount);
+                    $picked = $picked instanceof \Illuminate\Support\Collection ? $picked : collect([$picked]);
+
+                    $shopIds = $picked->pluck('shop_id')->filter()->unique();
+                    $shopId = $shopIds->count() === 1 ? $shopIds->first() : null;
+
                     $order = Order::create([
                         'customer_id' => $customer->id,
                         'guest_email' => null,
+                        'shop_id' => $shopId,
                         'total_amount' => 0,
                         'status' => $status,
                     ]);
 
-                    $lineCount = rand(2, 4);
-                    $picked = $products->shuffle()->take($lineCount);
                     $total = 0;
 
                     foreach ($picked as $product) {

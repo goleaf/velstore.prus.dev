@@ -14,11 +14,13 @@ class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $productIds = Product::query()->orderBy('id')->limit(3)->pluck('id');
+        $products = Product::query()->with('shop')->orderBy('id')->limit(5)->get();
 
-        if ($productIds->count() < 2) {
+        if ($products->count() < 2) {
             return; // Not enough products; skip to avoid FK issues
         }
+
+        $productIds = $products->pluck('id')->values();
 
         $now = now();
 
@@ -190,6 +192,15 @@ class OrderSeeder extends Seeder
 
         foreach ($orders as $id => $payload) {
             $items = collect($payload['items'] ?? []);
+            $shopIds = $items
+                ->map(function (array $item) use ($products) {
+                    $product = $products->firstWhere('id', $item['product_id'] ?? null);
+
+                    return $product?->shop_id;
+                })
+                ->filter()
+                ->unique();
+            $shopId = $shopIds->count() === 1 ? $shopIds->first() : null;
             $itemsTotal = $items->reduce(
                 static fn (float $carry, array $item): float => $carry + ($item['quantity'] * $item['price']),
                 0.0
@@ -205,6 +216,7 @@ class OrderSeeder extends Seeder
             DB::table('orders')->updateOrInsert(
                 ['id' => $id],
                 [
+                    'shop_id' => $shopId,
                     'customer_id' => null,
                     'guest_email' => $payload['guest_email'],
                     'total_amount' => number_format($total, 2, '.', ''),

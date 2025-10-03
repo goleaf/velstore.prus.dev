@@ -51,6 +51,7 @@ class AdminPageBrowsingTest extends TestCase
             ['admin.social-media-links.create', [], 'admin.social-media-links.create'],
             ['admin.social-media-links.edit', ['social_media_link' => $this->socialLink->id], 'admin.social-media-links.edit'],
             ['admin.orders.index', [], 'admin.orders.index'],
+            ['admin.orders.create', [], 'admin.orders.create'],
             ['admin.orders.show', ['order' => $this->order->id], 'admin.orders.show'],
             ['admin.coupons.index', [], 'admin.coupons.index'],
             ['admin.coupons.create', [], 'admin.coupons.create'],

@@ -19,10 +19,10 @@ class OrderController extends Controller
     {
         $vendorId = Auth::guard('vendor')->id();
 
-        $query = Order::whereHas('items', function ($q) use ($vendorId) {
+        $query = Order::whereHas('details.product', function ($q) use ($vendorId) {
             $q->where('vendor_id', $vendorId);
         })
-            ->with('items')
+            ->with('details.product')
             ->latest();
 
         return DataTables::of($query)
@@ -57,7 +57,7 @@ class OrderController extends Controller
     {
         $vendorId = Auth::guard('vendor')->id();
 
-        $order = Order::whereHas('items', function ($q) use ($vendorId) {
+        $order = Order::whereHas('details.product', function ($q) use ($vendorId) {
             $q->where('vendor_id', $vendorId);
         })->findOrFail($id);
 

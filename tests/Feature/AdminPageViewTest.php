@@ -67,6 +67,7 @@ class AdminPageViewTest extends TestCase
             'social media links create' => ['admin.social-media-links.create', [], 'admin.social-media-links.create'],
             'social media links edit' => ['admin.social-media-links.edit', ['social_media_link' => fn (self $test) => $test->socialLink->id], 'admin.social-media-links.edit'],
             'orders index' => ['admin.orders.index', [], 'admin.orders.index'],
+            'orders create' => ['admin.orders.create', [], 'admin.orders.create'],
             'orders show' => ['admin.orders.show', ['order' => fn (self $test) => $test->order->id], 'admin.orders.show'],
             'coupons index' => ['admin.coupons.index', [], 'admin.coupons.index'],
             'coupons create' => ['admin.coupons.create', [], 'admin.coupons.create'],

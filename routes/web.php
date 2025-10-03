@@ -85,8 +85,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Orders */
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::delete('orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     /* Coupons */
     Route::resource('coupons', CouponController::class);
