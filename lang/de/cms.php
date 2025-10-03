@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Rückerstattungen filtern',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Wählen Sie einen oder mehrere Status aus, um diese Liste einzugrenzen.',
         'date_from_label' => 'Von Datum',
         'date_to_label' => 'Bis Datum',
         'apply_filters' => 'Filter anwenden',
         'reset_filters' => 'Filter zurücksetzen',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Gesamtanzahl Rückerstattungen',

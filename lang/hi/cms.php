@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'रिफंड छांटें',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'स्थिति',
         'status_filter_help' => 'इस सूची को सीमित करने के लिए एक या अधिक स्थितियाँ चुनें।',
         'date_from_label' => 'दिनांक से',
         'date_to_label' => 'दिनांक तक',
         'apply_filters' => 'फ़िल्टर लागू करें',
         'reset_filters' => 'फ़िल्टर रीसेट करें',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'कुल रिफंड',

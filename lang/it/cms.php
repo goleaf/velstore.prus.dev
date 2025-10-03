@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Filtra rimborsi',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Stato',
         'status_filter_help' => 'Seleziona uno o più stati per restringere questo elenco.',
         'date_from_label' => 'Data iniziale',
         'date_to_label' => 'Data finale',
         'apply_filters' => 'Applica filtri',
         'reset_filters' => 'Reimposta filtri',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Rimborsi totali',

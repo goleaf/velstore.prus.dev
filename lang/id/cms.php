@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Saring pengembalian dana',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Pilih satu atau lebih status untuk mempersempit daftar ini.',
         'date_from_label' => 'Tanggal mulai',
         'date_to_label' => 'Tanggal akhir',
         'apply_filters' => 'Terapkan filter',
         'reset_filters' => 'Atur ulang filter',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Total pengembalian dana',

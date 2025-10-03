@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Filtruj zwroty',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Wybierz jeden lub więcej statusów, aby zawęzić tę listę.',
         'date_from_label' => 'Data od',
         'date_to_label' => 'Data do',
         'apply_filters' => 'Zastosuj filtry',
         'reset_filters' => 'Resetuj filtry',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Łączna liczba zwrotów',

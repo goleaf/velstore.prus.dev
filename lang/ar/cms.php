@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'تصفية عمليات الاسترداد',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'الحالة',
         'status_filter_help' => 'حدد حالة أو أكثر لتضييق هذه القائمة.',
         'date_from_label' => 'من التاريخ',
         'date_to_label' => 'إلى التاريخ',
         'apply_filters' => 'تطبيق عوامل التصفية',
         'reset_filters' => 'إعادة تعيين عوامل التصفية',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'إجمالي عمليات الاسترداد',

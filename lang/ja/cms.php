@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => '払い戻しを絞り込み',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'ステータス',
         'status_filter_help' => 'このリストを絞り込むには、1 つ以上のステータスを選択してください。',
         'date_from_label' => '開始日',
         'date_to_label' => '終了日',
         'apply_filters' => 'フィルターを適用',
         'reset_filters' => 'フィルターをリセット',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => '払い戻し総数',

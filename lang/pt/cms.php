@@ -178,12 +178,14 @@ return [
 
         // Filters
         'filters_title' => 'Filtrar reembolsos',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Selecione um ou mais status para restringir esta lista.',
         'date_from_label' => 'Data inicial',
         'date_to_label' => 'Data final',
         'apply_filters' => 'Aplicar filtros',
         'reset_filters' => 'Redefinir filtros',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Total de reembolsos',

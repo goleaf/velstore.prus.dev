@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'Фильтр возвратов',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Статус',
         'status_filter_help' => 'Выберите один или несколько статусов, чтобы сузить список.',
         'date_from_label' => 'Дата с',
         'date_to_label' => 'Дата по',
         'apply_filters' => 'Применить фильтры',
         'reset_filters' => 'Сбросить фильтры',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Всего возвратов',

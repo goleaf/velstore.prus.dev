@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => '筛选退款',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => '状态',
         'status_filter_help' => '选择一个或多个状态以缩小此列表。',
         'date_from_label' => '起始日期',
         'date_to_label' => '结束日期',
         'apply_filters' => '应用筛选',
         'reset_filters' => '重置筛选',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => '退款总数',

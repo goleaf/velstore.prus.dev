@@ -141,6 +141,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Refunds */
     Route::get('refunds', [RefundController::class, 'index'])->name('refunds.index');
+    Route::get('refunds/export', [RefundController::class, 'export'])->name('refunds.export');
     Route::get('refunds/data', [RefundController::class, 'getData'])->name('refunds.getData');
     Route::delete('refunds/{refund}', [RefundController::class, 'destroy'])->name('refunds.destroy');
     Route::get('refunds/{refund}', [RefundController::class, 'show'])->name('refunds.show');

@@ -178,12 +178,14 @@ return [
 
         // Filters
         'filters_title' => 'Restituties filteren',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Status',
         'status_filter_help' => 'Selecteer één of meer statussen om deze lijst te verfijnen.',
         'date_from_label' => 'Vanaf datum',
         'date_to_label' => 'Tot datum',
         'apply_filters' => 'Filters toepassen',
         'reset_filters' => 'Filters opnieuw instellen',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Totaal restituties',

@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'กรองการคืนเงิน',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'สถานะ',
         'status_filter_help' => 'เลือกหนึ่งสถานะหรือมากกว่าเพื่อจำกัดรายชื่อนี้.',
         'date_from_label' => 'จากวันที่',
         'date_to_label' => 'ถึงวันที่',
         'apply_filters' => 'ใช้ตัวกรอง',
         'reset_filters' => 'รีเซ็ตตัวกรอง',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'จำนวนการคืนเงินทั้งหมด',

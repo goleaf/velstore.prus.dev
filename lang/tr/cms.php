@@ -179,12 +179,14 @@ return [
 
         // Filters
         'filters_title' => 'İadeleri filtrele',
+        'filters_description' => 'Refine refund insights with advanced filters.',
         'status_filter_label' => 'Durum',
         'status_filter_help' => 'Bu listeyi daraltmak için bir veya daha fazla durum seçin.',
         'date_from_label' => 'Başlangıç tarihi',
         'date_to_label' => 'Bitiş tarihi',
         'apply_filters' => 'Filtreleri uygula',
         'reset_filters' => 'Filtreleri sıfırla',
+        'download_csv' => 'Download CSV',
 
         // Summary Cards
         'summary_total_count' => 'Toplam iadeler',
