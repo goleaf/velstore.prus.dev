@@ -168,6 +168,28 @@ return [
         'completed' => 'เสร็จสิ้น',
         'pending' => 'รอดำเนินการ',
         'failed' => 'ล้มเหลว',
+        'status_labels' => [
+            'requested' => 'ร้องขอแล้ว',
+            'approved' => 'อนุมัติแล้ว',
+            'rejected' => 'ถูกปฏิเสธ',
+            'pending' => 'รอดำเนินการ',
+            'completed' => 'เสร็จสิ้น',
+            'failed' => 'ล้มเหลว',
+        ],
+
+        // Filters
+        'filters_title' => 'กรองการคืนเงิน',
+        'status_filter_label' => 'สถานะ',
+        'status_filter_help' => 'เลือกหนึ่งสถานะหรือมากกว่าเพื่อจำกัดรายชื่อนี้.',
+        'date_from_label' => 'จากวันที่',
+        'date_to_label' => 'ถึงวันที่',
+        'apply_filters' => 'ใช้ตัวกรอง',
+        'reset_filters' => 'รีเซ็ตตัวกรอง',
+
+        // Summary Cards
+        'summary_total_count' => 'จำนวนการคืนเงินทั้งหมด',
+        'summary_completed_count' => 'การคืนเงินที่เสร็จสิ้น',
+        'summary_total_amount' => 'ยอดคืนเงินทั้งหมด',
 
         // Delete Modal
         'delete_confirm' => 'ยืนยันการลบ',

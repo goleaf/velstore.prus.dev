@@ -1,18 +1,12 @@
 @extends('admin.layouts.admin')
 
 @php
-    $customer = $review->customer;
-    $product = $review->product;
-    $customerNameParts = array_filter([$customer?->first_name, $customer?->last_name]);
-    $customerName = trim(implode(' ', $customerNameParts));
-
-    if ($customerName === '') {
-        $customerName = $customer?->email ?? __('cms.product_reviews.missing_customer');
-    }
-
-    $productName = $product?->title ?? __('cms.product_reviews.missing_product');
-    $statusKey = $review->is_approved ? 'approved' : 'pending';
-    $statusClass = $review->is_approved ? 'badge badge-success' : 'badge badge-warning';
+    $statusKey = $review->status_label;
+    $statusClass = $review->status_badge_class;
+    $customerName = $review->customer_display_name;
+    $productName = $review->product_display_name;
+    $submittedAt = optional($review->created_at)?->timezone(config('app.timezone'));
+    $updatedAt = optional($review->updated_at)?->timezone(config('app.timezone'));
 @endphp
 
 @section('content')
@@ -50,13 +44,29 @@
                     <span class="{{ $statusClass }}">{{ __('cms.product_reviews.' . $statusKey) }}</span>
                 </dd>
             </div>
+
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.product_reviews.submitted_at') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    {{ $submittedAt ? $submittedAt->format('M j, Y g:i A') : '—' }}
+                </dd>
+            </div>
+
+            <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.product_reviews.updated_at') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    {{ $updatedAt ? $updatedAt->format('M j, Y g:i A') : '—' }}
+                </dd>
+            </div>
         </dl>
 
         <div class="mt-8">
             <h3 class="text-sm font-medium text-gray-500">{{ __('cms.product_reviews.review') }}</h3>
-            <p class="mt-2 whitespace-pre-line text-sm text-gray-900">
-                {{ $review->review ?: __('cms.product_reviews.no_review_provided') }}
-            </p>
+            @if ($review->review)
+                <p class="mt-2 whitespace-pre-line text-sm text-gray-900">{{ $review->review }}</p>
+            @else
+                <p class="mt-2 text-sm text-gray-500">{{ __('cms.product_reviews.no_review_provided') }}</p>
+            @endif
         </div>
     </x-admin.card>
 @endsection
