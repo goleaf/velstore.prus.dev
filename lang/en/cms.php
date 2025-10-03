@@ -344,12 +344,20 @@ return [
 
     'customers' => [
         'customer_list' => 'Customer List',
+        'index_title' => 'Customers',
+        'index_description' => 'View, search, and manage customer accounts in one place.',
 
         // Create form
         'create_title' => 'Create Customer',
         'create_description' => 'Add a new customer by providing their basic information.',
         'create_button' => 'Create Customer',
+        'create_button_short' => 'New Customer',
         'password' => 'Password',
+        'form_section_profile' => 'Profile details',
+        'form_section_profile_hint' => 'Basic information used to identify the customer across the platform.',
+        'form_section_account' => 'Account settings',
+        'form_section_account_hint' => 'Credentials and status that control access to the storefront.',
+        'address_placeholder' => 'Street, city, postal code, country…',
 
         // Table columns
         'id' => 'Id',
@@ -359,6 +367,22 @@ return [
         'address' => 'Address',
         'status' => 'Status',
         'actions' => 'Actions',
+
+        // Filters
+        'search_label' => 'Search customers',
+        'search_placeholder' => 'Search by name, email, or phone',
+        'filter_status_label' => 'Status',
+        'filter_status_all' => 'All statuses',
+        'apply_filters' => 'Apply filters',
+        'reset_filters' => 'Reset',
+
+        // Metrics
+        'metric_total' => 'Total customers',
+        'metric_total_hint' => 'Includes all active and inactive accounts.',
+        'metric_active' => 'Active customers',
+        'metric_active_hint' => 'Ready to shop and receive communications.',
+        'metric_inactive' => 'Inactive customers',
+        'metric_inactive_hint' => 'Accounts currently disabled or suspended.',
 
         // Status labels
         'active' => 'Active',
@@ -372,9 +396,13 @@ return [
 
         // Toastr messages
         'success_title' => 'Success',
+        'error_title' => 'Error',
         'deleted_title' => 'Deleted',
         'delete_success_message' => 'Customer deleted successfully!',
         'delete_error_message' => 'Error deleting customer!',
+
+        // Empty state
+        'empty_state_message' => 'No customers match your filters yet.',
 
         // Details view
         'view_button' => 'View',
