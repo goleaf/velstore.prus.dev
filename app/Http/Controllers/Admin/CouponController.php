@@ -12,14 +12,47 @@ use Illuminate\Support\Facades\Log;
 
 class CouponController extends Controller
 {
-    protected array $statusFilters = ['active', 'expired'];
+    protected array $statusFilters = ['active', 'expired', 'expiring_soon'];
+    protected array $typeFilters = ['percentage', 'fixed'];
+    protected array $usageFilters = ['limited', 'unlimited'];
 
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $type = $request->query('type');
+        $usage = $request->query('usage');
+        $search = trim((string) $request->query('search', ''));
         $now = Carbon::now();
 
         $couponsQuery = Coupon::query()->latest();
+
+        if ($search !== '') {
+            $couponsQuery->where(function ($query) use ($search) {
+                $query->where('code', 'like', "%{$search}%");
+
+                if (is_numeric($search)) {
+                    $query->orWhere('id', (int) $search);
+                }
+            });
+        }
+
+        if (is_string($type) && in_array($type, $this->typeFilters, true)) {
+            $couponsQuery->where('type', $type);
+        } else {
+            $type = '';
+        }
+
+        if (is_string($usage) && in_array($usage, $this->usageFilters, true)) {
+            if ($usage === 'limited') {
+                $couponsQuery->whereNotNull('usage_limit');
+            }
+
+            if ($usage === 'unlimited') {
+                $couponsQuery->whereNull('usage_limit');
+            }
+        } else {
+            $usage = '';
+        }
 
         if (is_string($status) && in_array($status, $this->statusFilters, true)) {
             if ($status === 'active') {
@@ -33,6 +66,11 @@ class CouponController extends Controller
                 $couponsQuery->whereNotNull('expires_at')
                     ->where('expires_at', '<', $now);
             }
+
+            if ($status === 'expiring_soon') {
+                $couponsQuery->whereNotNull('expires_at')
+                    ->whereBetween('expires_at', [$now, $now->copy()->addDays(7)]);
+            }
         } else {
             $status = '';
         }
@@ -45,6 +83,19 @@ class CouponController extends Controller
             '' => __('cms.coupons.filters.all'),
             'active' => __('cms.coupons.filters.active'),
             'expired' => __('cms.coupons.filters.expired'),
+            'expiring_soon' => __('cms.coupons.filters.expiring_soon'),
+        ];
+
+        $typeFilterLabels = [
+            '' => __('cms.coupons.filters.type.all'),
+            'percentage' => __('cms.coupons.filters.type.percentage'),
+            'fixed' => __('cms.coupons.filters.type.fixed'),
+        ];
+
+        $usageFilterLabels = [
+            '' => __('cms.coupons.filters.usage.all'),
+            'limited' => __('cms.coupons.filters.usage.limited'),
+            'unlimited' => __('cms.coupons.filters.usage.unlimited'),
         ];
 
         return view('admin.coupons.index', [
@@ -52,6 +103,11 @@ class CouponController extends Controller
             'stats' => $stats,
             'statusFilters' => $statusFilterLabels,
             'currentStatus' => $status,
+            'typeFilters' => $typeFilterLabels,
+            'currentType' => $type,
+            'usageFilters' => $usageFilterLabels,
+            'currentUsage' => $usage,
+            'searchTerm' => $search,
         ]);
     }
 
@@ -109,6 +165,7 @@ class CouponController extends Controller
     private function getCouponStats(?Carbon $reference = null): array
     {
         $now = $reference ?? Carbon::now();
+        $expiringSoonThreshold = $now->copy()->addDays(7);
 
         $activeCount = Coupon::query()
             ->where(function ($query) use ($now) {
@@ -122,10 +179,21 @@ class CouponController extends Controller
             ->where('expires_at', '<', $now)
             ->count();
 
+        $expiringSoonCount = Coupon::query()
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [$now, $expiringSoonThreshold])
+            ->count();
+
+        $unlimitedCount = Coupon::query()
+            ->whereNull('usage_limit')
+            ->count();
+
         return [
             'total' => Coupon::count(),
             'active' => $activeCount,
             'expired' => $expiredCount,
+            'expiring_soon' => $expiringSoonCount,
+            'unlimited' => $unlimitedCount,
         ];
     }
 }

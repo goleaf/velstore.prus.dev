@@ -1406,18 +1406,39 @@ return [
         'status_labels' => [
             'active' => 'Active',
             'expired' => 'Expired',
+            'expiring_soon' => 'Expiring soon',
         ],
 
         'filters' => [
             'all' => 'All coupons',
             'active' => 'Active',
             'expired' => 'Expired',
+            'expiring_soon' => 'Expiring soon',
+            'search_label' => 'Search coupons',
+            'search_placeholder' => 'Search by code or ID…',
+            'apply' => 'Apply filters',
+            'reset' => 'Reset filters',
+            'active_notice' => 'Filters are active. Showing a refined list of coupons.',
+            'type' => [
+                'label' => 'Discount type',
+                'all' => 'All types',
+                'percentage' => 'Percentage only',
+                'fixed' => 'Fixed amount only',
+            ],
+            'usage' => [
+                'label' => 'Usage limit',
+                'all' => 'All usage types',
+                'limited' => 'Limited only',
+                'unlimited' => 'Unlimited only',
+            ],
         ],
 
         'stats' => [
             'total' => 'Total coupons',
             'active' => 'Active coupons',
             'expired' => 'Expired coupons',
+            'expiring_soon' => 'Expiring soon',
+            'unlimited' => 'Unlimited coupons',
         ],
 
         'errors' => [

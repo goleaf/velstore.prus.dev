@@ -6,7 +6,11 @@
         'total' => $stats['total'] ?? 0,
         'active' => $stats['active'] ?? 0,
         'expired' => $stats['expired'] ?? 0,
+        'expiring_soon' => $stats['expiring_soon'] ?? 0,
+        'unlimited' => $stats['unlimited'] ?? 0,
     ];
+    $currentSearch = $searchTerm ?? '';
+    $filtersActive = $currentStatus !== '' || $currentType !== '' || $currentUsage !== '' || $currentSearch !== '';
 @endphp
 
 @section('content')
@@ -19,7 +23,7 @@
         </x-admin.button-link>
     </x-admin.page-header>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-3">
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('cms.coupons.stats.total') }}</p>
             <p class="mt-2 text-2xl font-semibold text-gray-900" data-coupons-stat="total">
@@ -38,16 +42,83 @@
                 {{ number_format($couponStats['expired']) }}
             </p>
         </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('cms.coupons.stats.expiring_soon') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-gray-900" data-coupons-stat="expiring_soon">
+                {{ number_format($couponStats['expiring_soon']) }}
+            </p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ __('cms.coupons.stats.unlimited') }}</p>
+            <p class="mt-2 text-2xl font-semibold text-gray-900" data-coupons-stat="unlimited">
+                {{ number_format($couponStats['unlimited']) }}
+            </p>
+        </div>
     </div>
 
     <x-admin.card class="mt-6" :title="__('cms.coupons.table_title')">
+        <form method="GET" action="{{ route('admin.coupons.index') }}" class="mb-4 grid gap-4 lg:grid-cols-[2fr,repeat(2,minmax(0,1fr)),auto]">
+            <input type="hidden" name="status" value="{{ $currentStatus }}">
+
+            <div>
+                <label for="coupon-search" class="form-label">{{ __('cms.coupons.filters.search_label') }}</label>
+                <input
+                    id="coupon-search"
+                    type="search"
+                    name="search"
+                    value="{{ $currentSearch }}"
+                    placeholder="{{ __('cms.coupons.filters.search_placeholder') }}"
+                    class="form-control"
+                >
+            </div>
+
+            <div>
+                <label for="coupon-type" class="form-label">{{ __('cms.coupons.filters.type.label') }}</label>
+                <select id="coupon-type" name="type" class="form-select">
+                    @foreach ($typeFilters as $value => $label)
+                        <option value="{{ $value }}" @selected($currentType === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="coupon-usage" class="form-label">{{ __('cms.coupons.filters.usage.label') }}</label>
+                <select id="coupon-usage" name="usage" class="form-select">
+                    @foreach ($usageFilters as $value => $label)
+                        <option value="{{ $value }}" @selected($currentUsage === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="flex items-end gap-3">
+                <button type="submit" class="btn btn-primary">{{ __('cms.coupons.filters.apply') }}</button>
+                @if ($filtersActive)
+                    <a href="{{ route('admin.coupons.index') }}" class="btn btn-outline">{{ __('cms.coupons.filters.reset') }}</a>
+                @endif
+            </div>
+        </form>
+
+        @if ($filtersActive)
+            <div class="mb-4 rounded-xl border border-primary-100 bg-primary-50 px-4 py-3 text-sm text-primary-700">
+                {{ __('cms.coupons.filters.active_notice') }}
+            </div>
+        @endif
+
         <div class="flex flex-wrap items-center gap-2 mb-4">
             @foreach ($statusFilters as $value => $label)
                 @php
                     $isActive = $currentStatus === $value;
-                    $filterUrl = $value === ''
-                        ? route('admin.coupons.index')
-                        : route('admin.coupons.index', ['status' => $value]);
+                    $query = array_filter([
+                        'search' => $currentSearch !== '' ? $currentSearch : null,
+                        'type' => $currentType !== '' ? $currentType : null,
+                        'usage' => $currentUsage !== '' ? $currentUsage : null,
+                    ], fn ($item) => $item !== null);
+
+                    if ($value !== '') {
+                        $query['status'] = $value;
+                    }
+
+                    $filterUrl = route('admin.coupons.index', $query);
                 @endphp
                 <a
                     href="{{ $filterUrl }}"
@@ -76,10 +147,20 @@
             @forelse ($coupons as $coupon)
                 @php
                     $isExpired = $coupon->isExpired();
+                    $isExpiringSoon = ! $isExpired && $coupon->isExpiringSoon();
                     $discountValue = rtrim(rtrim(number_format($coupon->discount, 2), '0'), '.');
                     $formattedDiscount = $coupon->type === 'percentage'
                         ? $discountValue.'%'
                         : $discountValue;
+                    $statusKey = $isExpired ? 'expired' : ($isExpiringSoon ? 'expiring_soon' : 'active');
+                    $statusBadgeClass = [
+                        'expired' => 'badge-danger',
+                        'expiring_soon' => 'badge-warning',
+                        'active' => 'badge-success',
+                    ][$statusKey] ?? 'badge-success';
+                    $usagePercentage = $coupon->usage_limit
+                        ? min(100, round(($coupon->usage_count / max(1, $coupon->usage_limit)) * 100))
+                        : null;
                 @endphp
                 <tr class="table-row" data-coupon-row="{{ $coupon->id }}">
                     <td class="table-cell">
@@ -103,8 +184,15 @@
                     </td>
                     <td class="table-cell">
                         @if ($coupon->usage_limit)
-                            <div class="flex flex-col">
+                            <div class="flex flex-col gap-1">
                                 <span class="text-sm font-semibold text-gray-900">{{ $coupon->usage_count }} / {{ $coupon->usage_limit }}</span>
+                                <div class="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                                    <div
+                                        class="h-2 rounded-full bg-primary-500"
+                                        style="width: {{ $usagePercentage }}%"
+                                        aria-hidden="true"
+                                    ></div>
+                                </div>
                                 <span class="text-xs text-gray-500">{{ __('cms.coupons.usage_progress_hint') }}</span>
                             </div>
                         @else
@@ -112,8 +200,8 @@
                         @endif
                     </td>
                     <td class="table-cell">
-                        <span class="badge {{ $isExpired ? 'badge-danger' : 'badge-success' }}">
-                            {{ $isExpired ? __('cms.coupons.status_labels.expired') : __('cms.coupons.status_labels.active') }}
+                        <span class="badge {{ $statusBadgeClass }}">
+                            {{ __('cms.coupons.status_labels.'.$statusKey) }}
                         </span>
                     </td>
                     <td class="table-cell">
