@@ -57,7 +57,7 @@ class AdminPageManagementTest extends TestCase
             ->assertViewHas('activeLanguages', function ($languages) use ($language) {
                 return $languages->contains('id', $language->id);
             })
-            ->assertSee(__('cms.pages.slug_preview_label'))
+            ->assertSee(__('cms.pages.form_slug_label'))
             ->assertSee(__('cms.pages.form_status_label'));
     }
 
@@ -98,17 +98,27 @@ class AdminPageManagementTest extends TestCase
         Language::factory()->create(['code' => 'fr']);
 
         $payload = [
+            'template' => 'with-hero',
+            'show_in_navigation' => 1,
+            'show_in_footer' => 0,
+            'is_featured' => 1,
             'status' => 1,
             'translations' => [
                 $defaultLocale => [
                     'title' => 'About Us',
+                    'excerpt' => 'Learn more about our journey.',
                     'content' => 'Learn more about our journey.',
                     'image' => UploadedFile::fake()->image('about.jpg'),
+                    'meta_title' => 'About Us Meta',
+                    'meta_description' => 'Meta description en.',
                 ],
                 'fr' => [
                     'title' => 'À propos de nous',
+                    'excerpt' => 'En savoir plus sur notre parcours.',
                     'content' => 'En savoir plus sur notre parcours.',
                     'image' => UploadedFile::fake()->image('a-propos.jpg'),
+                    'meta_title' => 'À propos de nous Meta',
+                    'meta_description' => 'Meta description fr.',
                 ],
             ],
         ];
@@ -124,7 +134,12 @@ class AdminPageManagementTest extends TestCase
         $this->assertDatabaseHas('pages', [
             'id' => $page->id,
             'status' => 1,
+            'template' => 'with-hero',
+            'show_in_navigation' => true,
+            'show_in_footer' => false,
+            'is_featured' => true,
         ]);
+        $this->assertNotNull($page->published_at);
 
         $translations = PageTranslation::where('page_id', $page->id)->get();
         $this->assertCount(2, $translations);
@@ -160,12 +175,20 @@ class AdminPageManagementTest extends TestCase
         ]);
 
         $payload = [
+            'slug' => 'about-velstore',
+            'template' => 'default',
+            'show_in_navigation' => 0,
+            'show_in_footer' => 1,
+            'is_featured' => 0,
             'status' => 0,
             'translations' => [
                 $defaultLocale => [
                     'title' => 'New Title',
+                    'excerpt' => 'Updated summary',
                     'content' => 'Updated content for the page.',
                     'image' => UploadedFile::fake()->image('new-image.jpg'),
+                    'meta_title' => 'Updated Meta Title',
+                    'meta_description' => 'Updated meta description.',
                 ],
             ],
         ];
@@ -178,7 +201,12 @@ class AdminPageManagementTest extends TestCase
 
         $this->assertDatabaseHas('pages', [
             'id' => $page->id,
+            'slug' => 'about-velstore',
             'status' => 0,
+            'template' => 'default',
+            'show_in_navigation' => false,
+            'show_in_footer' => true,
+            'is_featured' => false,
         ]);
 
         $translation = PageTranslation::where('page_id', $page->id)
@@ -187,7 +215,10 @@ class AdminPageManagementTest extends TestCase
 
         $this->assertNotNull($translation);
         $this->assertSame('New Title', $translation->title);
+        $this->assertSame('Updated summary', $translation->excerpt);
         $this->assertSame('Updated content for the page.', $translation->content);
+        $this->assertSame('Updated Meta Title', $translation->meta_title);
+        $this->assertSame('Updated meta description.', $translation->meta_description);
         $this->assertNotNull($translation->image_url);
 
         Storage::disk('public')->assertMissing('pages/old-image.jpg');

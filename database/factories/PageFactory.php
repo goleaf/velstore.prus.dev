@@ -17,9 +17,16 @@ class PageFactory extends Factory
     {
         $title = $this->faker->unique()->sentence(3);
 
+        $status = $this->faker->boolean(80);
+
         return [
             'slug' => Str::slug($title).'-'.$this->faker->unique()->numberBetween(1, 9999),
-            'status' => $this->faker->boolean(80),
+            'status' => $status,
+            'template' => $this->faker->randomElement(['default', 'with-hero']),
+            'show_in_navigation' => $this->faker->boolean(40),
+            'show_in_footer' => $this->faker->boolean(60),
+            'is_featured' => $this->faker->boolean(30),
+            'published_at' => $status ? $this->faker->dateTimeBetween('-1 year', 'now') : null,
         ];
     }
 }

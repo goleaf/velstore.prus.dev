@@ -9,6 +9,7 @@ use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CheckoutController;
 use App\Http\Controllers\Store\CurrencyController;
 use App\Http\Controllers\Store\PaymentGateway\StripeController;
+use App\Http\Controllers\Store\PageController as StorePageController;
 use App\Http\Controllers\Store\ProductController;
 use App\Http\Controllers\Store\SearchController;
 use App\Http\Controllers\Store\ShopController;
@@ -20,6 +21,7 @@ Route::get('/', [StoreController::class, 'index'])->name('xylo.home');
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
 Route::post('/change-currency', [CurrencyController::class, 'changeCurrency'])->name('change.currency');
 Route::get('/category/{slug}', [ShopController::class, 'showCategory'])->name('category.show');
+Route::get('/pages/{slug}', [StorePageController::class, 'show'])->name('store.pages.show');
 
 Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
 Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');

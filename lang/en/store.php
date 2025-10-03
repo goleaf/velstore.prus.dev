@@ -17,6 +17,13 @@ return [
         'footer_logo_alt' => 'Velstore Footer Logo',
         'copyright' => '© 2025 Velstore Demo. All Rights Reserved.',
         'powered_by' => 'Powered by Velstore Labs',
+        'no_pages' => 'More pages coming soon.',
+    ],
+
+    'pages' => [
+        'featured_heading' => 'Discover more about Velstore',
+        'featured_cta' => 'Read more',
+        'related_heading' => 'Keep exploring',
     ],
 
     'product_detail' => [

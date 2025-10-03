@@ -43,6 +43,16 @@
                                 </li>
                             @endforeach
                         @endif
+
+                        @if (!empty($navigationPages) && $navigationPages->count())
+                            @foreach ($navigationPages as $navigationPage)
+                                <li class="nav-item">
+                                    <a class="nav-link menu-text-color" href="{{ $navigationPage->url }}">
+                                        {{ $navigationPage->title }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endif
                     </ul>
                 </nav>
             </div>
