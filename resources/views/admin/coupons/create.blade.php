@@ -10,12 +10,9 @@
         </x-admin.button-link>
     </x-admin.page-header>
 
-    <x-admin.card class="mt-6" :title="__('cms.coupons.form_title')">
-        @include('admin.coupons.partials.form', [
-            'action' => route('admin.coupons.store'),
-            'method' => 'POST',
-            'submitLabel' => __('cms.coupons.save'),
-            'cancelUrl' => route('admin.coupons.index'),
-        ])
-    </x-admin.card>
+    @include('admin.coupons.partials.form', [
+        'formAction' => route('admin.coupons.store'),
+        'formMethod' => 'POST',
+        'submitLabel' => __('cms.coupons.save'),
+    ])
 @endsection
