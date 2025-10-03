@@ -1,9 +1,13 @@
 @php
-    $formMethod = strtoupper($method ?? 'POST');
+    use Illuminate\Support\Carbon;
+
     $couponModel = $coupon ?? null;
     $cancelUrl = $cancelUrl ?? route('admin.coupons.index');
 
-    $expiresAtValue = old('expires_at');
+    $timezone = config('app.timezone', 'UTC');
+    $oldInput = session()->getOldInput() ?? [];
+    $hasOldExpiresInput = array_key_exists('expires_at', $oldInput);
+    $rawExpiresAt = $hasOldExpiresInput ? $oldInput['expires_at'] : null;
 
     if ($expiresAtValue) {
         try {
@@ -12,9 +16,11 @@
             $expiresAtValue = $expiresAtValue;
         }
     } elseif ($couponModel && $couponModel->expires_at) {
-        $expiresAtValue = $couponModel->expires_at->format('Y-m-d\\TH:i');
+        $expiresAtValue = $couponModel->expires_at->timezone($timezone)->format('Y-m-d\\TH:i');
+        $shouldShowExpiry = true;
     } else {
         $expiresAtValue = '';
+        $shouldShowExpiry = false;
     }
 
     $typeValue = old('type', optional($couponModel)->type ?? 'percentage');

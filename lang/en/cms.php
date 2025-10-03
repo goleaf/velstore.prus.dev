@@ -1246,13 +1246,26 @@ return [
         'save' => 'Save Coupon',
         'update' => 'Update Coupon',
 
+        'form_title' => 'Coupon details',
+        'form_description' => 'Define how the coupon should behave before saving it.',
+        'generate_code' => 'Generate code',
+        'generate_code_hint' => 'Need inspiration? Generate a code or type your own.',
+
         'delete_confirm_title' => 'Confirm Delete',
         'delete_confirm_message' => 'Are you sure you want to delete this coupon?',
         'delete_cancel' => 'Cancel',
         'delete_button' => 'Delete',
         'modal_coupon_label' => 'Coupon code: :code',
 
+        'discount_hint_percentage' => 'The value will be applied as a percentage discount (0-100).',
+        'discount_hint_fixed' => 'The amount will be subtracted from the order total in your store currency.',
+        'discount_fixed_suffix' => 'Amount',
         'discount_hint' => 'For percentage coupons the value must be between 0 and 100.',
+        'expiry_section_title' => 'Expiration settings',
+        'expiry_section_description' => 'Decide whether the coupon should stop working after a specific date.',
+        'expiry_toggle_label' => 'Set an expiration date',
+        'expiry_toggle_hint' => 'Disable the toggle to keep the coupon active indefinitely.',
+        'expiry_timezone_hint' => 'All times are shown in :timezone.',
         'expiry_hint' => 'Leave empty to keep the coupon active indefinitely or set a past date to expire immediately.',
         'no_expiry' => 'No expiry',
 
