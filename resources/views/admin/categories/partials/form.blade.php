@@ -60,6 +60,11 @@
     }
 
     $initialTab = $languageCodes->first();
+    $oldActiveTab = old('active_language');
+
+    if ($oldActiveTab && $languageCodes->contains($oldActiveTab)) {
+        $initialTab = $oldActiveTab;
+    }
 @endphp
 
 <form
@@ -83,6 +88,8 @@
     @if ($formMethod !== 'POST')
         @method($formMethod)
     @endif
+
+    <input type="hidden" name="active_language" x-model="activeTab">
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -143,13 +150,25 @@
 
     <x-admin.card
         :title="__('cms.categories.translations_section_title')"
-        :actions="view('admin.categories.partials.language-tabs', ['languages' => $languages])"
+        :actions="view('admin.categories.partials.language-tabs', [
+            'languages' => $languages,
+            'errorLanguages' => $errorLanguages ?? collect(),
+        ])"
     >
         <p class="text-sm text-gray-500 mb-6">{{ __('cms.categories.translations_section_description') }}</p>
 
         @foreach($languages as $language)
             @php($code = $language->code)
-            <section x-show="activeTab === '{{ $code }}'" x-cloak class="space-y-6">
+            @php($tabId = \Illuminate\Support\Str::slug($code))
+            <section
+                id="category-language-panel-{{ $tabId }}"
+                x-show="activeTab === '{{ $code }}'"
+                x-cloak
+                class="space-y-6"
+                role="tabpanel"
+                aria-labelledby="category-language-tab-{{ $tabId }}"
+                x-bind:aria-hidden="activeTab !== '{{ $code }}'"
+            >
                 <div>
                     <label class="form-label" for="category-name-{{ $code }}">
                         {{ __('cms.categories.name') }} ({{ strtoupper($code) }})

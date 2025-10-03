@@ -10,12 +10,14 @@
         </x-admin.button-link>
     </x-admin.page-header>
 
-    @include('admin.categories.partials.form', [
-        'formAction' => route('admin.categories.store'),
-        'formMethod' => 'POST',
-        'parentOptions' => $parentOptions,
-        'selectedParent' => $selectedParent ?? null,
-        'category' => null,
-        'activeLanguages' => $activeLanguages,
-    ])
+    <div class="mt-6">
+        @include('admin.categories.partials.form', [
+            'formAction' => route('admin.categories.store'),
+            'formMethod' => 'POST',
+            'parentOptions' => $parentOptions,
+            'selectedParent' => $selectedParent ?? null,
+            'category' => null,
+            'activeLanguages' => $activeLanguages,
+        ])
+    </div>
 @endsection
