@@ -7,7 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View;
 
 class ShopController extends Controller
 {
@@ -31,14 +31,26 @@ class ShopController extends Controller
 
     protected function renderShopPage(Request $request, ?Category $currentCategory = null): View|string
     {
+        $categoryFilter = array_filter((array) $request->input('category', []), static fn ($value) => $value !== null && $value !== '');
+        $brandFilter = array_filter((array) $request->input('brand', []), static fn ($value) => $value !== null && $value !== '');
+        $colorFilter = array_map(
+            static fn ($value) => is_string($value) ? ucfirst(strtolower($value)) : $value,
+            array_filter((array) $request->input('color', []), static fn ($value) => $value !== null && $value !== '')
+        );
+        $sizeFilter = array_filter((array) $request->input('size', []), static fn ($value) => $value !== null && $value !== '');
+
         $filters = [
-            'category' => array_filter((array) $request->input('category', [])),
-            'brand' => array_filter((array) $request->input('brand', [])),
-            'price_min' => (int) $request->input('price_min', 0),
-            'price_max' => (int) $request->input('price_max', 1000),
-            'color' => array_filter((array) $request->input('color', [])),
-            'size' => array_filter((array) $request->input('size', [])),
+            'category' => array_map('intval', $categoryFilter),
+            'brand' => array_map('intval', $brandFilter),
+            'price_min' => max(0, (int) $request->input('price_min', 0)),
+            'price_max' => max(0, (int) $request->input('price_max', 1000)),
+            'color' => $colorFilter,
+            'size' => $sizeFilter,
         ];
+
+        if ($filters['price_min'] > $filters['price_max']) {
+            [$filters['price_min'], $filters['price_max']] = [$filters['price_max'], $filters['price_min']];
+        }
 
         $products = Product::with(['translation', 'variants.attributeValues'])
             ->when(! empty($filters['category']), function ($query) use ($filters) {

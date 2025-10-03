@@ -49,7 +49,7 @@
                     <h5 class="mb-3">COLORS</h5>
                     @foreach(['Red', 'Black'] as $color)
                     <div class="form-check mb-3">
-                        <input class="form-check-input filter-input" type="checkbox" name="color[]" value="{{ strtolower($color) }}" @checked(in_array(strtolower($color), $filters['color']))>
+                        <input class="form-check-input filter-input" type="checkbox" name="color[]" value="{{ $color }}" @checked(in_array($color, $filters['color']))>
                         <label class="form-check-label">{{ $color }}</label>
                     </div>
                     @endforeach
@@ -92,6 +92,7 @@
     const maxSlider = document.getElementById('maxPrice');
     const minPriceText = document.getElementById('minPriceText');
     const maxPriceText = document.getElementById('maxPriceText');
+    const baseFilterUrl = "{{ isset($currentCategory) ? route('category.show', $currentCategory->slug) : route('shop.index') }}";
 
     function updatePriceDisplay() {
         let minVal = parseInt(minSlider.value);
@@ -113,7 +114,7 @@
 
     // Function to send filters including price
     function sendFilterRequest() {
-        let url = new URL("{{ route('shop.index') }}", window.location.origin);
+        let url = new URL(baseFilterUrl, window.location.origin);
         let params = new URLSearchParams();
 
         // Include all checked filter inputs
