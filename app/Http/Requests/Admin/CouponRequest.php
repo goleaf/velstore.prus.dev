@@ -22,6 +22,8 @@ abstract class CouponRequest extends FormRequest
             'code' => ['required', 'string', 'max:255', $this->codeRule()],
             'discount' => ['required', 'numeric', 'min:0'],
             'type' => ['required', Rule::in(['percentage', 'fixed'])],
+            'minimum_spend' => ['nullable', 'numeric', 'min:0'],
+            'usage_limit' => ['nullable', 'integer', 'min:1'],
             'expires_at' => ['nullable', 'date'],
         ];
     }
@@ -66,6 +68,12 @@ abstract class CouponRequest extends FormRequest
     {
         $data = $this->validated();
         $data['expires_at'] = $this->parsedExpiresAt;
+        $data['minimum_spend'] = $this->filled('minimum_spend')
+            ? (float) $this->input('minimum_spend')
+            : null;
+        $data['usage_limit'] = $this->filled('usage_limit')
+            ? (int) $this->input('usage_limit')
+            : null;
 
         return $data;
     }

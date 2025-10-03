@@ -9,6 +9,8 @@
 
     $codeValue = old('code', $couponModel->code ?? '');
     $discountValue = old('discount', $couponModel->discount ?? '');
+    $minimumSpendValue = old('minimum_spend', $couponModel->minimum_spend ?? '');
+    $usageLimitValue = old('usage_limit', $couponModel->usage_limit ?? '');
     $typeValue = old('type', $couponModel->type ?? 'percentage');
 
     if (! in_array($typeValue, ['percentage', 'fixed'], true)) {
@@ -161,6 +163,45 @@
         @error('discount')
             <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2">
+        <div class="space-y-2">
+            <label for="minimum_spend" class="form-label">{{ __('cms.coupons.minimum_spend') }}</label>
+            <input
+                type="number"
+                name="minimum_spend"
+                id="minimum_spend"
+                class="form-control @error('minimum_spend') is-invalid @enderror"
+                value="{{ $minimumSpendValue }}"
+                step="0.01"
+                min="0"
+            >
+            <p class="text-xs text-gray-500">{{ __('cms.coupons.minimum_spend_hint') }}</p>
+            @error('minimum_spend')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="space-y-2">
+            <label for="usage_limit" class="form-label">{{ __('cms.coupons.usage_limit') }}</label>
+            <input
+                type="number"
+                name="usage_limit"
+                id="usage_limit"
+                class="form-control @error('usage_limit') is-invalid @enderror"
+                value="{{ $usageLimitValue }}"
+                min="1"
+                step="1"
+            >
+            <p class="text-xs text-gray-500">{{ __('cms.coupons.usage_limit_hint') }}</p>
+            @if ($couponModel && $couponModel->usage_count)
+                <p class="text-xs text-gray-500">{{ __('cms.coupons.usage_count_info', ['count' => $couponModel->usage_count]) }}</p>
+            @endif
+            @error('usage_limit')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
     </div>
 
     <div class="space-y-4 border-t border-gray-200 pt-6">

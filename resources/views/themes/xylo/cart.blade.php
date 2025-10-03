@@ -3,7 +3,30 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 @endsection
 @section('content')
-    @php $currency = activeCurrency(); @endphp
+    @php
+        $currency = activeCurrency();
+        $summary = $cartSummary ?? [
+            'subtotal' => 0,
+            'discount_amount' => 0,
+            'final_total' => 0,
+            'coupon' => null,
+            'coupon_error' => null,
+            'coupon_error_key' => null,
+            'coupon_error_params' => [],
+            'coupon_error_meta' => [],
+        ];
+        $appliedCoupon = $summary['coupon'] ?? null;
+        $discountAmount = $summary['discount_amount'] ?? 0;
+        $finalTotal = $summary['final_total'] ?? 0;
+        $couponErrorKey = $summary['coupon_error_key'] ?? null;
+        $couponErrorMeta = $summary['coupon_error_meta'] ?? [];
+        $couponErrorMessage = $summary['coupon_error'] ?? null;
+        if ($couponErrorKey === 'cms.coupons.errors.minimum_spend_short' && isset($couponErrorMeta['amount'])) {
+            $couponErrorMessage = __('cms.coupons.errors.minimum_spend_short', [
+                'amount' => $currency->symbol . number_format($couponErrorMeta['amount'], 2),
+            ]);
+        }
+    @endphp
     <section class="breadcrumb-section">
         <div class="container">
             <div class="breadcrumbs" aria-label="breadcrumb">
@@ -137,28 +160,19 @@
                     <div class="cart-box">
                         <h3 class="cart-heading">Cart totals</h3>
 
+                        @php
+                            $calculatedSubtotal = $total;
+                            $displaySubtotal = $summary['subtotal'] ?? $calculatedSubtotal;
+                        @endphp
                         <div class="row border-bottom pb-2 mb-2 mt-4">
                             <div class="col-6 col-md-4">Subtotal</div>
-                            <div class="col-6 col-md-8 text-end">{{ $currency->symbol }}{{ number_format($total, 2) }}
+                            <div class="col-6 col-md-8 text-end">{{ $currency->symbol }}{{ number_format($displaySubtotal, 2) }}
                             </div>
                         </div>
 
-                        @php
-                            $coupon = session('cart_coupon');
-                            $discountAmount = 0;
-                            if ($coupon) {
-                                if ($coupon['type'] === 'percentage') {
-                                    $discountAmount = $total * ($coupon['discount'] / 100);
-                                } else {
-                                    $discountAmount = $coupon['discount'];
-                                }
-                            }
-                            $finalTotal = max(0, $total - $discountAmount);
-                        @endphp
-
-                        @if ($coupon)
+                        @if ($appliedCoupon)
                             <div class="row border-bottom pb-2 mb-2 d-flex align-items-center">
-                                <div class="col-8 d-flex align-items-center">Discount ({{ $coupon['code'] }})</div>
+                                <div class="col-8 d-flex align-items-center">Discount ({{ $appliedCoupon['code'] }})</div>
                                 <div class="col-4 d-flex justify-content-end align-items-center">
                                     -{{ $currency->symbol }}{{ number_format($discountAmount, 2) }}
                                     <form id="removeCouponForm" class="ms-2">
@@ -169,6 +183,12 @@
                                         </button>
                                     </form>
                                 </div>
+                            </div>
+                        @endif
+
+                        @if (! empty($couponErrorMessage))
+                            <div class="alert alert-warning py-2 px-3 mb-3 text-sm">
+                                {{ $couponErrorMessage }}
                             </div>
                         @endif
 
@@ -195,6 +215,18 @@
                             </div>
                             <button type="submit" class="btn-light d-block text-center w-100">Apply Coupon</button>
                         </form>
+
+                        @if ($appliedCoupon)
+                            <div class="mt-3 small text-muted">
+                                <p class="mb-1">Coupon <strong>{{ $appliedCoupon['code'] }}</strong> is active.</p>
+                                @if (! empty($appliedCoupon['minimum_spend']))
+                                    <p class="mb-0">Minimum spend: {{ $currency->symbol }}{{ number_format($appliedCoupon['minimum_spend'], 2) }}</p>
+                                @endif
+                                @if (! empty($appliedCoupon['usage_limit']))
+                                    <p class="mb-0">Usage: {{ $appliedCoupon['usage_count'] }} / {{ $appliedCoupon['usage_limit'] }}</p>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                 </div>
@@ -272,12 +304,15 @@
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("applyCouponForm")?.addEventListener("submit", function(e) {
                 e.preventDefault();
-                let code = document.getElementById("coupon_code").value;
+                const form = e.currentTarget;
+                const code = document.getElementById("coupon_code").value;
+                const csrfToken = form.querySelector('input[name="_token"]').value;
+
                 fetch("{{ route('cart.applyCoupon') }}", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
+                            "X-CSRF-TOKEN": csrfToken
                         },
                         body: JSON.stringify({
                             code: code
@@ -285,25 +320,42 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        toastr.success(data.message, "Applied", {
+                        const toastMethod = data.success ? toastr.success : toastr.error;
+                        const toastTitle = data.success ? "Applied" : "Coupon";
+
+                        toastMethod(data.message, toastTitle, {
                             closeButton: true,
                             progressBar: true,
                             positionClass: "toast-top-right",
                             timeOut: 5000
                         });
-                        setTimeout(() => {
-                            if (data.success) location.reload();
-                        }, 1000);
+
+                        if (data.success) {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }
+                    })
+                    .catch(() => {
+                        toastr.error("Something went wrong while applying the coupon.", "Coupon", {
+                            closeButton: true,
+                            progressBar: true,
+                            positionClass: "toast-top-right",
+                            timeOut: 5000
+                        });
                     });
             });
 
             document.getElementById("removeCouponForm")?.addEventListener("submit", function(e) {
                 e.preventDefault();
+                const form = e.currentTarget;
+                const csrfToken = form.querySelector('input[name="_token"]').value;
+
                 fetch("{{ route('cart.removeCoupon') }}", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
+                            "X-CSRF-TOKEN": csrfToken
                         }
                     })
                     .then(response => response.json())
@@ -316,9 +368,18 @@
                         });
 
                         setTimeout(() => {
-                            if (data.success) location.reload();
+                            if (data.success) {
+                                location.reload();
+                            }
                         }, 1000);
-
+                    })
+                    .catch(() => {
+                        toastr.error("Something went wrong while removing the coupon.", "Coupon", {
+                            closeButton: true,
+                            progressBar: true,
+                            positionClass: "toast-top-right",
+                            timeOut: 5000
+                        });
                     });
             });
         });
