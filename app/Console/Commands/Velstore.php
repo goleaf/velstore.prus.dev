@@ -34,6 +34,9 @@ class Velstore extends Command
         $this->info('Running migrations...');
         $this->call('migrate');
 
+        $this->info('Seeding core data...');
+        $this->call('db:seed');
+
         $this->info('Creating admin user...');
         $this->createAdminUser();
 

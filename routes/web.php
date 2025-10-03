@@ -51,7 +51,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     /* Brands */
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
-    Route::get('brands/data', [BrandController::class, 'getData'])->name('brands.getData');
     Route::get('brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::put('brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
     Route::get('brands/create', [BrandController::class, 'create'])->name('brands.create');
