@@ -22,7 +22,6 @@ class OrderSeeder extends Seeder
         $orders = [
             1 => [
                 'guest_email' => 'guest1@example.com',
-                'total_amount' => 300,
                 'status' => 'completed',
                 'created_at' => $now->copy()->subDays(5),
                 'items' => [
@@ -40,7 +39,6 @@ class OrderSeeder extends Seeder
             ],
             2 => [
                 'guest_email' => 'guest2@example.com',
-                'total_amount' => 150,
                 'status' => 'pending',
                 'created_at' => $now->copy()->subDays(3),
                 'items' => [
@@ -60,7 +58,6 @@ class OrderSeeder extends Seeder
         if ($productIds->count() >= 2) {
             $orders[3] = [
                 'guest_email' => 'showcase-order@example.com',
-                'total_amount' => 180.75,
                 'status' => 'processing',
                 'created_at' => $now->copy()->subDay(),
                 'items' => [
@@ -79,19 +76,26 @@ class OrderSeeder extends Seeder
         }
 
         foreach ($orders as $id => $payload) {
+            $items = collect($payload['items'] ?? []);
+            $total = $items->reduce(
+                static fn (float $carry, array $item): float => $carry + ($item['quantity'] * $item['price']),
+                0.0
+            );
+            $createdAt = $payload['created_at'] ?? $now;
+
             DB::table('orders')->updateOrInsert(
                 ['id' => $id],
                 [
                     'customer_id' => null,
                     'guest_email' => $payload['guest_email'],
-                    'total_amount' => $payload['total_amount'],
+                    'total_amount' => number_format($total, 2, '.', ''),
                     'status' => $payload['status'],
-                    'created_at' => $payload['created_at'],
+                    'created_at' => $createdAt,
                     'updated_at' => $now,
                 ]
             );
 
-            foreach ($payload['items'] as $item) {
+            foreach ($items as $item) {
                 DB::table('order_details')->updateOrInsert(
                     [
                         'order_id' => $id,
@@ -100,13 +104,13 @@ class OrderSeeder extends Seeder
                     [
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
-                        'created_at' => $now,
+                        'created_at' => $createdAt,
                         'updated_at' => $now,
                     ]
                 );
             }
 
-            if (isset($payload['shipping'])) {
+            if (! empty($payload['shipping'])) {
                 ShippingAddress::updateOrCreate(
                     ['order_id' => $id],
                     array_merge(

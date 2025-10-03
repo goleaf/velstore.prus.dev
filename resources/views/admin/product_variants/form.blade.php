@@ -26,6 +26,7 @@
     );
 
     $initialTab = $localeResolution->initial();
+    $errorTab = $localeResolution->error();
 @endphp
 
 <x-admin.page-header :title="$pageTitle" :description="$pageDescription">
@@ -57,6 +58,8 @@
         @if ($isEdit)
             @method($formMethod)
         @endif
+
+        <input type="hidden" name="active_tab" id="active_tab" value="{{ $localeResolution->old() ?? $initialTab }}">
 
         <section>
             <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -226,108 +229,106 @@
             </div>
         </section>
 
-        <section>
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                        {{ __('cms.product_variants.form_section_translations') }}
-                    </h2>
-                    <p class="mt-2 text-sm text-gray-500">
-                        {{ __('cms.product_variants.form_section_translations_description') }}
-                    </p>
+        <section x-data="{ activeTab: '{{ $initialTab }}' }">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            {{ __('cms.product_variants.form_section_translations') }}
+                        </h2>
+                        <p class="mt-2 text-sm text-gray-500">
+                            {{ __('cms.product_variants.form_section_translations_description') }}
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mt-6">
-                <ul class="nav nav-tabs" id="productVariantLanguageTabs" role="tablist">
-                    @foreach ($languages as $language)
-                        @php
-                            $langCode = $language->code;
-                            $languageName = ucwords($language->name ?? $langCode);
-                            $hasTranslationErrors = $errors->has("translations.$langCode.name") || $errors->has("translations.$langCode.value");
-                            $isActiveTab = $langCode === $initialTab;
-                        @endphp
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link {{ $isActiveTab ? 'active' : '' }} {{ $hasTranslationErrors ? 'text-danger-600' : '' }}"
-                                id="product-variant-{{ $langCode }}-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#product-variant-{{ $langCode }}"
-                                data-language-code="{{ $langCode }}"
-                                type="button"
-                                role="tab"
-                                aria-controls="product-variant-{{ $langCode }}"
-                                aria-selected="{{ $isActiveTab ? 'true' : 'false' }}"
+                <div class="mt-6">
+                    <ul class="nav nav-tabs" id="productVariantLanguageTabs" role="tablist">
+                        @foreach ($languages as $language)
+                            @php
+                                $langCode = $language->code;
+                                $languageName = ucwords($language->name ?? $langCode);
+                                $hasTranslationErrors = $errors->has("translations.$langCode.name") || $errors->has("translations.$langCode.value");
+                                $isActiveTab = $langCode === $initialTab;
+                            @endphp
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link {{ $isActiveTab ? 'active' : '' }} {{ $hasTranslationErrors ? 'text-danger-600' : '' }}"
+                                    id="product-variant-{{ $langCode }}-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#product-variant-{{ $langCode }}"
+                                    data-language-code="{{ $langCode }}"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="product-variant-{{ $langCode }}"
+                                    aria-selected="{{ $isActiveTab ? 'true' : 'false' }}"
+                                >
+                                    {{ $languageName }}
+                                    @if ($hasTranslationErrors)
+                                        <span class="ms-1">*</span>
+                                    @endif
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <div class="tab-content mt-4" id="productVariantLanguageTabContent">
+                        @foreach ($languages as $language)
+                            @php
+                                $langCode = $language->code;
+                                $languageName = ucwords($language->name ?? $langCode);
+                                $existingTranslation = $isEdit && $productVariant
+                                    ? $productVariant->translations->firstWhere('locale', $langCode)
+                                    : null;
+                                $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
+                                $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
+                                $isActiveTab = $langCode === $initialTab;
+                            @endphp
+                            <div
+                                class="tab-pane fade {{ $isActiveTab ? 'show active' : '' }} rounded-lg border border-gray-200 bg-secondary-50/40 p-4"
+                                id="product-variant-{{ $langCode }}"
+                                role="tabpanel"
+                                aria-labelledby="product-variant-{{ $langCode }}-tab"
                             >
-                                {{ $languageName }}
-                                @if ($hasTranslationErrors)
-                                    <span class="ms-1">*</span>
-                                @endif
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="translations_{{ $langCode }}_name" class="form-label">
+                                            {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="translations[{{ $langCode }}][name]"
+                                            id="translations_{{ $langCode }}_name"
+                                            class="form-control @error('translations.' . $langCode . '.name') is-invalid @enderror"
+                                            value="{{ $nameValue }}"
+                                            required
+                                        >
+                                        @error('translations.' . $langCode . '.name')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                <div class="tab-content mt-4" id="productVariantLanguageTabContent">
-                    @foreach ($languages as $language)
-                        @php
-                            $langCode = $language->code;
-                            $languageName = ucwords($language->name ?? $langCode);
-                            $existingTranslation = $isEdit && $productVariant
-                                ? $productVariant->translations->firstWhere('locale', $langCode)
-                                : null;
-                            $nameValue = old("translations.$langCode.name", $existingTranslation->name ?? '');
-                            $valueValue = old("translations.$langCode.value", $existingTranslation->value ?? '');
-                            $isActiveTab = $langCode === $initialTab;
-                        @endphp
-                        <div
-                            class="tab-pane fade {{ $isActiveTab ? 'show active' : '' }} rounded-lg border border-gray-200 bg-secondary-50/40 p-4"
-                            id="product-variant-{{ $langCode }}"
-                            role="tabpanel"
-                            aria-labelledby="product-variant-{{ $langCode }}-tab"
-                        >
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="translations_{{ $langCode }}_name" class="form-label">
-                                        {{ __('cms.product_variants.form_translation_name', ['language' => $languageName]) }}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="translations[{{ $langCode }}][name]"
-                                        id="translations_{{ $langCode }}_name"
-                                        class="form-control @error('translations.' . $langCode . '.name') is-invalid @enderror"
-                                        value="{{ $nameValue }}"
-                                        required
-                                    >
-                                    @error('translations.' . $langCode . '.name')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label for="translations_{{ $langCode }}_value" class="form-label">
-                                        {{ __('cms.product_variants.form_translation_value', ['language' => $languageName]) }}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="translations[{{ $langCode }}][value]"
-                                        id="translations_{{ $langCode }}_value"
-                                        class="form-control @error('translations.' . $langCode . '.value') is-invalid @enderror"
-                                        value="{{ $valueValue }}"
-                                        placeholder="{{ __('cms.product_variants.form_translation_placeholder') }}"
-                                    >
-                                    @error('translations.' . $langCode . '.value')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
+                                    <div>
+                                        <label for="translations_{{ $langCode }}_value" class="form-label">
+                                            {{ __('cms.product_variants.form_translation_value', ['language' => $languageName]) }}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="translations[{{ $langCode }}][value]"
+                                            id="translations_{{ $langCode }}_value"
+                                            class="form-control @error('translations.' . $langCode . '.value') is-invalid @enderror"
+                                            value="{{ $valueValue }}"
+                                            placeholder="{{ __('cms.product_variants.form_translation_placeholder') }}"
+                                        >
+                                        @error('translations.' . $langCode . '.value')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
-            </div>
         </section>
-
-        <input type="hidden" name="active_tab" id="active_tab" value="{{ $initialTab }}">
 
         <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
             <x-admin.button-link href="{{ route('admin.product_variants.index') }}" class="btn-outline">

@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentGateway;
 use App\Models\ShippingAddress;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -17,11 +16,6 @@ class PaymentSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::firstOrCreate(
-            ['email' => 'testuser@example.com'],
-            ['name' => 'Test User', 'password' => bcrypt('password')]
-        );
-
         $stripeGateway = PaymentGateway::firstOrCreate(
             ['code' => 'stripe'],
             [
@@ -77,18 +71,17 @@ class PaymentSeeder extends Seeder
             ]
         );
 
-        $order = Order::updateOrCreate(
+        $showcaseOrder = Order::updateOrCreate(
             ['guest_email' => 'showcase-order@example.com'],
             [
                 'customer_id' => null,
                 'total_amount' => 180.75,
                 'status' => 'processing',
-                'created_at' => Carbon::now()->subDay(),
             ]
         );
 
         ShippingAddress::updateOrCreate(
-            ['order_id' => $order->id],
+            ['order_id' => $showcaseOrder->id],
             [
                 'customer_id' => null,
                 'name' => 'Showcase Customer',
@@ -138,7 +131,7 @@ class PaymentSeeder extends Seeder
         foreach ($payments as $data) {
             $payment = Payment::updateOrCreate(
                 [
-                    'order_id' => $order->id,
+                    'order_id' => $showcaseOrder->id,
                     'transaction_id' => $data['transaction_id'],
                 ],
                 [
