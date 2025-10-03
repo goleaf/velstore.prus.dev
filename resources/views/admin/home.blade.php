@@ -44,6 +44,11 @@
     @endphp
     @php
         $charts = $cardCharts ?? [];
+        $lowStockList = collect($lowStockProducts ?? []);
+        $topCategories = collect($topCategories ?? []);
+        $latestOrders = collect($latestOrders ?? []);
+        $recentCustomers = collect($recentCustomers ?? []);
+        $lowStockThreshold = $kpi['low_stock_threshold'] ?? 5;
     @endphp
     <div class="max-w-7xl mx-auto mt-4 px-4 space-y-6">
         <div>
@@ -172,6 +177,68 @@
             </div>
         </div>
 
+        <div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.business_snapshot_title') }}</h3>
+                    <p class="text-sm text-gray-500">{{ __('cms.dashboard.business_snapshot_description') }}</p>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.total_revenue_all_time') }}</p>
+                            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ number_format($kpi['total_revenue'] ?? 0, 2) }}</p>
+                        </div>
+                        <span class="w-10 h-10 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-500">
+                            <i class="fas fa-coins"></i>
+                        </span>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.total_revenue_all_time_description', ['refunds' => number_format($kpi['refunds_total'] ?? 0, 2)]) }}</p>
+                </div>
+
+                <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.total_orders_all_time') }}</p>
+                            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ number_format($kpi['orders_total'] ?? 0) }}</p>
+                        </div>
+                        <span class="w-10 h-10 rounded-full bg-cyan-50 border border-cyan-100 flex items-center justify-center text-cyan-500">
+                            <i class="fas fa-shopping-cart"></i>
+                        </span>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.total_orders_all_time_description', ['completed' => number_format($kpi['orders_completed'] ?? 0)]) }}</p>
+                </div>
+
+                <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.catalog_size') }}</p>
+                            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ number_format($kpi['products_total'] ?? 0) }}</p>
+                        </div>
+                        <span class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+                            <i class="fas fa-boxes"></i>
+                        </span>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.catalog_size_description', ['active' => number_format($kpi['products_active'] ?? 0), 'inactive' => number_format($kpi['products_inactive'] ?? 0)]) }}</p>
+                </div>
+
+                <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">{{ __('cms.dashboard.inventory_value') }}</p>
+                            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ number_format($kpi['inventory_value'] ?? 0, 2) }}</p>
+                        </div>
+                        <span class="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
+                            <i class="fas fa-warehouse"></i>
+                        </span>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-500">{{ __('cms.dashboard.inventory_value_description', ['low' => number_format($kpi['low_stock_count'] ?? 0)]) }}</p>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between">
@@ -280,6 +347,90 @@
                             role="img"
                         ></canvas>
                     </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.inventory_health') }}</h3>
+                        <p class="text-sm text-gray-500">{{ __('cms.dashboard.inventory_health_description', ['threshold' => $lowStockThreshold]) }}</p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
+                        <i class="fas fa-clipboard-check"></i>
+                    </span>
+                </div>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
+                    <div class="rounded-lg bg-gray-50 px-4 py-3">
+                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.active_products') }}</dt>
+                        <dd class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($kpi['products_active'] ?? 0) }}</dd>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 px-4 py-3">
+                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.inactive_products') }}</dt>
+                        <dd class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($kpi['products_inactive'] ?? 0) }}</dd>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 px-4 py-3">
+                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.low_stock_count') }}</dt>
+                        <dd class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($kpi['low_stock_count'] ?? 0) }}</dd>
+                    </div>
+                    <div class="rounded-lg bg-gray-50 px-4 py-3">
+                        <dt class="font-medium text-gray-500">{{ __('cms.dashboard.average_items_per_order') }}</dt>
+                        <dd class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($kpi['average_items_per_order'] ?? 0, 1) }}</dd>
+                        <p class="mt-1 text-xs text-gray-500">{{ __('cms.dashboard.average_items_per_order_description', ['items' => number_format($kpi['total_items_sold'] ?? 0)]) }}</p>
+                    </div>
+                </dl>
+                <div class="mt-6">
+                    <h4 class="text-sm font-semibold text-gray-700">{{ __('cms.dashboard.low_stock_products') }}</h4>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('cms.dashboard.low_stock_products_description', ['threshold' => $lowStockThreshold]) }}</p>
+                    @if($lowStockList->isNotEmpty())
+                        <ul class="mt-4 space-y-3">
+                            @foreach ($lowStockList as $product)
+                                <li class="flex items-start justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                                    <div class="text-sm">
+                                        <p class="font-semibold text-gray-900">{{ optional($product->translation)->name ?? $product->slug }}</p>
+                                        <p class="text-xs text-gray-500">{{ __('cms.dashboard.top_products_stock') }}: {{ number_format($product->stock ?? 0) }}</p>
+                                    </div>
+                                    <div class="text-right text-xs text-gray-500">
+                                        <p>{{ __('cms.dashboard.unit_price') }}: {{ number_format($product->price ?? 0, 2) }}</p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="mt-4 text-sm text-gray-500">{{ __('cms.dashboard.no_low_stock_products') }}</p>
+                    @endif
+                </div>
+            </div>
+
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.category_performance') }}</h3>
+                        <p class="text-sm text-gray-500">{{ __('cms.dashboard.category_performance_description') }}</p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
+                        <i class="fas fa-layer-group"></i>
+                    </span>
+                </div>
+                @if($topCategories->isNotEmpty())
+                    <ul class="divide-y divide-gray-100">
+                        @foreach ($topCategories as $category)
+                            <li class="py-3 text-sm flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ optional($category->translation)->name ?? $category->slug }}</p>
+                                    <p class="text-xs text-gray-500">{{ __('cms.dashboard.units_sold') }}: {{ number_format($category->units_sold ?? 0) }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-gray-900">{{ number_format($category->revenue_generated ?? 0, 2) }}</p>
+                                    <p class="text-xs text-gray-500">{{ __('cms.dashboard.revenue') }}</p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-gray-500">{{ __('cms.dashboard.no_data') }}</p>
                 @endif
             </div>
         </div>
@@ -419,6 +570,86 @@
                         </li>
                     @endforeach
                 </ul>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.latest_orders') }}</h3>
+                        <p class="text-sm text-gray-500">{{ __('cms.dashboard.latest_orders_description') }}</p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </span>
+                </div>
+                @if($latestOrders->isNotEmpty())
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-100 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase">
+                                <tr>
+                                    <th scope="col" class="px-3 py-2">{{ __('cms.dashboard.order_id') }}</th>
+                                    <th scope="col" class="px-3 py-2">{{ __('cms.dashboard.customer') }}</th>
+                                    <th scope="col" class="px-3 py-2 text-right">{{ __('cms.dashboard.items') }}</th>
+                                    <th scope="col" class="px-3 py-2 text-right">{{ __('cms.dashboard.total') }}</th>
+                                    <th scope="col" class="px-3 py-2">{{ __('cms.dashboard.status') }}</th>
+                                    <th scope="col" class="px-3 py-2 text-right">{{ __('cms.dashboard.placed_at') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach ($latestOrders as $order)
+                                    <tr class="text-gray-700">
+                                        <td class="px-3 py-2 font-medium text-gray-900">#{{ $order->id }}</td>
+                                        <td class="px-3 py-2">
+                                            <p class="font-medium">{{ optional($order->customer)->name ?? __('cms.dashboard.guest_customer') }}</p>
+                                            <p class="text-xs text-gray-500">{{ optional($order->customer)->email ?? $order->guest_email }}</p>
+                                        </td>
+                                        <td class="px-3 py-2 text-right">{{ number_format($order->items_count ?? 0) }}</td>
+                                        <td class="px-3 py-2 text-right">{{ number_format($order->total_amount ?? 0, 2) }}</td>
+                                        <td class="px-3 py-2">
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">{{ $statusMap[$order->status] ?? ucfirst($order->status) }}</span>
+                                        </td>
+                                        <td class="px-3 py-2 text-right">{{ optional($order->created_at)->format('M d, Y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500">{{ __('cms.dashboard.no_data') }}</p>
+                @endif
+            </div>
+
+            <div class="p-5 rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('cms.dashboard.recent_customers') }}</h3>
+                        <p class="text-sm text-gray-500">{{ __('cms.dashboard.recent_customers_description') }}</p>
+                    </div>
+                    <span class="w-10 h-10 rounded-full bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-500">
+                        <i class="fas fa-user-plus"></i>
+                    </span>
+                </div>
+                @if($recentCustomers->isNotEmpty())
+                    <ul class="divide-y divide-gray-100">
+                        @foreach ($recentCustomers as $customer)
+                            <li class="py-3 flex items-center justify-between text-sm gap-4">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ $customer->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $customer->email }}</p>
+                                </div>
+                                <div class="text-right text-xs text-gray-500">
+                                    <p class="text-sm font-semibold text-gray-900">{{ number_format($customer->orders_count ?? 0) }}</p>
+                                    <p>{{ __('cms.dashboard.orders_count') }}</p>
+                                    <p class="mt-1 text-gray-400">{{ __('cms.dashboard.joined') }}: {{ optional($customer->created_at)->format('M d, Y') }}</p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-gray-500">{{ __('cms.dashboard.no_data') }}</p>
+                @endif
             </div>
         </div>
     </div>

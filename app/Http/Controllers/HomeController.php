@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -57,12 +58,27 @@ class HomeController extends Controller
         $totalVendors = Vendor::query()->count();
         $totalCustomers = Customer::query()->count();
 
+        $totalProducts = Product::query()->count();
+        $activeProducts = Product::query()->where('status', 1)->count();
+        $inactiveProducts = Product::query()->where('status', 0)->count();
+
+        $lowStockThreshold = 5;
+        $lowStockCount = Product::query()->where('stock', '<=', $lowStockThreshold)->count();
+        $inventoryValue = (float) Product::query()->selectRaw('SUM(stock * price) as total')->value('total');
+
         $totalRevenue = Payment::query()->where('status', 'completed')->sum('amount');
         $averageOrderValue = $completedOrders > 0 ? round($totalRevenue / $completedOrders, 2) : 0.0;
 
         $refundsAmount = Refund::query()->where('status', 'completed')->sum('amount');
         $refundRate = $totalRevenue > 0 ? round(($refundsAmount / $totalRevenue) * 100, 2) : 0.0;
         $netRevenue = round($totalRevenue - $refundsAmount, 2);
+
+        $totalItemsSold = OrderDetail::query()
+            ->whereHas('order', fn ($query) => $query->where('status', 'completed'))
+            ->sum('quantity');
+        $averageItemsPerOrder = $completedOrders > 0
+            ? round($totalItemsSold / $completedOrders, 1)
+            : 0.0;
 
         $weeklyRevenue = Payment::query()
             ->where('status', 'completed')
@@ -134,6 +150,60 @@ class HomeController extends Controller
 
                 return $product;
             });
+
+        $categorySales = OrderDetail::query()
+            ->select(
+                'products.category_id',
+                DB::raw('SUM(order_details.quantity) as units_sold'),
+                DB::raw('SUM(order_details.quantity * order_details.price) as revenue_generated')
+            )
+            ->join('products', 'order_details.product_id', '=', 'products.id')
+            ->groupBy('products.category_id');
+
+        $topCategories = Category::query()
+            ->leftJoinSub($categorySales, 'category_sales', 'category_sales.category_id', '=', 'categories.id')
+            ->with([
+                'translation' => function ($query) {
+                    $query->select('category_id', 'name');
+                },
+            ])
+            ->select(
+                'categories.*',
+                DB::raw('COALESCE(category_sales.units_sold, 0) as units_sold'),
+                DB::raw('COALESCE(category_sales.revenue_generated, 0) as revenue_generated')
+            )
+            ->orderByDesc(DB::raw('COALESCE(category_sales.revenue_generated, 0)'))
+            ->limit(5)
+            ->get()
+            ->map(function ($category) {
+                $category->revenue_generated = round((float) $category->revenue_generated, 2);
+
+                return $category;
+            });
+
+        $lowStockProducts = Product::query()
+            ->where('stock', '<=', $lowStockThreshold)
+            ->orderBy('stock')
+            ->with([
+                'translation' => function ($query) {
+                    $query->select('product_id', 'name');
+                },
+            ])
+            ->limit(5)
+            ->get();
+
+        $latestOrders = Order::query()
+            ->with(['customer'])
+            ->withSum('details as items_count', 'quantity')
+            ->latest()
+            ->limit(6)
+            ->get();
+
+        $recentCustomers = Customer::query()
+            ->withCount('orders')
+            ->latest()
+            ->limit(6)
+            ->get();
 
         // Last 7 days revenue trend
         $revenueTrend = Payment::query()
@@ -355,12 +425,24 @@ class HomeController extends Controller
                 'net_revenue' => $netRevenue,
                 'refunds_total' => $refundsAmount,
                 'refund_rate' => $refundRate,
+                'products_total' => $totalProducts,
+                'products_active' => $activeProducts,
+                'products_inactive' => $inactiveProducts,
+                'low_stock_threshold' => $lowStockThreshold,
+                'low_stock_count' => $lowStockCount,
+                'inventory_value' => round($inventoryValue, 2),
+                'total_items_sold' => $totalItemsSold,
+                'average_items_per_order' => $averageItemsPerOrder,
             ],
             'topProducts' => $topProducts,
             'revenueTrend' => $revenueTrend,
             'orderStatusBreakdown' => $orderStatusBreakdown,
             'cardCharts' => $cardCharts,
             'productInsights' => $productInsights,
+            'topCategories' => $topCategories,
+            'lowStockProducts' => $lowStockProducts,
+            'latestOrders' => $latestOrders,
+            'recentCustomers' => $recentCustomers,
         ]);
     }
 }
