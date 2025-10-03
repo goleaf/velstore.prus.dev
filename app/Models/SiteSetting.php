@@ -20,8 +20,20 @@ class SiteSetting extends Model
         'meta_description',
         'meta_keywords',
         'contact_email',
+        'support_email',
         'contact_phone',
+        'support_hours',
         'address',
+        'logo',
+        'favicon',
+        'primary_color',
+        'secondary_color',
+        'facebook_url',
+        'twitter_url',
+        'instagram_url',
+        'linkedin_url',
+        'maintenance_mode',
+        'maintenance_message',
         'footer_text',
     ];
 
@@ -29,6 +41,7 @@ class SiteSetting extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'maintenance_mode' => 'boolean',
     ];
 
     // Optional: You may want to include any relationships (e.g., translations, if necessary)
