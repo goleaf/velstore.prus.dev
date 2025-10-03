@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\AttributeValueTranslation;
+use App\Models\Language;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -16,66 +17,56 @@ class AttributeSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            $sizeAttribute = Attribute::firstOrCreate(
-                ['name' => 'Size'],
-                ['created_at' => now(), 'updated_at' => now()]
-            );
+            $languages = Language::query()
+                ->where('active', true)
+                ->pluck('code')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
 
-            $sizes = ['Small', 'Medium', 'Large'];
-
-            foreach ($sizes as $size) {
-                $value = AttributeValue::firstOrCreate(
-                    [
-                        'attribute_id' => $sizeAttribute->id,
-                        'value' => $size,
-                    ],
-                    [
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
-                );
-
-                AttributeValueTranslation::updateOrCreate(
-                    [
-                        'attribute_value_id' => $value->id,
-                        'language_code' => 'en',
-                    ],
-                    [
-                        'translated_value' => $size,
-                        'updated_at' => now(),
-                    ]
-                );
+            if (empty($languages)) {
+                $languages = ['en'];
             }
 
-            $colorAttribute = Attribute::firstOrCreate(
-                ['name' => 'Color'],
-                ['created_at' => now(), 'updated_at' => now()]
-            );
+            $attributeDefinitions = [
+                'Size' => ['Extra Small', 'Small', 'Medium', 'Large', 'Extra Large'],
+                'Color' => ['Red', 'Green', 'Blue', 'Black', 'White', 'Yellow'],
+                'Material' => ['Cotton', 'Linen', 'Wool', 'Leather'],
+                'Length' => ['Short', 'Regular', 'Long'],
+            ];
 
-            $colors = ['Red', 'Green', 'Blue', 'Black', 'White', 'Yellow'];
-
-            foreach ($colors as $color) {
-                $value = AttributeValue::firstOrCreate(
-                    [
-                        'attribute_id' => $colorAttribute->id,
-                        'value' => $color,
-                    ],
-                    [
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
+            foreach ($attributeDefinitions as $attributeName => $values) {
+                $attribute = Attribute::firstOrCreate(
+                    ['name' => $attributeName],
+                    ['created_at' => now(), 'updated_at' => now()]
                 );
 
-                AttributeValueTranslation::updateOrCreate(
-                    [
-                        'attribute_value_id' => $value->id,
-                        'language_code' => 'en',
-                    ],
-                    [
-                        'translated_value' => $color,
-                        'updated_at' => now(),
-                    ]
-                );
+                foreach ($values as $valueName) {
+                    $value = AttributeValue::firstOrCreate(
+                        [
+                            'attribute_id' => $attribute->id,
+                            'value' => $valueName,
+                        ],
+                        [
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]
+                    );
+
+                    foreach ($languages as $languageCode) {
+                        AttributeValueTranslation::updateOrCreate(
+                            [
+                                'attribute_value_id' => $value->id,
+                                'language_code' => $languageCode,
+                            ],
+                            [
+                                'translated_value' => $valueName,
+                                'updated_at' => now(),
+                            ]
+                        );
+                    }
+                }
             }
         });
     }
