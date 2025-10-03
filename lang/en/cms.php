@@ -334,34 +334,74 @@ return [
     'pages' => [
         // General
         'title' => 'Pages',
-        'choose_file' => 'Choose File',
+        'index_description' => 'Manage the static content that powers your storefront.',
+        'create_button' => 'New page',
+        'choose_file' => 'Choose file',
 
-        // Create Page
-        'create' => 'Create Page',
-        'form_title' => 'Title (:code)',
-        'form_content' => 'Content (:code)',
-        'form_image' => 'Image (:code)',
-        'form_save' => 'Save',
+        // Dashboard stats
+        'stat_total' => 'Total pages',
+        'stat_active' => 'Published',
+        'stat_inactive' => 'Drafts',
+        'stat_last_updated' => 'Last updated',
+        'stat_last_updated_never' => 'Not available yet',
 
-        // Edit Page
-        'edit' => 'Edit Page',
-        'form_update' => 'Update',
-
-        // Pages Table
+        // Table
+        'table_heading' => 'All pages',
+        'table_description' => 'Review translations, visibility, and update history for each page.',
         'table_title' => 'Title',
         'table_slug' => 'Slug',
-        'table_status' => 'Status',
+        'table_languages' => 'Languages',
+        'table_status' => 'Visibility',
+        'table_last_updated' => 'Last updated',
         'table_actions' => 'Actions',
 
+        // Create Page
+        'create' => 'Create page',
+        'create_description' => 'Build a localized page for your customers and control how it appears in the storefront.',
+        'back_to_index' => 'Back to pages',
+        'validation_error_title' => 'Please review the highlighted fields.',
+        'form_section_overview' => 'Page settings',
+        'form_section_overview_help' => 'Configure visibility and metadata before adding translations.',
+        'form_status_label' => 'Publish page',
+        'form_status_help_active' => 'Visible to customers once linked from the storefront.',
+        'form_status_help_inactive' => 'Hidden from the storefront but available for editing.',
+        'slug_preview_label' => 'Slug preview',
+        'slug_preview_hint' => 'Generated from the default language title. You can adjust it after saving if needed.',
+        'slug_preview_placeholder' => 'page-slug',
+        'form_tips_title' => 'Helpful tips',
+        'form_tip_primary_language' => 'Start with the :code version to generate a clean slug.',
+        'form_tip_media' => 'Upload language-specific imagery whenever possible.',
+        'form_section_translations' => 'Localized content',
+        'form_section_translations_help' => 'Provide copy, imagery, and assets for each active language.',
+        'form_default_badge' => 'Default',
+        'form_title' => 'Title (:code)',
+        'form_content' => 'Content (:code)',
+        'form_image' => 'Featured image (:code)',
+        'form_image_help' => 'PNG, JPG or WEBP up to 2 MB.',
+        'form_save' => 'Save page',
+
+        // Edit Page
+        'edit' => 'Edit page',
+        'form_update' => 'Update page',
+
+        // Data helpers
+        'untitled' => 'Untitled page',
+        'no_translations' => 'No translations yet',
+        'last_updated_on' => 'Updated :date',
+        'status_active' => 'Published',
+        'status_inactive' => 'Draft',
+
         // Delete Modal
-        'delete_modal_title' => 'Confirm Deletion',
+        'delete_modal_title' => 'Confirm deletion',
         'delete_modal_text' => 'Are you sure you want to delete this page?',
         'delete_modal_cancel' => 'Cancel',
         'delete_modal_delete' => 'Delete',
 
         // Toastr messages
-        'toastr_success' => 'Success',
+        'toastr_success' => 'Page deleted successfully.',
         'toastr_error' => 'Error deleting page',
+        'toastr_status_updated' => 'Page status updated.',
+        'toastr_status_error' => 'Unable to update page status.',
     ],
 
     'customers' => [
