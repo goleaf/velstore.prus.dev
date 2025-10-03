@@ -52,5 +52,8 @@ class CustomerSeeder extends Seeder
                 ]
             );
         }
+
+        Customer::factory()->count(12)->create();
+        Customer::factory()->inactive()->count(4)->create();
     }
 }

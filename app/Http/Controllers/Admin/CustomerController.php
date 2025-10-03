@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CustomerStoreRequest;
+use App\Http\Requests\Admin\CustomerUpdateRequest;
 use App\Models\Customer;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -16,30 +19,28 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return view('admin.customers.create');
+        $statusOptions = [
+            'active' => __('cms.customers.active'),
+            'inactive' => __('cms.customers.inactive'),
+        ];
+
+        return view('admin.customers.create', [
+            'statusOptions' => $statusOptions,
+        ]);
     }
 
     /**
      * Store a new customer.
      */
-    public function store(Request $request)
+    public function store(CustomerStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:customers,email',
-            'password' => 'required|min:6',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-        ]);
-
         Customer::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'status' => $request->status,
+            'name' => $request->string('name'),
+            'email' => $request->string('email'),
+            'password' => Hash::make($request->input('password')),
+            'phone' => $request->input('phone'),
+            'address' => $request->input('address'),
+            'status' => $request->string('status'),
         ]);
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
@@ -48,11 +49,58 @@ class CustomerController extends Controller
     /**
      * List all customers.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->paginate(10);
+        $statusOptions = [
+            '' => __('cms.customers.filter_status_all'),
+            'active' => __('cms.customers.active'),
+            'inactive' => __('cms.customers.inactive'),
+        ];
 
-        return view('admin.customers.index', compact('customers'));
+        $search = trim((string) $request->query('search', ''));
+        $status = (string) $request->query('status', '');
+
+        if (! array_key_exists($status, $statusOptions)) {
+            $status = '';
+        }
+
+        $filters = [
+            'search' => $search,
+            'status' => $status,
+        ];
+
+        $query = Customer::query()
+            ->with('defaultAddress')
+            ->when($filters['search'] !== '', function (Builder $builder) use ($filters): void {
+                $builder->where(function (Builder $nested) use ($filters): void {
+                    $term = '%' . $filters['search'] . '%';
+                    $nested
+                        ->where('name', 'like', $term)
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('phone', 'like', $term);
+                });
+            })
+            ->when(in_array($filters['status'], ['active', 'inactive'], true), function (Builder $builder) use ($filters): void {
+                $builder->where('status', $filters['status']);
+            })
+            ->latest();
+
+        $customers = $query->paginate(15)->withQueryString();
+
+        $statusCounts = Customer::query()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        return view('admin.customers.index', [
+            'customers' => $customers,
+            'filters' => $filters,
+            'statusOptions' => $statusOptions,
+            'statusCounts' => [
+                'active' => (int) ($statusCounts['active'] ?? 0),
+                'inactive' => (int) ($statusCounts['inactive'] ?? 0),
+            ],
+        ]);
     }
 
     public function getCustomerData()
@@ -74,8 +122,8 @@ class CustomerController extends Controller
                     : __('cms.customers.inactive');
 
                 $class = $customer->status === 'active'
-                    ? 'badge bg-success'
-                    : 'badge bg-danger';
+                    ? 'badge badge-success'
+                    : 'badge badge-danger';
 
                 return '<span class="' . $class . '">' . e($label) . '</span>';
             })
@@ -140,20 +188,12 @@ class CustomerController extends Controller
     /**
      * Update a customer.
      */
-    public function update(Request $request, Customer $customer)
+    public function update(CustomerUpdateRequest $request, Customer $customer)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('customers')->ignore($customer->id)],
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-        ]);
-
         $data = $request->only(['name', 'email', 'phone', 'address', 'status']);
 
         if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            $data['password'] = Hash::make($request->input('password'));
         }
 
         $customer->update($data);

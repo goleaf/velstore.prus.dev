@@ -23,4 +23,11 @@ class CustomerFactory extends Factory
             'status' => 'active',
         ];
     }
+
+    public function inactive(): self
+    {
+        return $this->state(fn () => [
+            'status' => 'inactive',
+        ]);
+    }
 }
