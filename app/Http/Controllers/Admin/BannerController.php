@@ -9,6 +9,7 @@ use App\Models\Language;
 use App\Services\Admin\BannerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class BannerController extends Controller
@@ -38,23 +39,54 @@ class BannerController extends Controller
 
     public function getData(Request $request)
     {
-        $banners = Banner::with('translations')->get();
+        $locale = app()->getLocale();
+        $fallbackLocale = config('app.fallback_locale', 'en');
+
+        $typeLabels = [
+            'promotion' => __('cms.banners.promotion'),
+            'sale' => __('cms.banners.sale'),
+            'seasonal' => __('cms.banners.seasonal'),
+            'featured' => __('cms.banners.featured'),
+            'announcement' => __('cms.banners.announcement'),
+        ];
+
+        $banners = Banner::with('translations')->select('banners.*');
 
         return DataTables::of($banners)
-            ->addColumn('image', function ($banner) {
-                $imageUrl = $banner->translations->firstWhere('language_code', 'en')->image_url ?? null;
+            ->addColumn('title', function (Banner $banner) use ($locale, $fallbackLocale) {
+                $translation = $banner->translations->firstWhere('language_code', $locale)
+                    ?? $banner->translations->firstWhere('language_code', $fallbackLocale)
+                    ?? $banner->translations->first();
 
-                return $imageUrl ? '<img src="'.Storage::url($imageUrl).'" width="50" />' : 'No Image';
+                return $translation?->title ?? __('cms.banners.untitled');
             })
-            ->addColumn('action', function ($banner) {
-                return '<a href="'.route('admin.banners.edit', $banner->id).'" class="btn btn-primary">Edit</a>
-                        <form action="'.route('admin.banners.destroy', $banner->id).'" method="POST" style="display:inline;">
-                            '.csrf_field().'
-                            '.method_field('DELETE').'
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>';
+            ->addColumn('type_badge', function (Banner $banner) use ($typeLabels) {
+                $label = $typeLabels[$banner->type] ?? Str::title($banner->type);
+
+                return '<span class="badge badge-soft-primary">'.e($label).'</span>';
             })
-            ->rawColumns(['image', 'action'])
+            ->addColumn('image', function (Banner $banner) use ($locale, $fallbackLocale) {
+                $translation = $banner->translations->firstWhere('language_code', $locale)
+                    ?? $banner->translations->firstWhere('language_code', $fallbackLocale)
+                    ?? $banner->translations->first();
+
+                $imagePath = $translation?->image_url;
+
+                if (! $imagePath) {
+                    return '';
+                }
+
+                $resolved = $this->resolveImageUrl($imagePath);
+
+                if (! $resolved) {
+                    return '';
+                }
+
+                return '<img src="'.e($resolved).'" alt="'.e(__('cms.banners.image')).'" class="h-12 w-20 rounded-md object-cover border border-gray-200" />';
+            })
+            ->addColumn('status', fn (Banner $banner) => (int) $banner->status)
+            ->addColumn('action', fn () => '')
+            ->rawColumns(['image', 'type_badge'])
             ->make(true);
     }
 
@@ -134,5 +166,24 @@ class BannerController extends Controller
                 'message' => 'Error updating banner status.',
             ]);
         }
+    }
+
+    protected function resolveImageUrl(string $path): ?string
+    {
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $normalized = Str::startsWith($path, 'public/') ? Str::after($path, 'public/') : $path;
+
+        if (Storage::disk('public')->exists($normalized)) {
+            return Storage::disk('public')->url($normalized);
+        }
+
+        if (Storage::exists($path)) {
+            return Storage::url($path);
+        }
+
+        return asset($normalized);
     }
 }

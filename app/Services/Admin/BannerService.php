@@ -7,6 +7,7 @@ use App\Models\Language;
 use App\Repositories\Admin\Banner\BannerRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BannerService
 {
@@ -24,100 +25,144 @@ class BannerService
 
     public function store(Request $request)
     {
-        $activeLanguages = Language::where('active', 1)->pluck('code')->toArray();
-        $defaultLang = 'en';
+        $activeLanguages = Language::active()->pluck('code')->toArray();
+        $defaultLocale = $this->resolveDefaultLocale($activeLanguages);
 
         $rules = [
             'type' => 'required|in:promotion,sale,seasonal,featured,announcement',
+            'status' => 'required|boolean',
         ];
 
         foreach ($activeLanguages as $code) {
             $rules["languages.$code.title"] = 'required|string|max:255';
-
-            if ($code === $defaultLang) {
-                $rules["languages.$code.image"] = 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000';
-            } else {
-                $rules["languages.$code.image"] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000';
-            }
-
             $rules["languages.$code.description"] = 'required|string|min:3';
 
-            $rules["languages.$code.image_title"] = 'nullable|string|max:255';
+            $rules["languages.$code.image"] = ($code === $defaultLocale ? 'required' : 'nullable')
+                .'|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000';
         }
 
         $validated = $request->validate($rules);
 
-        $banner = $this->bannerRepository->createBanner($request->only('type'));
+        $defaultTranslation = $request->input("languages.$defaultLocale", []);
 
-        $defaultImage = null;
-        if ($request->hasFile("languages.$defaultLang.image")) {
-            $defaultImage = $request->file("languages.$defaultLang.image")->store('banner_images', 'public');
+        $banner = $this->bannerRepository->createBanner([
+            'type' => $validated['type'],
+            'status' => (int) $validated['status'],
+            'title' => $defaultTranslation['title'] ?? null,
+        ]);
+
+        $defaultImagePath = null;
+        if ($request->hasFile("languages.$defaultLocale.image")) {
+            $defaultImagePath = $this->storeImage($request->file("languages.$defaultLocale.image"));
         }
 
         foreach ($activeLanguages as $code) {
             $langInput = $request->input("languages.$code");
 
-            $image = $request->file("languages.$code.image");
-            $imageUrl = $image
-                ? $image->store('banner_images', 'public')
-                : $defaultImage;
+            if (! $langInput) {
+                continue;
+            }
+
+            $imagePath = $defaultImagePath;
+
+            if ($request->hasFile("languages.$code.image")) {
+                $imagePath = $this->storeImage($request->file("languages.$code.image"));
+            }
+
+            if (! $imagePath) {
+                continue;
+            }
 
             BannerTranslation::create([
                 'banner_id' => $banner->id,
                 'language_code' => $code,
                 'title' => $langInput['title'],
                 'description' => $langInput['description'],
-                'image_title' => $langInput['image_title'] ?? null,
-                'image_url' => $imageUrl,
+                'image_url' => $imagePath,
             ]);
         }
 
-        return redirect()->route('admin.banners.index')->with('success', __('cms.banners.created'));
+        return $banner;
     }
 
     public function update(Request $request, int $id)
     {
-        $request->validate([
-            'languages.*.title' => 'required|string|max:255',
-            'languages.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
+        $validated = $request->validate([
             'type' => 'required|in:promotion,sale,seasonal,featured,announcement',
+            'status' => 'required|boolean',
+            'languages.*.language_code' => 'required|string',
+            'languages.*.title' => 'required|string|max:255',
+            'languages.*.description' => 'required|string|min:3',
+            'languages.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000',
         ]);
 
         $banner = $this->bannerRepository->getBannerById($id);
+        $languagesInput = $request->input('languages', []);
+        $defaultLocale = config('app.locale', 'en');
+        $defaultLanguageData = collect($languagesInput)->firstWhere('language_code', $defaultLocale)
+            ?? collect($languagesInput)->first();
 
-        $this->bannerRepository->updateBanner($banner, $request->only('type'));
+        $this->bannerRepository->updateBanner($banner, [
+            'type' => $validated['type'],
+            'status' => (int) $request->boolean('status'),
+            'title' => $defaultLanguageData['title'] ?? $banner->title,
+        ]);
 
-        foreach ($request->languages as $languageData) {
-            $translation = BannerTranslation::where('banner_id', $banner->id)
-                ->where('language_code', $languageData['language_code'])
-                ->first();
+        $existingTranslations = BannerTranslation::where('banner_id', $banner->id)
+            ->get()
+            ->keyBy('language_code');
+
+        $defaultImagePath = optional($existingTranslations->get($defaultLocale))->image_url;
+
+        foreach ($languagesInput as $index => $languageData) {
+            $languageCode = $languageData['language_code'] ?? null;
+
+            if (! $languageCode) {
+                continue;
+            }
+
+            $translation = $existingTranslations->get($languageCode);
+            $uploadedImage = $languageData['image'] ?? $request->file("languages.$index.image");
 
             if ($translation) {
-                $imageUrl = null;
-                if (isset($languageData['image']) && $languageData['image']) {
-                    if ($translation->image_url && Storage::exists($translation->image_url)) {
-                        Storage::delete($translation->image_url);
-                    }
-                    $imageUrl = $languageData['image']->store('public/banner_images');
+                if ($uploadedImage) {
+                    $this->deleteImage($translation->image_url);
+                    $translation->image_url = $this->storeImage($uploadedImage);
                 }
 
                 $translation->title = $languageData['title'];
-                $translation->image_url = $imageUrl ?: $translation->image_url;
-                $translation->description = $languageData['description'] ?? $translation->description;
+                $translation->description = $languageData['description'];
                 $translation->save();
-            } else {
-                $imageUrl = null;
-                if (isset($languageData['image']) && $languageData['image']) {
-                    $imageUrl = $languageData['image']->store('public/banner_images');
+
+                if ($languageCode === $defaultLocale) {
+                    $defaultImagePath = $translation->image_url;
                 }
 
-                BannerTranslation::create([
-                    'banner_id' => $banner->id,
-                    'language_code' => $languageData['language_code'],
-                    'title' => $languageData['title'],
-                    'description' => $languageData['description'] ?? null,
-                    'image_url' => $imageUrl,
-                ]);
+                continue;
+            }
+
+            $imagePath = null;
+
+            if ($uploadedImage) {
+                $imagePath = $this->storeImage($uploadedImage);
+            } elseif ($languageCode !== $defaultLocale) {
+                $imagePath = $defaultImagePath;
+            }
+
+            if (! $imagePath) {
+                continue;
+            }
+
+            $createdTranslation = BannerTranslation::create([
+                'banner_id' => $banner->id,
+                'language_code' => $languageCode,
+                'title' => $languageData['title'],
+                'description' => $languageData['description'],
+                'image_url' => $imagePath,
+            ]);
+
+            if ($languageCode === $defaultLocale) {
+                $defaultImagePath = $createdTranslation->image_url;
             }
         }
     }
@@ -126,5 +171,40 @@ class BannerService
     {
         $banner = $this->bannerRepository->getBannerById($id);
         $this->bannerRepository->deleteBanner($banner);
+    }
+
+    protected function storeImage($file): string
+    {
+        return $file->store('banner_images', 'public');
+    }
+
+    protected function deleteImage(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $normalized = Str::startsWith($path, 'public/') ? Str::after($path, 'public/') : $path;
+
+        if (Storage::disk('public')->exists($normalized)) {
+            Storage::disk('public')->delete($normalized);
+
+            return;
+        }
+
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+        }
+    }
+
+    protected function resolveDefaultLocale(array $activeLanguages): string
+    {
+        $defaultLocale = config('app.locale', 'en');
+
+        if (in_array($defaultLocale, $activeLanguages, true)) {
+            return $defaultLocale;
+        }
+
+        return $activeLanguages[0] ?? $defaultLocale;
     }
 }

@@ -186,7 +186,7 @@ trait CreatesAdminTestData
 
         $this->banner = Banner::create([
             'title' => 'Homepage Banner',
-            'status' => true,
+            'status' => 1,
             'type' => 'promotion',
         ]);
 

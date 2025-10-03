@@ -118,6 +118,24 @@
                     <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="banner_status">{{ __('cms.banners.status') }}</label>
+                <select
+                    id="banner_status"
+                    name="status"
+                    @class([
+                        'form-select',
+                        'border-danger-300 focus:border-danger-500 focus:ring-danger-500' => $errors->has('status'),
+                    ])
+                >
+                    <option value="1" @selected(old('status', $banner?->status ?? 1) == 1)>{{ __('cms.banners.active') }}</option>
+                    <option value="0" @selected(old('status', $banner?->status ?? 1) == 0)>{{ __('cms.banners.inactive') }}</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">{{ __('cms.banners.status_help') }}</p>
+                @error('status')
+                    <p class="text-danger-600 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
     </x-admin.card>
 
