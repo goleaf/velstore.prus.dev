@@ -460,6 +460,7 @@ return [
         'name' => 'Vendor',
         'email' => 'Email',
         'phone' => 'Phone',
+        'registered_at' => 'Registered',
         'status' => 'Status',
         'actions' => 'Actions',
         'empty_state' => 'No vendors found yet.',
@@ -480,6 +481,9 @@ return [
         'confirm_password' => 'Confirm password',
         'status_label' => 'Status',
         'status_placeholder' => 'Select status',
+        'password_requirements' => 'Use at least 8 characters, including one symbol.',
+        'phone_format_hint' => 'Include the country code, e.g. +1 555 123 4567.',
+        'password_symbol_validation' => 'The password must include at least one symbol character.',
 
         // Buttons
         'add_vendor' => 'Add Vendor',
@@ -498,6 +502,10 @@ return [
         'success_create' => 'Vendor registered successfully!',
         'success_delete' => 'Vendor deleted successfully!',
         'error_delete' => 'Error deleting vendor! Please try again.',
+
+        // Filters
+        'filter_status_label' => 'Filter by status',
+        'filter_status_all' => 'All statuses',
 
         // Legacy keys kept for backwards compatibility
         'title_list' => 'Vendor List',
