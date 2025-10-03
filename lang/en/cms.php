@@ -23,6 +23,13 @@ return [
         'validation_error' => 'Validation Error',
     ],
 
+    'common' => [
+        'updated_successfully' => 'Updated successfully.',
+        'update_failed' => 'Update failed. Please try again.',
+        'deleted_successfully' => 'Deleted successfully.',
+        'delete_failed' => 'Delete failed. Please try again.',
+    ],
+
     'sidebar' => [
         'search_placeholder' => 'Search...',
         'dashboard' => 'Dashboard',
@@ -164,6 +171,7 @@ return [
         'encrypted' => 'Encrypted',
         'unique' => 'unique',
         'update_button' => 'Update',
+        'no_configurations' => 'No configurations available for this gateway.',
 
         // Fallback
         'not_available' => 'N/A',
@@ -234,6 +242,7 @@ return [
         // Page Titles
         'title' => 'Refunds',
         'details_title' => 'Refund Details',
+        'manage' => 'Track and process refund requests in one place.',
 
         // Table Headings
         'id' => 'ID',
@@ -242,6 +251,7 @@ return [
         'status' => 'Status',
         'reason' => 'Reason',
         'action' => 'Action',
+        'list' => 'Refund list',
 
         // Status Labels
         'completed' => 'Completed',
@@ -1130,6 +1140,8 @@ return [
         'csrf_token_invalid' => 'Invalid CSRF token. Please refresh the page and try again.',
         'not_found' => 'The requested item could not be found.',
         'unauthorized' => 'You are not authorized to perform this action.',
+        'whoops' => 'Whoops!',
+        'input_problem' => 'There were some problems with your input.',
     ],
 
     'messages' => [
@@ -1233,6 +1245,7 @@ return [
         'items' => 'Order Items',
         'product' => 'Product',
         'sku' => 'SKU',
+        'quantity' => 'Quantity',
         'unit_price' => 'Unit Price',
         'subtotal' => 'Subtotal',
         'items_empty' => 'No items attached to this order.',
