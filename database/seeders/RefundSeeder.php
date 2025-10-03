@@ -51,22 +51,16 @@ class RefundSeeder extends Seeder
             ],
         ];
 
-        $payments = Payment::query()->take(count($definitions))->get();
+        $payments = Payment::query()->orderBy('id')->get();
 
-        if ($payments->count() < count($definitions)) {
-            $additional = Payment::factory()
-                ->count(count($definitions) - $payments->count())
-                ->create();
-
-            $payments = $payments->concat($additional);
+        if ($payments->isEmpty()) {
+            return;
         }
 
-        foreach ($definitions as $index => $definition) {
-            $payment = $payments[$index] ?? $payments->first();
+        $paymentsPool = $payments->values();
 
-            if (! $payment) {
-                break;
-            }
+        foreach ($definitions as $index => $definition) {
+            $payment = $paymentsPool[$index % $paymentsPool->count()];
 
             $amount = round((float) $payment->amount * ($definition['ratio'] ?? 0.3), 2);
             $amount = $amount > 0

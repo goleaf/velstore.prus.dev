@@ -40,6 +40,43 @@ class PaymentSeeder extends Seeder
             ]
         );
 
+        $guestOrder = Order::updateOrCreate(
+            ['guest_email' => 'guest@example.com'],
+            [
+                'customer_id' => null,
+                'total_amount' => 100.00,
+                'status' => 'pending',
+            ]
+        );
+
+        ShippingAddress::updateOrCreate(
+            ['order_id' => $guestOrder->id],
+            [
+                'customer_id' => null,
+                'name' => 'Guest Checkout',
+                'phone' => '+1-202-555-0199',
+                'address' => '789 Example Road',
+                'city' => 'Seedville',
+                'postal_code' => '60601',
+                'country' => 'United States',
+            ]
+        );
+
+        Payment::updateOrCreate(
+            [
+                'order_id' => $guestOrder->id,
+                'transaction_id' => 'GUEST-ORDER-0001',
+            ],
+            [
+                'gateway_id' => $stripeGateway->id,
+                'amount' => 100.00,
+                'currency' => 'USD',
+                'status' => 'completed',
+                'response' => ['message' => 'Payment successful'],
+                'meta' => ['ip' => '127.0.0.1', 'seeded' => true],
+            ]
+        );
+
         $order = Order::updateOrCreate(
             ['guest_email' => 'showcase-order@example.com'],
             [
@@ -105,7 +142,6 @@ class PaymentSeeder extends Seeder
                     'transaction_id' => $data['transaction_id'],
                 ],
                 [
-                    'user_id' => $user->id,
                     'gateway_id' => $data['gateway']->id,
                     'amount' => $data['amount'],
                     'currency' => $data['currency'],
@@ -121,6 +157,5 @@ class PaymentSeeder extends Seeder
                 $payment->save();
             }
         }
-
     }
 }
