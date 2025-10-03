@@ -122,6 +122,22 @@ Your Velstore instance is now running! Open your browser and visit:
 http://127.0.0.1:8000
 ```
 
+### QA Verification After Seeding
+
+Run the database seeder to load demo data:
+
+```sh
+php artisan db:seed
+```
+
+The storefront will include the "Atsuktuvų rinkinys Kiilde" product, accessible at:
+
+```text
+/products/atsuktuvu-rinkinys-kiilde
+```
+
+QA can navigate to that URL to confirm the product and its variants are available.
+
 ## Tech Stack
 - Backend: Laravel 12
 - Database: MySQLi
