@@ -345,7 +345,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('productVariantForm');
-            if (!form || typeof bootstrap === 'undefined') {
+            const bootstrapNamespace =
+                window.bootstrap ?? (typeof bootstrap !== 'undefined' ? bootstrap : undefined);
+
+            if (!form || !bootstrapNamespace || !bootstrapNamespace.Tab) {
                 return;
             }
 
@@ -401,7 +404,7 @@
                     : null;
 
                 pendingFocusElement = focusTarget;
-                bootstrap.Tab.getOrCreateInstance(trigger).show();
+                bootstrapNamespace.Tab.getOrCreateInstance(trigger).show();
             };
 
             tabTriggers.forEach((trigger) => {
