@@ -1,20 +1,22 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    <div class="card mt-4">
-        <div class="card-header card-header-bg text-white d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">{{ __('cms.coupons.edit_title') }}</h6>
-            <a href="{{ route('admin.coupons.index') }}" class="btn btn-light btn-sm">
-                {{ __('cms.coupons.back_to_list') }}
-            </a>
-        </div>
-        <div class="card-body">
-            @include('admin.coupons.partials.form', [
-                'action' => route('admin.coupons.update', $coupon->id),
-                'method' => 'PUT',
-                'submitLabel' => __('cms.coupons.update'),
-                'coupon' => $coupon,
-            ])
-        </div>
-    </div>
+    <x-admin.page-header
+        :title="__('cms.coupons.edit_title')"
+        :description="__('cms.coupons.form_description')"
+    >
+        <x-admin.button-link href="{{ route('admin.coupons.index') }}" class="btn-outline btn-sm">
+            {{ __('cms.coupons.back_to_list') }}
+        </x-admin.button-link>
+    </x-admin.page-header>
+
+    <x-admin.card class="mt-6" :title="__('cms.coupons.form_title')">
+        @include('admin.coupons.partials.form', [
+            'action' => route('admin.coupons.update', $coupon),
+            'method' => 'PUT',
+            'submitLabel' => __('cms.coupons.update'),
+            'cancelUrl' => route('admin.coupons.index'),
+            'coupon' => $coupon,
+        ])
+    </x-admin.card>
 @endsection
