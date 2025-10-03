@@ -14,6 +14,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'shop_id',
         'customer_id',
         'guest_email',
         'total_amount',
@@ -23,6 +24,11 @@ class Order extends Model
     protected $casts = [
         'total_amount' => 'decimal:2',
     ];
+
+    public function shop(): BelongsTo
+    {
+        return $this->belongsTo(Shop::class);
+    }
 
     public function customer(): BelongsTo
     {

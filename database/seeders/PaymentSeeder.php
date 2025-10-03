@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentGateway;
 use App\Models\ShippingAddress;
+use App\Models\Shop;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -16,6 +17,8 @@ class PaymentSeeder extends Seeder
      */
     public function run(): void
     {
+        $defaultShopId = Shop::query()->value('id');
+
         $stripeGateway = PaymentGateway::firstOrCreate(
             ['code' => 'stripe'],
             [
@@ -38,6 +41,7 @@ class PaymentSeeder extends Seeder
             ['guest_email' => 'guest@example.com'],
             [
                 'customer_id' => null,
+                'shop_id' => $defaultShopId,
                 'total_amount' => 100.00,
                 'status' => 'pending',
             ]
@@ -75,6 +79,7 @@ class PaymentSeeder extends Seeder
             ['guest_email' => 'showcase-order@example.com'],
             [
                 'customer_id' => null,
+                'shop_id' => $defaultShopId,
                 'total_amount' => 180.75,
                 'status' => 'processing',
             ]

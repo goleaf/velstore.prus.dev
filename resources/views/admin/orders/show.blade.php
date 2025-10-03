@@ -16,10 +16,11 @@
         ];
         $statusClass = $statusClasses[$order->status] ?? 'badge-gray';
         $itemsTotal = $order->details->reduce(fn ($carry, $detail) => $carry + ($detail->quantity * (float) $detail->price), 0);
+        $statusLabel = __('cms.orders.status_labels.' . $order->status);
     @endphp
 
     <x-admin.card class="mt-6" :title="__('cms.orders.summary')">
-        <dl class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <dl class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             <div>
                 <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.placed_at') }}</dt>
                 <dd class="mt-1 text-sm text-gray-900">
@@ -27,9 +28,15 @@
                 </dd>
             </div>
             <div>
+                <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.shop') }}</dt>
+                <dd class="mt-1 text-sm text-gray-900">
+                    {{ $order->shop?->name ?? __('cms.orders.shop_unassigned') }}
+                </dd>
+            </div>
+            <div>
                 <dt class="text-sm font-medium text-gray-500">{{ __('cms.orders.status') }}</dt>
                 <dd class="mt-1">
-                    <span class="{{ $statusClass }}">{{ ucfirst($order->status) }}</span>
+                    <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
                 </dd>
             </div>
             <div>

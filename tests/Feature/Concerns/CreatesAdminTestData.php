@@ -221,6 +221,7 @@ trait CreatesAdminTestData
 
         $this->order = Order::create([
             'customer_id' => $this->customer->id,
+            'shop_id' => $shop->id,
             'total_amount' => 150,
             'status' => 'completed',
         ]);

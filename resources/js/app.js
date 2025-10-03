@@ -1,6 +1,7 @@
 import './bootstrap';
 import './admin/sidebar';
 import './admin/orders/index';
+import './admin/orders/create';
 import './admin/coupons/index';
 import './admin/customers/index';
 

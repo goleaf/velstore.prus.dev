@@ -2,7 +2,7 @@
     <button type="button"
             class="btn btn-outline btn-sm"
             data-url="{{ route('admin.orders.show', $order) }}">
-        {{ __('cms.customers.view_button') }}
+        {{ __('cms.orders.view_button') }}
         <span class="sr-only">{{ __('cms.orders.id') }} #{{ $order->id }}</span>
     </button>
     <button type="button"
