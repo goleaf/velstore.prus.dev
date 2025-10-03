@@ -1,8 +1,8 @@
 <?php
 
-namespace App\\Http\\Requests\\Admin;
+namespace App\Http\Requests\Admin;
 
-use Illuminate\\Foundation\\Http\\FormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 class SiteSettingUpdateRequest extends FormRequest
 {
