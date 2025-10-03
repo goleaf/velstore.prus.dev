@@ -64,6 +64,8 @@ class OrderController extends Controller
             'details.product.category.translation',
             'payments.gateway',
             'payments.refunds',
+            'statusUpdates',
+            'notes',
         ]);
 
         return view('admin.orders.show', compact('order'));

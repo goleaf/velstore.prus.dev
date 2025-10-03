@@ -17,11 +17,24 @@ class Order extends Model
         'customer_id',
         'guest_email',
         'total_amount',
+        'currency',
+        'shipping_method',
+        'shipping_tracking_number',
+        'shipping_estimated_at',
+        'shipping_amount',
+        'discount_amount',
+        'tax_amount',
+        'adjustment_amount',
         'status',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'shipping_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'adjustment_amount' => 'decimal:2',
+        'shipping_estimated_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo
@@ -57,5 +70,15 @@ class Order extends Model
     public function refunds(): HasManyThrough
     {
         return $this->hasManyThrough(Refund::class, Payment::class);
+    }
+
+    public function statusUpdates(): HasMany
+    {
+        return $this->hasMany(OrderStatusUpdate::class)->orderBy('happened_at');
+    }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(OrderNote::class)->latest('created_at');
     }
 }
