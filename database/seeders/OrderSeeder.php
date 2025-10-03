@@ -102,6 +102,25 @@ class OrderSeeder extends Seeder
             ];
         }
 
+        if ($productIds->count() >= 1) {
+            $orders[4] = [
+                'guest_email' => 'cancelled-order@example.com',
+                'status' => 'canceled',
+                'created_at' => $now->copy()->subHours(12),
+                'items' => [
+                    ['product_id' => $productIds[0], 'quantity' => 1, 'price' => 45.5],
+                ],
+                'shipping' => [
+                    'name' => 'Guest Three',
+                    'phone' => '+1-202-555-0103',
+                    'address' => '321 Sample Parkway',
+                    'city' => 'Reference City',
+                    'postal_code' => '73301',
+                    'country' => 'United States',
+                ],
+            ];
+        }
+
         $orders[29] = [
             'guest_email' => 'vip-shopper@example.com',
             'status' => 'processing',

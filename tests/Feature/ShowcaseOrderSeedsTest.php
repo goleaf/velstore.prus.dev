@@ -27,15 +27,20 @@ class ShowcaseOrderSeedsTest extends TestCase
         $this->seed(OrderSeeder::class);
 
         $orders = Order::orderBy('id')->get();
-        $this->assertCount(4, $orders);
-        $this->assertSame([1, 2, 3, 29], $orders->pluck('id')->all());
+        $this->assertCount(5, $orders);
+        $this->assertSame([1, 2, 3, 4, 29], $orders->pluck('id')->all());
 
-        $showcaseOrder = $orders->last();
+        $showcaseOrder = $orders->firstWhere('id', 3);
         $this->assertSame('showcase-order@example.com', $showcaseOrder->guest_email);
         $this->assertSame('processing', $showcaseOrder->status);
         $this->assertSame('Express Courier', $showcaseOrder->shipping_method);
         $this->assertEquals(202.50, (float) $showcaseOrder->total_amount);
         $this->assertSame('USD', $showcaseOrder->currency);
+
+        $cancelledOrder = $orders->firstWhere('status', 'canceled');
+        $this->assertNotNull($cancelledOrder);
+        $this->assertSame('cancelled-order@example.com', $cancelledOrder->guest_email);
+        $this->assertEquals(45.5, (float) $cancelledOrder->total_amount);
 
         $productIds = DB::table('products')->pluck('id')->take(2);
 

@@ -1442,6 +1442,13 @@ return [
         'total_price' => 'Total Price',
         'action' => 'Actions',
 
+        // Filters & Status Labels
+        'all_orders' => 'All Orders',
+        'pending_orders' => 'Pending Orders',
+        'processing_orders' => 'Processing Orders',
+        'completed_orders' => 'Completed Orders',
+        'cancelled_orders' => 'Cancelled Orders',
+
         // Delete Modal
         'delete_confirm_title' => 'Confirm Delete',
         'delete_confirm_message' => 'Are you sure you want to delete this order?',
@@ -1452,6 +1459,14 @@ return [
         'deleted_success' => 'Order deleted successfully.',
         'deleted_error' => 'Failed to delete the order.',
         'deleted' => 'Deleted',
+
+        // Overview Stats
+        'overview_title' => 'Orders Overview',
+        'overview_description' => 'Track recent orders and revenue at a glance.',
+        'total_orders' => 'Total Orders',
+        'total_revenue' => 'Total Revenue',
+        'average_order_value' => 'Average Order Value',
+        'status_breakdown' => 'Status Breakdown',
 
         // Detail Page
         'details_title' => 'Order Details',

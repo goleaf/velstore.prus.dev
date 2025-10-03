@@ -102,6 +102,7 @@ return [
             'title' => 'Платёжные шлюзы',
             'list' => 'Список',
         ],
+
     ],
 
     'payment_gateways' => [
@@ -861,6 +862,59 @@ return [
         'deleted_success' => 'Заказ успешно удален.',
         'deleted_error' => 'Не удалось удалить заказ.',
         'deleted' => 'Удалено',
+
+        // Filters & Status Labels
+        'all_orders' => 'All Orders',
+        'pending_orders' => 'Pending Orders',
+        'processing_orders' => 'Processing Orders',
+        'completed_orders' => 'Completed Orders',
+        'cancelled_orders' => 'Cancelled Orders',
+
+        // Overview Stats
+        'overview_title' => 'Orders Overview',
+        'overview_description' => 'Track recent orders and revenue at a glance.',
+        'total_orders' => 'Total Orders',
+        'total_revenue' => 'Total Revenue',
+        'average_order_value' => 'Average Order Value',
+        'status_breakdown' => 'Status Breakdown',
+
+        // Detail Page
+        'details_title' => 'Order Details',
+        'summary' => 'Order Summary',
+        'placed_at' => 'Placed At',
+        'total_amount' => 'Total Amount',
+        'items_total' => 'Items Total',
+        'customer_info' => 'Customer Information',
+        'customer_guest' => 'Guest Checkout',
+        'customer_name' => 'Name',
+        'customer_email' => 'Email',
+        'customer_phone' => 'Phone',
+        'guest_email' => 'Guest Email',
+        'shipping' => 'Shipping Address',
+        'shipping_none' => 'No shipping address recorded for this order.',
+        'address' => 'Address',
+        'city' => 'City',
+        'postal_code' => 'Postal Code',
+        'country' => 'Country',
+        'items' => 'Order Items',
+        'product' => 'Product',
+        'sku' => 'SKU',
+        'unit_price' => 'Unit Price',
+        'subtotal' => 'Subtotal',
+        'items_empty' => 'No items attached to this order.',
+        'payments' => 'Payments',
+        'payment_gateway' => 'Gateway',
+        'payment_amount' => 'Amount',
+        'payment_status' => 'Status',
+        'payment_transaction' => 'Transaction ID',
+        'payment_date' => 'Processed At',
+        'payments_none' => 'No payments recorded for this order.',
+        'refunds' => 'Refunds',
+        'refunds_none' => 'No refunds processed for this payment.',
+        'not_available' => 'N/A',
+        'back_to_orders' => 'Back to Orders',
+        'product_missing' => 'Product unavailable',
+
     ],
 
     'attributes' => [

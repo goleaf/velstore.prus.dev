@@ -20,9 +20,9 @@ class OrderSeederTest extends TestCase
 
         $this->seed(OrderSeeder::class);
 
-        $this->assertSame(3, Order::count());
-        $this->assertSame(3, ShippingAddress::count());
-        $this->assertSame(5, OrderDetail::count());
+        $this->assertSame(4, Order::count());
+        $this->assertSame(4, ShippingAddress::count());
+        $this->assertSame(6, OrderDetail::count());
 
         $this->assertDatabaseHas('shipping_addresses', [
             'name' => 'Guest One',
@@ -38,6 +38,11 @@ class OrderSeederTest extends TestCase
             'name' => 'Showcase Customer',
             'address' => '789 Showcase Boulevard',
         ]);
+
+        $this->assertDatabaseHas('shipping_addresses', [
+            'name' => 'Guest Three',
+            'address' => '321 Sample Parkway',
+        ]);
     }
 
     public function test_order_seeder_is_idempotent(): void
@@ -47,8 +52,8 @@ class OrderSeederTest extends TestCase
         $this->seed(OrderSeeder::class);
         $this->seed(OrderSeeder::class);
 
-        $this->assertSame(3, Order::count());
-        $this->assertSame(3, ShippingAddress::count());
-        $this->assertSame(5, OrderDetail::count());
+        $this->assertSame(4, Order::count());
+        $this->assertSame(4, ShippingAddress::count());
+        $this->assertSame(6, OrderDetail::count());
     }
 }

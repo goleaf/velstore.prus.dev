@@ -3,9 +3,98 @@
 @section('content')
     @php
         $deleteTemplate = route('admin.orders.destroy', ['id' => '__ORDER_ID__']);
+        $orderMetrics = [
+            'total_orders' => $metrics['total_orders'] ?? 0,
+            'total_revenue' => $metrics['total_revenue'] ?? 0,
+            'average_order_value' => $metrics['average_order_value'] ?? 0,
+        ];
+        $statusCounts = $metrics['status_counts'] ?? [
+            'pending' => 0,
+            'processing' => 0,
+            'completed' => 0,
+            'canceled' => 0,
+        ];
     @endphp
 
     <x-admin.page-header :title="__('cms.orders.title')" />
+
+    <div class="mt-6 space-y-6">
+        <div>
+            <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                {{ __('cms.orders.overview_title') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-600">
+                {{ __('cms.orders.overview_description') }}
+            </p>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    {{ __('cms.orders.total_orders') }}
+                </p>
+                <p class="mt-2 text-2xl font-semibold text-gray-900">
+                    {{ number_format($orderMetrics['total_orders']) }}
+                </p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    {{ __('cms.orders.total_revenue') }}
+                </p>
+                <p class="mt-2 text-2xl font-semibold text-gray-900">
+                    {{ number_format($orderMetrics['total_revenue'], 2) }}
+                </p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    {{ __('cms.orders.average_order_value') }}
+                </p>
+                <p class="mt-2 text-2xl font-semibold text-gray-900">
+                    {{ number_format($orderMetrics['average_order_value'], 2) }}
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                {{ __('cms.orders.status_breakdown') }}
+            </h3>
+            <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                        {{ __('cms.dashboard.pending_orders') }}
+                    </p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">
+                        {{ number_format($statusCounts['pending'] ?? 0) }}
+                    </p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                        {{ __('cms.dashboard.processing_orders') }}
+                    </p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">
+                        {{ number_format($statusCounts['processing'] ?? 0) }}
+                    </p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                        {{ __('cms.dashboard.completed_orders') }}
+                    </p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">
+                        {{ number_format($statusCounts['completed'] ?? 0) }}
+                    </p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">
+                        {{ __('cms.dashboard.cancelled_orders') }}
+                    </p>
+                    <p class="mt-2 text-2xl font-semibold text-gray-900">
+                        {{ number_format($statusCounts['canceled'] ?? 0) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <x-admin.card noMargin class="mt-6">
         <div class="flex flex-wrap items-center gap-3 mb-4">
