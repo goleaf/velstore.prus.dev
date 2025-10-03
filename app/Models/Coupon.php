@@ -9,14 +9,43 @@ class Coupon extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'discount', 'type', 'expires_at'];
+    protected $fillable = [
+        'code',
+        'discount',
+        'type',
+        'minimum_spend',
+        'usage_limit',
+        'usage_count',
+        'expires_at',
+    ];
 
     protected $casts = [
         'expires_at' => 'datetime',
+        'minimum_spend' => 'decimal:2',
+        'usage_limit' => 'integer',
+        'usage_count' => 'integer',
     ];
 
     public function isExpired()
     {
         return $this->expires_at ? $this->expires_at->isPast() : false;
+    }
+
+    public function hasReachedUsageLimit(): bool
+    {
+        if ($this->usage_limit === null) {
+            return false;
+        }
+
+        return $this->usage_count >= $this->usage_limit;
+    }
+
+    public function meetsMinimumSpend(float $amount): bool
+    {
+        if ($this->minimum_spend === null) {
+            return true;
+        }
+
+        return $amount >= (float) $this->minimum_spend;
     }
 }

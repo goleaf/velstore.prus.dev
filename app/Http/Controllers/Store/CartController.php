@@ -120,7 +120,12 @@ class CartController extends Controller
     {
         $cart = Session::get('cart', []);
 
-        return view('themes.xylo.cart', compact('cart'));
+        $cartSummary = $this->cartService->summarizeCart();
+
+        return view('themes.xylo.cart', [
+            'cart' => $cart,
+            'cartSummary' => $cartSummary,
+        ]);
     }
 
     public function removeFromCart(Request $request)
@@ -152,6 +157,9 @@ class CartController extends Controller
     {
         $this->cartService->removeCoupon();
 
-        return response()->json(['success' => true, 'message' => 'Coupon removed successfully!']);
+        return response()->json(array_merge(
+            ['success' => true, 'message' => 'Coupon removed successfully!'],
+            $this->cartService->summarizeCart()
+        ));
     }
 }

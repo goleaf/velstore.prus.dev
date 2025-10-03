@@ -18,6 +18,9 @@ class CouponFactory extends Factory
             'code' => strtoupper($this->faker->unique()->bothify('SAVE##??')),
             'discount' => $this->faker->numberBetween(5, 50),
             'type' => $this->faker->randomElement(['percentage', 'fixed']),
+            'minimum_spend' => $this->faker->optional()->randomFloat(2, 20, 200),
+            'usage_limit' => $this->faker->optional()->numberBetween(50, 500),
+            'usage_count' => 0,
             'expires_at' => $this->faker->optional()->dateTimeBetween('now', '+1 year'),
         ];
     }

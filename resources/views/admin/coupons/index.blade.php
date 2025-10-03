@@ -60,11 +60,13 @@
 
         <x-admin.table
             data-coupons-table
-            data-column-count="6"
+            data-column-count="8"
             data-empty-message="{{ __('cms.coupons.empty') }}"
             :columns="[
                 __('cms.coupons.column_coupon'),
                 __('cms.coupons.discount'),
+                __('cms.coupons.minimum_spend'),
+                __('cms.coupons.usage_column'),
                 __('cms.coupons.status'),
                 __('cms.coupons.expires_at'),
                 __('cms.coupons.created_at'),
@@ -91,6 +93,23 @@
                             <span class="text-sm font-semibold text-gray-900">{{ $formattedDiscount }}</span>
                             <span class="text-xs text-gray-500">{{ __('cms.coupons.type_labels.'.$coupon->type) }}</span>
                         </div>
+                    </td>
+                    <td class="table-cell">
+                        @if ($coupon->minimum_spend)
+                            <span class="text-sm font-semibold text-gray-900">{{ currency_format($coupon->minimum_spend) }}</span>
+                        @else
+                            <span class="text-sm text-gray-500">{{ __('cms.coupons.no_minimum_spend') }}</span>
+                        @endif
+                    </td>
+                    <td class="table-cell">
+                        @if ($coupon->usage_limit)
+                            <div class="flex flex-col">
+                                <span class="text-sm font-semibold text-gray-900">{{ $coupon->usage_count }} / {{ $coupon->usage_limit }}</span>
+                                <span class="text-xs text-gray-500">{{ __('cms.coupons.usage_progress_hint') }}</span>
+                            </div>
+                        @else
+                            <span class="text-sm text-gray-500">{{ __('cms.coupons.unlimited_usage') }}</span>
+                        @endif
                     </td>
                     <td class="table-cell">
                         <span class="badge {{ $isExpired ? 'badge-danger' : 'badge-success' }}">
@@ -136,7 +155,7 @@
                 </tr>
             @empty
                 <tr data-coupons-empty-row>
-                    <td colspan="6" class="table-cell py-6 text-center text-sm text-gray-500">
+                    <td colspan="8" class="table-cell py-6 text-center text-sm text-gray-500">
                         {{ __('cms.coupons.empty') }}
                     </td>
                 </tr>
