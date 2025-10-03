@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\VendorStoreRequest;
 use App\Models\Vendor;
+use App\Support\Vendors\AdminVendorViewData;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -12,21 +13,7 @@ class VendorController extends Controller
 {
     public function index()
     {
-        $statusCounts = Vendor::query()
-            ->selectRaw('status, COUNT(*) as aggregate')
-            ->groupBy('status')
-            ->pluck('aggregate', 'status');
-
-        $stats = [
-            'total' => $statusCounts->sum(),
-            'active' => (int) ($statusCounts['active'] ?? 0),
-            'inactive' => (int) ($statusCounts['inactive'] ?? 0),
-            'banned' => (int) ($statusCounts['banned'] ?? 0),
-        ];
-
-        $statusOptions = $this->statusOptions();
-
-        return view('admin.vendors.index', compact('stats', 'statusOptions'));
+        return view('admin.vendors.index', AdminVendorViewData::forIndex());
     }
 
     public function getVendorData(Request $request)
@@ -41,7 +28,7 @@ class VendorController extends Controller
             )
             ->latest('id');
 
-        $statusOptions = $this->statusOptions();
+        $statusOptions = AdminVendorViewData::statusOptions();
 
         return DataTables::of($vendors)
             ->editColumn('phone', fn ($vendor) => $vendor->phone ?: '—')
@@ -88,9 +75,7 @@ class VendorController extends Controller
 
     public function create()
     {
-        $statusOptions = $this->statusOptions();
-
-        return view('admin.vendors.create', compact('statusOptions'));
+        return view('admin.vendors.create', AdminVendorViewData::forCreate());
     }
 
     public function store(VendorStoreRequest $request)
@@ -112,12 +97,4 @@ class VendorController extends Controller
         ]);
     }
 
-    private function statusOptions(): array
-    {
-        return collect(Vendor::STATUSES)
-            ->mapWithKeys(fn ($status) => [
-                $status => __('cms.vendors.status_' . $status),
-            ])
-            ->all();
-    }
 }
