@@ -25,14 +25,21 @@ class CategoryFactory extends Factory
         ];
     }
 
-    public function configure(): static
+    /**
+     * Create a translation for the category after it has been persisted.
+     */
+    public function withTranslation(?string $languageCode = null): static
     {
-        return $this->afterCreating(function (Category $category) {
-            $defaultLocale = config('app.locale');
+        return $this->afterCreating(function (Category $category) use ($languageCode) {
+            $language = $languageCode ?? config('app.locale');
+
+            if ($category->translations()->where('language_code', $language)->exists()) {
+                return;
+            }
 
             CategoryTranslation::factory()
                 ->for($category)
-                ->forLanguage($defaultLocale)
+                ->forLanguage($language)
                 ->create();
         });
     }
