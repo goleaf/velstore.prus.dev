@@ -28,10 +28,14 @@ class CategoryFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Category $category) {
-            CategoryTranslation::factory()->create([
-                'category_id' => $category->id,
-                'language_code' => config('app.locale'),
-            ]);
+            $locale = config('app.locale');
+
+            if (! $category->translations()->where('language_code', $locale)->exists()) {
+                CategoryTranslation::factory()->create([
+                    'category_id' => $category->id,
+                    'language_code' => $locale,
+                ]);
+            }
         });
     }
 }
