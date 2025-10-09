@@ -4,6 +4,7 @@ namespace App\Repositories\Admin\Category;
 
 use App\Models\Category;
 use App\Models\CategoryTranslation;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CategoryRepository implements CategoryRepositoryInterface
@@ -56,8 +57,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         $category = $this->find($id);
 
         foreach ($category->translations as $translation) {
-            if ($translation->image_url) {
-                \Storage::disk('public')->delete($translation->image_url);
+            if ($translation->image_url && $this->shouldDeleteStoredImage($translation->image_url)) {
+                Storage::disk('public')->delete($translation->image_url);
             }
         }
 
@@ -129,6 +130,19 @@ class CategoryRepository implements CategoryRepositoryInterface
         }
 
         return self::DEFAULT_IMAGE;
+    }
+
+    private function shouldDeleteStoredImage(string $path): bool
+    {
+        if ($path === self::DEFAULT_IMAGE) {
+            return false;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return false;
+        }
+
+        return Storage::disk('public')->exists($path);
     }
 
     protected function generateUniqueSlug(string $baseSlug, ?int $ignoreId = null): string
