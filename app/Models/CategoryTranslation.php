@@ -9,7 +9,7 @@ class CategoryTranslation extends Model
 {
     use HasFactory;
 
-    public const DEFAULT_IMAGE_PATH = 'assets/images/placeholder-promo.svg';
+    public const DEFAULT_IMAGE_PATH = 'categories/placeholder-promo.svg';
 
     protected $fillable = ['category_id', 'language_code', 'name', 'description', 'image_url'];
 
