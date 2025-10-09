@@ -15,9 +15,15 @@ class CategoryTranslationFactory extends Factory
 
     public function definition(): array
     {
+        $defaultLocale = config('app.locale');
+
+        do {
+            $languageCode = $this->faker->languageCode();
+        } while ($languageCode === $defaultLocale);
+
         return [
             'category_id' => Category::factory(),
-            'language_code' => 'en',
+            'language_code' => $languageCode,
             'name' => $this->faker->unique()->words(3, true),
             'description' => $this->faker->sentence(),
             'image_url' => 'categories/'.$this->faker->unique()->lexify('??????????').'.jpg',
